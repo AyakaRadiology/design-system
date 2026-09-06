@@ -1,0 +1,10 @@
+:root {
+    --accent: oklch(0.8 0.12 195);
+    --x-dicom-crosshair: var(--accent);
+    --x-danger: oklch(0.7 0.16 25);
+    --panel-gap: 8px;
+}
+
+@theme inline {
+    --color-x-dicom-crosshair: var(--x-dicom-crosshair);
+}

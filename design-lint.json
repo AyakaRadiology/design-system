@@ -1,0 +1,15 @@
+{
+    "include": ["src/react/**/*.{ts,tsx}", "src/lint/rules/__fixtures__/*/pass.{tsx,css}"],
+    "exclude": ["**/*.test.*"],
+    "themeFile": "src/styles/theme.css",
+    "rules": {
+        "L1": "error",
+        "L2": "error",
+        "L3": "error",
+        "L4": "error",
+        "L5": "error",
+        "L6": "error",
+        "L7": "error"
+    },
+    "allow": []
+}

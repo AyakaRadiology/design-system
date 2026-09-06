@@ -1,0 +1,4 @@
+.panel {
+    --x-needle-tracker: var(--chart-1);
+    --x-needle-fused: var(--chart-2);
+}
