@@ -21,6 +21,11 @@
             "rule": "L5",
             "path": "src/react/IconButton.tsx",
             "reason": "this IS the primitive \u2014 the intrinsic <button> has to exist somewhere, and here is where"
+        },
+        {
+            "rule": "L5",
+            "path": "src/react/Input.tsx",
+            "reason": "this IS the primitive \u2014 the intrinsic <input> has to exist somewhere, and here is where"
         }
     ]
 }
