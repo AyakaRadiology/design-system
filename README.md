@@ -97,6 +97,22 @@ instead of being a line every app has to remember. `tests/consumer/run.sh`
 asserts that classes only the primitives use reach a real app's built
 stylesheet.
 
+### Labels and case
+
+`Field` does **not** uppercase its label. The density table in `docs/ui-rules.md`
+asks for `uppercase tracking-wide` on meta labels, and that is right for
+English, but CSS `text-transform` is not case-folding: it turned `Plan θ` into
+`Plan Θ`, a different symbol from the one the same quantity is printed with
+elsewhere.
+
+A product whose labels are pure ASCII adds the class where it wants the effect:
+
+```tsx
+<Field label={<span className="uppercase">Port</span>}>
+```
+
+Anything carrying Greek, mathematical or non-Latin text leaves it off.
+
 ## Colour maths
 
 ```ts

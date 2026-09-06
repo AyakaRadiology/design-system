@@ -3,7 +3,12 @@ export interface FieldProps {
     label: ReactNode;
     /** Guidance shown before the control is used. */
     hint?: ReactNode;
-    /** What went wrong. Its presence is what marks the control invalid. */
+    /**
+     * What went wrong. Its presence is what marks the control invalid — so
+     * anything React would render as nothing counts as no error, not as an
+     * empty one. `error={touched && message}`, `error={errors.port ?? null}`
+     * and `error=""` are all "this field is fine".
+     */
     error?: ReactNode;
     /** Use when the control's id is already fixed by something else. */
     htmlFor?: string;
