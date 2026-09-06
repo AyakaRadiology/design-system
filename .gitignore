@@ -1,0 +1,7 @@
+node_modules/
+coverage/
+*.tsbuildinfo
+
+# dist/ is deliberately NOT ignored: it is the committed build artifact a
+# consumer gets straight from a git tag, and CI diffs it against a fresh
+# `tools/gen.sh` run.

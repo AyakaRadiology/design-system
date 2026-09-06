@@ -1,0 +1,36 @@
+{
+    // Type-checking config for the whole repository (`tsc --noEmit`). The emit
+    // that produces the committed dist/ lives in tsconfig.build.json.
+    //
+    // `moduleResolution: bundler` with `.js` specifiers on every relative
+    // import: TypeScript resolves `./cn.js` to `./cn.ts` at check time, Vite
+    // does the same for the test run, and the emitted dist/ carries the `.js`
+    // specifier verbatim so a plain `node` can load `bin/design-lint.js`
+    // without a bundler in the path.
+    "compilerOptions": {
+        "target": "ES2022",
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "noEmit": true,
+        "skipLibCheck": true,
+        "verbatimModuleSyntax": true,
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "types": ["node"]
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "tools/**/*.ts",
+        "vitest.config.ts",
+        "vitest.setup.ts"
+    ]
+}

@@ -1,0 +1,76 @@
+{
+    "name": "@ayaka/design-system",
+    "version": "0.0.0",
+    "type": "module",
+    "private": false,
+    "description": "Frontend design schema, voices and primitives for Harry's tool UIs",
+    "license": "UNLICENSED",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/AyakaRadiology/design-system.git"
+    },
+    "sideEffects": [
+        "*.css"
+    ],
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./react": {
+            "types": "./dist/react/index.d.ts",
+            "default": "./dist/react/index.js"
+        },
+        "./tailwind.css": "./tailwind.css",
+        "./voices/*.css": "./voices/*.css",
+        "./tokens/*.css": "./tokens/*.css",
+        "./tokens/schema.json": "./tokens/schema.json",
+        "./package.json": "./package.json"
+    },
+    "bin": {
+        "design-lint": "bin/design-lint.js"
+    },
+    "files": [
+        "dist",
+        "tokens",
+        "voices",
+        "tailwind.css",
+        "bin",
+        "README.md",
+        "AGENTS.md"
+    ],
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "gen": "tools/gen.sh",
+        "typecheck": "tsc --noEmit",
+        "lint": "biome check .",
+        "test": "vitest run --passWithNoTests",
+        "check": "bun run gen && bun run typecheck && bun run lint && bun run test && tools/check-dist.sh"
+    },
+    "peerDependencies": {
+        "react": "^19",
+        "react-dom": "^19",
+        "tailwindcss": "^4"
+    },
+    "dependencies": {
+        "@radix-ui/react-dialog": "^1.1.23",
+        "@radix-ui/react-select": "^2.3.7",
+        "@radix-ui/react-switch": "^1.3.7",
+        "@radix-ui/react-tooltip": "^1.2.16",
+        "class-variance-authority": "^0.7.1",
+        "postcss": "^8.5.28",
+        "tailwind-merge": "^3.6.0",
+        "typescript": "5.9"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.5.12",
+        "@testing-library/jest-dom": "^7.0.1",
+        "@testing-library/react": "^16.3.3",
+        "@testing-library/user-event": "^14.6.7",
+        "@types/node": "^26.4.1",
+        "@types/react": "^19.2.18",
+        "@types/react-dom": "^19.2.7",
+        "jsdom": "^30.0.1",
+        "vitest": "^5.0.0"
+    }
+}

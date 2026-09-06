@@ -1,0 +1,60 @@
+name: CI
+
+# One job, because every check here is fast and they share one install. The
+# order is deliberate: rebuild dist/ and diff it first, so a stale artifact
+# fails before the suites get a chance to pass against a build nobody
+# committed.
+#
+# runs-on: GitHub-hosted ubuntu-latest. This repository is PUBLIC, so hosted
+# minutes are free here, and the org's self-hosted runner group refuses public
+# repositories anyway (allows_public_repositories: false) — a self-hosted job
+# would queue forever. It is also the safer half of the trade: a fork PR
+# against a public repository must never get to execute on the workstation
+# that hosts those runners.
+
+on:
+    push:
+        branches: ['main']
+        tags: ['v*']
+    pull_request:
+        branches: ['**']
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    check:
+        name: Quality Check
+        runs-on: ubuntu-latest
+        steps:
+            # Deliberately no path filter anywhere in this workflow. "Quality
+            # Check" is the merge gate, and a filtered-out pull request never
+            # starts the workflow at all, so the context never reports and the
+            # PR stays blocked with no way to satisfy it.
+            - uses: actions/checkout@v7
+
+            # Node AND bun, because they do different jobs here and neither
+            # substitutes for the other: bun installs and runs the suites,
+            # while `node` is what a consumer uses to load `bin/design-lint.js`
+            # out of the committed dist/, so the consumer smoke test needs a
+            # real one. Both are pinned rather than taken from whatever the
+            # runner image happens to preinstall, because this job rebuilds the
+            # committed dist/ and diffs it.
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: '24'
+
+            - uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: '1.3.14'
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Check
+              run: bun run check

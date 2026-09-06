@@ -1,0 +1,76 @@
+name: release-please
+
+# Release automation, mirroring the sibling repos needle-protocol,
+# needle-guide and needle-simulator.
+#
+# On every push to main, release-please maintains ONE open
+# "chore(main): release X.Y.Z" PR carrying the version bump and the generated
+# CHANGELOG. Merging that PR is the single human action — it tags the release,
+# and the tag is what every consumer pins. Never auto-merge the release PR:
+# choosing when to cut a release is the decision this mechanism exists to
+# preserve.
+#
+# `release-type: node` because package.json is the version's home here. Unlike
+# needle-protocol there is no second version to keep in lock-step: bun.lock
+# records the workspace package's NAME but not its version, so a bump leaves
+# the lockfile valid and `bun install --frozen-lockfile` keeps passing on the
+# release PR. Adding any file that restates the version (a Python
+# pyproject.toml, a Cargo.toml) means adding it to `extra-files` here.
+#
+# The tag is pushed with a GitHub App token, not GITHUB_TOKEN. That matters
+# twice over: a tag created with GITHUB_TOKEN triggers no workflows (GitHub's
+# loop prevention); and a PR branch pushed by GITHUB_TOKEN has its checks held
+# in `action_required` until a maintainer clicks "Approve and run", which is
+# friction on every single release.
+#
+# runs-on: GitHub-hosted ubuntu-latest, matching ci.yml. See that file for why
+# the self-hosted runners are not an option on a public repository.
+
+on:
+    push:
+        branches: [main]
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    release-please:
+        name: Maintain release PR
+        runs-on: ubuntu-latest
+        steps:
+            # Fail with a sentence a human can act on, rather than deep inside
+            # the token action with "invalid app id".
+            - name: Preflight — the release bot's credentials must exist
+              env:
+                  APP_ID: ${{ secrets.RELEASE_BOT_APP_ID }}
+                  PRIVATE_KEY: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+              run: |
+                  set -euo pipefail
+                  if [ -z "${APP_ID:-}" ] || [ -z "${PRIVATE_KEY:-}" ]; then
+                    echo "::error::Missing RELEASE_BOT_APP_ID and/or RELEASE_BOT_PRIVATE_KEY. They are AyakaRadiology ORGANISATION secrets with visibility ALL, so a repository in the org inherits them; the needle-tracking-release-bot App must also be installed on this repository." >&2
+                    exit 1
+                  fi
+
+            - uses: actions/create-github-app-token@v3
+              id: app-token
+              with:
+                  app-id: ${{ secrets.RELEASE_BOT_APP_ID }}
+                  private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+
+            - uses: googleapis/release-please-action@v5
+              id: rp
+              with:
+                  token: ${{ steps.app-token.outputs.token }}
+                  config-file: release-please-config.json
+                  manifest-file: .release-please-manifest.json
+
+            # Fail loudly if a release was created but the tag output is empty:
+            # that would mean the output key below is wrong, and consumers pin
+            # this repository BY TAG, so a release with no tag is a release
+            # nobody can depend on.
+            - name: Guard — a created release must carry a tag
+              if: steps.rp.outputs.releases_created == 'true' && steps.rp.outputs.tag_name == ''
+              run: |
+                  echo "::error::release-please created a release but tag_name is empty — check the output key." >&2
+                  exit 1

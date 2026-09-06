@@ -1,0 +1,20 @@
+{
+    // The emit that produces the committed dist/.
+    //
+    // dist/ is diffed byte for byte by CI, so nothing about the emit may depend
+    // on the host: the line ending is pinned and incremental state is off.
+    // Tests and tools are excluded — a consumer installs neither.
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "noEmit": false,
+        "declaration": true,
+        "declarationMap": false,
+        "sourceMap": false,
+        "outDir": "dist",
+        "rootDir": "src",
+        "newLine": "lf",
+        "incremental": false
+    },
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/__fixtures__/**"]
+}
