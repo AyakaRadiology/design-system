@@ -85,7 +85,7 @@ tar -xzf "$TARBALL" -C "$PACKAGE" --strip-components=1
 # The four files a consumer reaches for by name. Checked before anything is
 # built, so a `files` list that dropped one fails with that sentence rather
 # than with a resolution error thirty lines further down.
-for required in dist/react/index.js dist/lint/cli.js bin/design-lint.js tokens/schema.json voices/biomonitor.css tailwind.css; do
+for required in dist/react/index.js dist/lint/cli.js dist/color.js bin/design-lint.js tokens/schema.json voices/biomonitor.css tailwind.css; do
     if [ ! -f "$PACKAGE/$required" ]; then
         echo "::error::the packed tarball has no $required — check \"files\" in package.json." >&2
         exit 1
@@ -216,6 +216,32 @@ if ! printf '%s' "$LAST_ACCENT" | grep -q '195'; then
 fi
 echo "    the voice, the utility mapping, the primitives' classes and the --x- extension all reached the built CSS"
 echo "    the consumer's override wins: $LAST_ACCENT"
+
+# The colour subpath, resolved by a stock `node` THROUGH the exports map — the
+# only check that an entry point a consumer imports by name actually resolves.
+# Importing dist/color.js by path would pass with the map broken.
+echo "==> the colour subpath resolves and computes"
+cat >"$APP/color-probe.mjs" <<'JS'
+import assert from "node:assert/strict";
+import { contrastRatio, oklchToSrgb, parseOklch } from "@ayaka/design-system/color";
+
+const teal = parseOklch("oklch(0.66 0.12 178)");
+assert.deepEqual(teal, { l: 0.66, c: 0.12, h: 178, alpha: 1 });
+
+const rgb = oklchToSrgb(teal.l, teal.c, teal.h);
+assert.equal(rgb.length, 3);
+for (const channel of rgb) assert.ok(channel >= 0 && channel <= 1, `channel out of range: ${channel}`);
+
+// White on black is 21:1 by definition; if the maths crossed the package
+// boundary intact, this is exact.
+assert.ok(Math.abs(contrastRatio("oklch(1 0 0)", "oklch(0 0 0)") - 21) < 0.01);
+console.log("ok");
+JS
+if [ "$(cd "$APP" && node color-probe.mjs)" != "ok" ]; then
+    echo "::error::@ayaka/design-system/color did not resolve or did not compute correctly from the packed tarball." >&2
+    exit 1
+fi
+echo "    @ayaka/design-system/color resolves through the exports map"
 
 echo "==> the gate, run from the tarball by a stock node, on a compliant app"
 if ! (cd "$APP" && node node_modules/@ayaka/design-system/bin/design-lint.js --config design-lint.json); then

@@ -55,7 +55,7 @@ const voices = readdirSync(`${root}voices`)
     .sort();
 if (voices.length === 0) {
     console.error("::error::voices/ contains no .css file — the schema is satisfied by nothing.");
-    process.exit(1);
+    failed += 1;
 }
 for (const voice of voices)
     report(
@@ -63,8 +63,12 @@ for (const voice of voices)
         validateVoice(readFileSync(`${root}voices/${voice}`, "utf8"), schema),
     );
 
+/* `process.exitCode`, not `process.exit()`, for the reason spelled out in
+ * bin/design-lint.js: a pending write to a pipe is discarded when the process
+ * is torn down, and this tool prints one line per violation. */
 if (failed > 0) {
     console.error(`::error::${failed} token violation(s). See AGENTS.md > "Adding a voice".`);
-    process.exit(1);
+    process.exitCode = 1;
+} else {
+    console.log(`==> ${voices.length} voice(s) satisfy the schema`);
 }
-console.log(`==> ${voices.length} voice(s) satisfy the schema`);

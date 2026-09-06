@@ -97,6 +97,25 @@ instead of being a line every app has to remember. `tests/consumer/run.sh`
 asserts that classes only the primitives use reach a real app's built
 stylesheet.
 
+## Colour maths
+
+```ts
+import { contrastRatio, oklchToSrgb, parseOklch } from "@ayaka/design-system/color";
+
+const [r, g, b] = oklchToSrgb(...Object.values(parseOklch("oklch(0.66 0.12 178)")).slice(0, 3));
+```
+
+`parseOklch`, `oklchToSrgb`, `relativeLuminance`, `contrastRatio`, `deltaE` and
+`parseTokens`. Pure, dependency-free, and the same code every voice in this
+package is held to — so an assertion you write about a colour and this
+package's own gate cannot disagree about what that colour is.
+
+Reach for it where a value has to leave CSS: a canvas fill, a WebGL uniform, a
+test that checks a rendered pixel against a token. The GPU cannot take an
+`oklch()` string, and a Node test cannot ask the browser to resolve one, so
+without this the sRGB triple ends up hard-coded beside the token — the drift
+rule L1 exists to prevent, moved one file over.
+
 ## The gate
 
 ```sh
