@@ -1,0 +1,92 @@
+/* scales.css — the voice-independent half of the schema.
+ *
+ * A type ramp, a font stack, a stacking order and a motion curve do not change
+ * when the palette does, so they are declared ONCE here and every voice imports
+ * them. Only the colour half lives in voices/.
+ *
+ * Skeleton: IBM Carbon's productive type scale at a 14px base, identity
+ * stripped. Tailwind's default 4px spacing scale already contains every Carbon
+ * spacing step, so there is no spacing block — docs/ui-rules.md says which
+ * steps are allowed (never 5/7/9/11).
+ *
+ * Imported by every voice; not meant to be imported on its own.
+ */
+
+@theme {
+    /* "Inter Variable" and "JetBrains Mono Variable" are the family names
+     * @fontsource-variable registers. They lead the stack so an app that
+     * installs those packages gets the variable faces, and fall through to the
+     * static families and then the system stack in an app that does not — one
+     * stack that is correct either way, rather than a per-project fork of this
+     * file. */
+    --font-sans:
+        "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+    --font-mono:
+        "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+        Consolas, monospace;
+
+    --text-xs: 0.75rem; /* 12/16 — meta, column headers, hints */
+    --text-xs--line-height: 1rem;
+    --text-sm: 0.875rem; /* 14/18 — body base for tool UI */
+    --text-sm--line-height: 1.125rem;
+    --text-base: 1rem; /* 16/22 — body base for reading surfaces */
+    --text-base--line-height: 1.375rem;
+    --text-lg: 1.25rem; /* 20/28 — section headings */
+    --text-lg--line-height: 1.75rem;
+    --text-xl: 1.5rem; /* 24/32 — page titles */
+    --text-xl--line-height: 2rem;
+    --text-2xl: 1.75rem; /* 28/36 — rare display use */
+    --text-2xl--line-height: 2.25rem;
+
+    --container-prose-page: 45rem; /* generates max-w-prose-page (reading-surface
+                                      line length; distinct from built-in max-w-prose) */
+
+    /* The one easing curve. It sits in @theme rather than :root because the
+     * Tailwind namespace name and the schema token name are the same word:
+     * one declaration buys both the `ease-standard` utility and a
+     * `var(--ease-standard)` that plain CSS can read, since Tailwind emits
+     * every @theme entry into :root. */
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root {
+    /* Stacking order. Four layers, and the gaps between them are the point:
+     * a component that needs to sit between two of these wants one of these,
+     * not a number of its own. design-lint rule L7 rejects the number. */
+    --z-raised: 10; /* sticky headers, raised rows */
+    --z-overlay: 100; /* dropdowns, popovers, select menus, a dialog's scrim */
+    --z-modal: 1000; /* dialog content, above its own scrim */
+    --z-toast: 1100; /* toasts and tooltips — must clear a modal */
+
+    --motion-fast: 120ms; /* hover, press, a switch knob */
+    --motion-base: 200ms; /* a dialog, a popover, a toast */
+}
+
+/* The z utilities (`z-raised`, `z-modal`, …). `inline` keeps the var()
+ * reference, so the numbers above are the single source of truth: a
+ * non-inline @theme here would restate all four, and two lists of stacking
+ * numbers is how a "raised" element ends up above a modal. */
+@theme inline {
+    --z-index-raised: var(--z-raised);
+    --z-index-overlay: var(--z-overlay);
+    --z-index-modal: var(--z-modal);
+    --z-index-toast: var(--z-toast);
+}
+
+@layer base {
+    body {
+        background: var(--bg-subtle);
+        color: var(--text);
+        font-family: var(--font-sans);
+        font-size: var(--text-sm); /* 14px base; reading surfaces override */
+        line-height: var(--text-sm--line-height);
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+
+    /* One global focus treatment — components never add their own rings. */
+    :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+}

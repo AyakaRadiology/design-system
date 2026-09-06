@@ -1,0 +1,84 @@
+/* Voice: biomonitor — dark-only patient telemetry, for monitors and
+ * dashboards the owner glances at.
+ *
+ * Layered blue-cast charcoal surfaces, phosphor teal traces, multi-hue vitals,
+ * mono numerals. Deliberately not a pure-black terminal: every surface carries
+ * a blue cast (hue 225) and the steps between them, not shadows, are what give
+ * the UI depth. First worn by spine (PRs #11–12). See voices/biomonitor/VOICE.md
+ * for the rules that go with these values — the values alone are not the voice.
+ *
+ * DARK ONLY. There is no light block and no `prefers-color-scheme` query: a
+ * monitor is only ever read dark, and one mode is one set of values to keep
+ * honest against the contrast gate. src/lint/voices.test.ts enforces that
+ * mechanically — it refuses to read a second token-declaring block.
+ *
+ * Usage, in the consumer's CSS entry point:
+ *   @import "tailwindcss";
+ *   @import "@ayaka/design-system/voices/biomonitor.css";
+ */
+
+@import "../tokens/scales.css";
+@import "../tailwind.css";
+
+:root {
+    color-scheme: dark;
+
+    /* neutrals — three background layers, two borders, three text levels. The
+     * layers step ~0.04–0.05 in L, which is what separates a card from the page
+     * now that nothing casts a shadow. */
+    --bg: oklch(0.2 0.015 225); /* surfaces: cards, panels, inputs */
+    --bg-subtle: oklch(0.16 0.015 225); /* page chrome, table headers, alt rows */
+    --bg-muted: oklch(0.25 0.015 225); /* inset wells, disabled fills */
+    --border: oklch(0.3 0.012 225); /* structural borders, dividers */
+    --border-strong: oklch(0.42 0.012 225); /* control borders, hover borders */
+    /* Warm white against the cold surfaces — the readable half of the contrast
+     * the palette is built on. */
+    --text: oklch(0.94 0.008 100);
+    --text-secondary: oklch(0.72 0.008 100);
+    --text-tertiary: oklch(0.55 0.008 100);
+
+    /* accent — phosphor teal; the one hue that brands the project. Light enough
+     * to read as a trace on the deep surfaces, which is why `--accent-fg` is
+     * the dark member of the pair. */
+    --accent: oklch(0.8 0.12 178); /* fills, links, focus — AA on --bg */
+    --accent-hover: oklch(0.86 0.11 178);
+    --accent-fg: oklch(0.22 0.03 200); /* text/icons/knobs on accent fills */
+    --accent-subtle: oklch(0.32 0.05 183); /* selected rows, tinted chips */
+
+    /* The voice's only glow, reserved for the signature element (spine: the
+     * header EKG trace). Derived from `--accent` rather than restated, so
+     * retuning the accent cannot leave the glow behind on the old hue. */
+    --trace-glow: color-mix(in oklab, var(--accent) 45%, transparent);
+
+    /* status — the only permitted non-accent hues; -fg is for text on solid fills */
+    --success: oklch(0.75 0.14 155);
+    --success-subtle: oklch(0.31 0.05 155);
+    --success-fg: oklch(0.22 0.05 155);
+    --warning: oklch(0.79 0.13 85);
+    --warning-subtle: oklch(0.31 0.05 85);
+    --warning-fg: oklch(0.23 0.05 85);
+    --danger: oklch(0.72 0.16 25);
+    --danger-hover: oklch(0.78 0.16 25); /* danger is the only status used as a
+                                            button fill, hence the only -hover */
+    --danger-subtle: oklch(0.31 0.06 25);
+    --danger-fg: oklch(0.22 0.06 25); /* text/icons on danger fills (banner) */
+    --info: oklch(0.74 0.12 245);
+    --info-subtle: oklch(0.31 0.05 245);
+    --info-fg: oklch(0.22 0.05 245);
+
+    /* series — categorical slots for the money charts: the only hues outside
+     * accent+status, and never a stand-in for either. Slot 1 carries the brand
+     * teal so the primary series reads as accent; it sits below `--accent`'s L
+     * because the dataviz validator's dark lightness band tops out at 0.67.
+     * Slot 5 is a gold stepped off `--warning`'s 85 for the same reason the
+     * hues have to stay apart at all: a series that reads as a status tells the
+     * viewer something the data never said. Validated with the dataviz skill's
+     * validate_palette.js against the `--bg` surface (lightness band, chroma
+     * floor, CVD and normal-vision separation of adjacent slots, ≥3:1 against
+     * the surface) — re-run it before changing any value. */
+    --chart-1: oklch(0.66 0.12 178);
+    --chart-2: oklch(0.53 0.16 252);
+    --chart-3: oklch(0.67 0.15 308);
+    --chart-4: oklch(0.55 0.17 345);
+    --chart-5: oklch(0.62 0.15 105);
+}

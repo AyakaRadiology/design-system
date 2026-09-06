@@ -1,0 +1,48 @@
+/* tailwind.css — the colour half of the schema, mapped into Tailwind v4
+ * utilities: bg-bg, bg-bg-subtle, text-text-secondary, border-border,
+ * bg-accent, text-accent-fg, bg-danger-subtle, text-chart-1, …
+ *
+ * `inline` keeps the var() reference rather than resolving it at build time,
+ * which is what lets a voice's `.dark` block swap every value without a single
+ * `dark:` twin in a component (design-lint rule L4 rejects those).
+ *
+ * Every colour token in tokens/schema.json needs a line here or it generates
+ * no utility and cannot be reached from a component without the literal that
+ * rule L1 exists to reject. src/lint/schema.test.ts fails a colour token that
+ * is missing one.
+ *
+ * Imported by every voice; not meant to be imported on its own.
+ */
+
+@theme inline {
+    --color-bg: var(--bg);
+    --color-bg-subtle: var(--bg-subtle);
+    --color-bg-muted: var(--bg-muted);
+    --color-border: var(--border);
+    --color-border-strong: var(--border-strong);
+    --color-text: var(--text);
+    --color-text-secondary: var(--text-secondary);
+    --color-text-tertiary: var(--text-tertiary);
+    --color-accent: var(--accent);
+    --color-accent-hover: var(--accent-hover);
+    --color-accent-fg: var(--accent-fg);
+    --color-accent-subtle: var(--accent-subtle);
+    --color-success: var(--success);
+    --color-success-subtle: var(--success-subtle);
+    --color-success-fg: var(--success-fg);
+    --color-warning: var(--warning);
+    --color-warning-subtle: var(--warning-subtle);
+    --color-warning-fg: var(--warning-fg);
+    --color-danger: var(--danger);
+    --color-danger-hover: var(--danger-hover);
+    --color-danger-subtle: var(--danger-subtle);
+    --color-danger-fg: var(--danger-fg);
+    --color-info: var(--info);
+    --color-info-subtle: var(--info-subtle);
+    --color-info-fg: var(--info-fg);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+}

@@ -1,0 +1,324 @@
+{
+    "version": 1,
+    "extensionPrefix": "x-",
+    "tokens": {
+        "bg": {
+            "type": "color",
+            "role": "surface",
+            "required": true,
+            "doc": "Surfaces that sit above the page: cards, panels, inputs, toolbars."
+        },
+        "bg-subtle": {
+            "type": "color",
+            "role": "surface",
+            "required": true,
+            "doc": "Page chrome, table headers, alternating rows — one step behind bg."
+        },
+        "bg-muted": {
+            "type": "color",
+            "role": "surface",
+            "required": true,
+            "doc": "Inset wells and disabled fills — one step in front of bg."
+        },
+        "border": {
+            "type": "color",
+            "role": "border",
+            "required": true,
+            "doc": "Structural borders and dividers."
+        },
+        "border-strong": {
+            "type": "color",
+            "role": "border",
+            "required": true,
+            "doc": "Control borders and hover borders — the visible edge of an input or a secondary button."
+        },
+        "text": {
+            "type": "color",
+            "role": "text",
+            "required": true,
+            "doc": "Body text and headings. Clears AA on every surface."
+        },
+        "text-secondary": {
+            "type": "color",
+            "role": "text",
+            "required": true,
+            "doc": "Labels, units, meta. Clears AA on bg."
+        },
+        "text-tertiary": {
+            "type": "color",
+            "role": "text",
+            "required": true,
+            "doc": "Placeholders and decorative meta. Deliberately below AA; never load-bearing."
+        },
+        "accent": {
+            "type": "color",
+            "role": "accent",
+            "required": true,
+            "doc": "The one hue that brands the product: primary fills, links, the focus ring."
+        },
+        "accent-hover": {
+            "type": "color",
+            "role": "accent",
+            "required": true,
+            "doc": "Hover state of an accent fill."
+        },
+        "accent-fg": {
+            "type": "color",
+            "role": "accent",
+            "required": true,
+            "doc": "Text, icons and knobs drawn ON an accent fill."
+        },
+        "accent-subtle": {
+            "type": "color",
+            "role": "accent",
+            "required": true,
+            "doc": "Tinted chips and selected rows — a wash of the accent that body text still reads on."
+        },
+        "success": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Healthy state."
+        },
+        "success-subtle": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Tinted background for a success badge or row."
+        },
+        "success-fg": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Text and icons drawn ON a solid success fill."
+        },
+        "warning": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Degraded state, needs attention but not action."
+        },
+        "warning-subtle": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Tinted background for a warning badge or row."
+        },
+        "warning-fg": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Text and icons drawn ON a solid warning fill."
+        },
+        "danger": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Failed state, and the only status hue that may be used as text."
+        },
+        "danger-hover": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Hover state of a danger fill. Danger is the only status used as a button fill, hence the only status with a hover."
+        },
+        "danger-subtle": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Tinted background for a danger badge or row."
+        },
+        "danger-fg": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Text and icons drawn ON a solid danger fill."
+        },
+        "info": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Neutral informational state."
+        },
+        "info-subtle": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Tinted background for an info badge or row."
+        },
+        "info-fg": {
+            "type": "color",
+            "role": "status",
+            "required": true,
+            "doc": "Text and icons drawn ON a solid info fill."
+        },
+        "chart-1": {
+            "type": "color",
+            "role": "series",
+            "required": true,
+            "doc": "Categorical chart series slot 1. Series hues are data and status hues are alarms — a series that reads as a status tells the viewer something the data never said, which is what the ΔE floor in src/lint/voices.test.ts holds apart."
+        },
+        "chart-2": {
+            "type": "color",
+            "role": "series",
+            "required": true,
+            "doc": "Categorical chart series slot 2. Series hues are data and status hues are alarms — a series that reads as a status tells the viewer something the data never said, which is what the ΔE floor in src/lint/voices.test.ts holds apart."
+        },
+        "chart-3": {
+            "type": "color",
+            "role": "series",
+            "required": true,
+            "doc": "Categorical chart series slot 3. Series hues are data and status hues are alarms — a series that reads as a status tells the viewer something the data never said, which is what the ΔE floor in src/lint/voices.test.ts holds apart."
+        },
+        "chart-4": {
+            "type": "color",
+            "role": "series",
+            "required": true,
+            "doc": "Categorical chart series slot 4. Series hues are data and status hues are alarms — a series that reads as a status tells the viewer something the data never said, which is what the ΔE floor in src/lint/voices.test.ts holds apart."
+        },
+        "chart-5": {
+            "type": "color",
+            "role": "series",
+            "required": true,
+            "doc": "Categorical chart series slot 5. Series hues are data and status hues are alarms — a series that reads as a status tells the viewer something the data never said, which is what the ΔE floor in src/lint/voices.test.ts holds apart."
+        },
+        "trace-glow": {
+            "type": "shadow",
+            "role": "signature",
+            "required": false,
+            "doc": "The colour of the ONE glow a voice is allowed, on its signature element only. Optional: a voice with no signature element declares no glow. Derive it from --accent rather than restating a hue, so retuning the accent cannot leave the glow behind."
+        },
+        "font-sans": {
+            "type": "font",
+            "role": "font",
+            "required": true,
+            "doc": "Prose: labels, copy, headings."
+        },
+        "font-mono": {
+            "type": "font",
+            "role": "font",
+            "required": true,
+            "doc": "Every reading a machine produced: numerals, counters, eyebrows. Pair it with tabular-nums."
+        },
+        "text-xs": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Type step xs (12/16 — meta, column headers, hints)."
+        },
+        "text-xs--line-height": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Line height paired with text-xs. Tailwind reads the `--name--line-height` suffix as the pair."
+        },
+        "text-sm": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Type step sm (14/18 — body base for tool UI)."
+        },
+        "text-sm--line-height": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Line height paired with text-sm. Tailwind reads the `--name--line-height` suffix as the pair."
+        },
+        "text-base": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Type step base (16/22 — body base for reading surfaces)."
+        },
+        "text-base--line-height": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Line height paired with text-base. Tailwind reads the `--name--line-height` suffix as the pair."
+        },
+        "text-lg": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Type step lg (20/28 — section headings)."
+        },
+        "text-lg--line-height": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Line height paired with text-lg. Tailwind reads the `--name--line-height` suffix as the pair."
+        },
+        "text-xl": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Type step xl (24/32 — page titles)."
+        },
+        "text-xl--line-height": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Line height paired with text-xl. Tailwind reads the `--name--line-height` suffix as the pair."
+        },
+        "text-2xl": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Type step 2xl (28/36 — rare display use)."
+        },
+        "text-2xl--line-height": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Line height paired with text-2xl. Tailwind reads the `--name--line-height` suffix as the pair."
+        },
+        "container-prose-page": {
+            "type": "length",
+            "role": "type",
+            "required": true,
+            "doc": "Reading-surface line length; generates max-w-prose-page. Distinct from Tailwind's built-in max-w-prose."
+        },
+        "z-raised": {
+            "type": "integer",
+            "role": "z",
+            "required": true,
+            "doc": "A sticky header or a raised row, above the page and nothing else."
+        },
+        "z-overlay": {
+            "type": "integer",
+            "role": "z",
+            "required": true,
+            "doc": "Dropdowns, popovers, select menus, and a dialog's scrim."
+        },
+        "z-modal": {
+            "type": "integer",
+            "role": "z",
+            "required": true,
+            "doc": "Dialog content, above its own overlay."
+        },
+        "z-toast": {
+            "type": "integer",
+            "role": "z",
+            "required": true,
+            "doc": "Toasts and tooltips — the layer that must clear a modal."
+        },
+        "motion-fast": {
+            "type": "duration",
+            "role": "motion",
+            "required": true,
+            "doc": "State changes the eye should not have to wait for: hover, press, a switch knob."
+        },
+        "motion-base": {
+            "type": "duration",
+            "role": "motion",
+            "required": true,
+            "doc": "Entrances and exits: a dialog, a popover, a toast."
+        },
+        "ease-standard": {
+            "type": "easing",
+            "role": "motion",
+            "required": true,
+            "doc": "The one easing curve. Fast out of the gate, settled at the end."
+        }
+    }
+}
