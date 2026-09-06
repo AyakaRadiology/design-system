@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { Field } from "./Field.js";
 import { Input } from "./Input.js";
@@ -76,6 +77,92 @@ describe("Field", () => {
             </Field>,
         );
         expect(screen.getByRole("textbox")).not.toHaveAttribute("aria-invalid");
+    });
+
+    /* `error={errors.port ?? null}` and `error={touched && message}` are how
+     * every form library and every conditional spells "nothing is wrong". A
+     * check against `undefined` alone read all of them as an error and put an
+     * empty red paragraph under a valid field. */
+    it.each([
+        ["null", null],
+        ["undefined", undefined],
+        ["false", false],
+        ["an empty string", ""],
+    ])("treats %s as no error at all", (_label, error) => {
+        const { container } = render(
+            <Field label="Port" error={error}>
+                <Input />
+            </Field>,
+        );
+        expect(screen.getByRole("textbox")).not.toHaveAttribute("aria-invalid");
+        expect(screen.getByRole("textbox")).not.toHaveAccessibleDescription();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        expect(container.querySelector(".text-danger")).toBeNull();
+    });
+
+    /* Same predicate, same reason: a hint that renders nothing must not leave
+     * the control describing itself by an empty paragraph. */
+    it.each([
+        ["null", null],
+        ["an empty string", ""],
+    ])("treats %s as no hint at all", (_label, hint) => {
+        const { container } = render(
+            <Field label="Port" hint={hint}>
+                <Input />
+            </Field>,
+        );
+        expect(screen.getByRole("textbox")).not.toHaveAccessibleDescription();
+        expect(container.querySelectorAll("p")).toHaveLength(0);
+    });
+
+    /* aria-describedby alone only reaches a reader that navigates back to the
+     * control, which is not what happens when validation fires on blur. */
+    it("announces its error", () => {
+        render(
+            <Field label="Port" error="must be a number">
+                <Input />
+            </Field>,
+        );
+        expect(screen.getByRole("alert")).toHaveTextContent("must be a number");
+        expect(screen.getByRole("textbox")).toHaveAccessibleDescription("must be a number");
+    });
+
+    it("announces an error that appears only after the control was used", async () => {
+        function Validated() {
+            const [value, setValue] = useState("");
+            return (
+                <Field
+                    label="Port"
+                    error={value.length > 0 && value !== "8790" ? "unknown port" : null}
+                >
+                    <Input value={value} onChange={(event) => setValue(event.target.value)} />
+                </Field>
+            );
+        }
+        render(<Validated />);
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        await userEvent.type(screen.getByRole("textbox"), "1");
+        expect(screen.getByRole("alert")).toHaveTextContent("unknown port");
+        expect(screen.getByRole("textbox")).toHaveAttribute("aria-invalid", "true");
+    });
+
+    /* CSS text-transform is not case-folding. `uppercase` ran "Plan θ" through
+     * the same rule as the Latin letters and printed "Plan Θ" — a different
+     * character from the one the other apps show for the same quantity.
+     *
+     * The class list is the assertion because jsdom computes no layout, so the
+     * transform itself is not observable here; what IS observable, and what
+     * regressed, is the class being applied at all. */
+    it("does not case-transform its label", () => {
+        render(
+            <Field label="Plan θ">
+                <Input />
+            </Field>,
+        );
+        const label = screen.getByText("Plan θ");
+        expect(label.className).not.toMatch(/\buppercase\b/);
+        expect(label).toHaveClass("text-xs", "font-medium", "tracking-wide", "text-text-secondary");
+        expect(label).toHaveTextContent("Plan θ");
     });
 
     /* Two controls under one label is not a layout this can wire correctly,
