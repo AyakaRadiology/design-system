@@ -30,6 +30,7 @@
     --color-bg: var(--bg);
     --color-bg-subtle: var(--bg-subtle);
     --color-bg-muted: var(--bg-muted);
+    --color-bg-elevated: var(--bg-elevated);
     --color-border: var(--border);
     --color-border-strong: var(--border-strong);
     --color-text: var(--text);

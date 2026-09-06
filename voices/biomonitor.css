@@ -29,6 +29,13 @@
     --bg: oklch(0.2 0.015 225); /* surfaces: cards, panels, inputs */
     --bg-subtle: oklch(0.16 0.015 225); /* page chrome, table headers, alt rows */
     --bg-muted: oklch(0.25 0.015 225); /* inset wells, disabled fills */
+    /* Popovers, menus, dialogs, tooltips — a full ramp step above the highest
+     * surface, not above the card. This voice draws no shadows (VOICE.md rule
+     * 1), so lightness is the ONLY thing that says a menu floats, and the
+     * steps have to be ~0.04–0.05 L to be steps at all. Placed 0.04 above the
+     * card instead, it would land 0.01 from --bg-muted and a floating menu
+     * would read as an inset well. */
+    --bg-elevated: oklch(0.29 0.015 225);
     --border: oklch(0.3 0.012 225); /* structural borders, dividers */
     --border-strong: oklch(0.42 0.012 225); /* control borders, hover borders */
     /* Warm white against the cold surfaces — the readable half of the contrast

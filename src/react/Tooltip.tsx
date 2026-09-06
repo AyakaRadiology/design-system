@@ -34,7 +34,7 @@ export function Tooltip({ content, children, side = "top", className }: TooltipP
                     side={side}
                     sideOffset={4}
                     className={cn(
-                        "z-toast rounded-md border border-border bg-bg px-2 py-1 text-xs shadow-xs",
+                        "z-toast rounded-md border border-border bg-bg-elevated px-2 py-1 text-xs shadow-xs",
                         className,
                     )}
                 >

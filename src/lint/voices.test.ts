@@ -28,8 +28,13 @@ const SERIES_SEPARATION = 15;
  * series that reads as a status tells the viewer something the data never
  * said — that a slice is failing, or that spending is an error. */
 const STATUS_SEPARATION = 10;
+/** Two surfaces are either deliberately the SAME (base light draws elevation
+ * with a shadow, so bg-elevated equals bg there) or visibly different. What is
+ * rejected is the state in between: almost-the-same, where a floating menu
+ * reads as an inset well and nobody can say whether that was meant. */
+const SURFACE_SEPARATION = 2;
 
-const SURFACES = ["bg", "bg-subtle", "bg-muted"];
+const SURFACES = ["bg", "bg-subtle", "bg-muted", "bg-elevated"];
 const TINTS = ["success-subtle", "warning-subtle", "danger-subtle", "info-subtle", "accent-subtle"];
 const FILLS = ["accent", "success", "warning", "danger", "info"];
 const CHART_SLOTS = [1, 2, 3, 4, 5].map((n) => `chart-${n}`);
@@ -57,8 +62,24 @@ for (const voice of voices) {
                     expect(ratio("text", surface), `text/${surface}`).toBeGreaterThanOrEqual(AA);
             });
 
-            it("secondary text clears AA on the card surface", () => {
+            it("secondary text clears AA on the card and the elevated surface", () => {
                 expect(ratio("text-secondary", "bg")).toBeGreaterThanOrEqual(AA);
+                /* Popovers, menus and tooltips put units and meta on this
+                 * surface, so it carries secondary text as often as bg does. */
+                expect(ratio("text-secondary", "bg-elevated")).toBeGreaterThanOrEqual(AA);
+            });
+
+            /* On a voice that draws no shadows, lightness is the only thing
+             * saying a menu floats. Two surfaces 0.01 L apart are not a step. */
+            it("keeps its surfaces either identical or tellable apart", () => {
+                for (let i = 0; i < SURFACES.length; i++)
+                    for (let j = i + 1; j < SURFACES.length; j++) {
+                        const [a, b] = [SURFACES[i], SURFACES[j]];
+                        if (!a || !b) throw new Error("surface list is malformed");
+                        const apart = distance(a, b);
+                        if (apart === 0) continue;
+                        expect(apart, `${a}/${b}`).toBeGreaterThanOrEqual(SURFACE_SEPARATION);
+                    }
             });
 
             /* Deliberately sub-AA — decorative meta only. The 3.0 floor records

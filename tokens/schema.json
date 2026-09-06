@@ -20,6 +20,12 @@
             "required": true,
             "doc": "Inset wells and disabled fills — one step in front of bg."
         },
+        "bg-elevated": {
+            "type": "color",
+            "role": "surface",
+            "required": true,
+            "doc": "Popovers, menus, dialogs, tooltips — one step above bg; the depth cue where a voice forbids shadows."
+        },
         "border": {
             "type": "color",
             "role": "border",

@@ -143,6 +143,15 @@ describe("Select", () => {
         render(<Select options={[]} />);
         expect(screen.getByRole("combobox")).toHaveClass("h-8", "border-border-strong");
     });
+
+    /* The menu floats over the page, so it names the elevated surface; the
+     * trigger sits in the page and does not. */
+    it("draws its menu on the elevated surface", async () => {
+        render(<Select options={[{ value: "v1", label: "v1" }]} placeholder="protocol" />);
+        await userEvent.click(screen.getByRole("combobox"));
+        await waitFor(() => expect(screen.getByRole("listbox")).toBeInTheDocument());
+        expect(screen.getByRole("listbox").closest(".bg-bg-elevated")).not.toBeNull();
+    });
 });
 
 describe("Switch", () => {
