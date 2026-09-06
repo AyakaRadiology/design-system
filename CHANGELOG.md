@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/AyakaRadiology/design-system/compare/v0.1.0...v0.1.1) (2026-09-06)
+
+
+### Bug Fixes
+
+* **react:** Field treats null as no error, announces errors, keeps label case ([#12](https://github.com/AyakaRadiology/design-system/issues/12)) ([62592cf](https://github.com/AyakaRadiology/design-system/commit/62592cfdf97b9371ca98ba362f095e353119017b))
+
 ## 0.1.0 (2026-09-06)
 
 
