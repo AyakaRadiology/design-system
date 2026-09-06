@@ -40,10 +40,27 @@ for prerequisite in node bun tar; do
     fi
 done
 
-if [ ! -d "$ROOT/node_modules/react" ]; then
-    echo "::error::tests/consumer/run.sh links its dependencies out of $ROOT/node_modules. Run \`bun install\` first." >&2
-    exit 1
-fi
+# The probe app is built out of THIS repository's node_modules, so every
+# package it needs has to be a declared devDependency here — not merely present
+# on disk. Those two came apart once: a `bun add` was reverted by a later `git
+# checkout`, the packages stayed installed locally, this script passed, and CI
+# failed on `bun install --frozen-lockfile` with the package missing. Checking
+# package.json rather than the directory is what makes a local run mean what a
+# CI run means.
+for dependency in react react-dom vite @vitejs/plugin-react @tailwindcss/vite tailwindcss; do
+    if ! node -e "
+        const pkg = require('$ROOT/package.json');
+        const declared = { ...pkg.dependencies, ...pkg.devDependencies, ...pkg.peerDependencies };
+        process.exit(declared['$dependency'] ? 0 : 1);
+    "; then
+        echo "::error::the probe app needs '$dependency', which is not declared in $ROOT/package.json. It may still be installed locally from an earlier \`bun add\`; CI installs with --frozen-lockfile and will not have it." >&2
+        exit 1
+    fi
+    if [ ! -e "$ROOT/node_modules/$dependency" ]; then
+        echo "::error::'$dependency' is declared but not installed. Run \`bun install\`." >&2
+        exit 1
+    fi
+done
 
 # $RUNNER_TEMP on a GitHub runner; the job's own scratch directory otherwise.
 SCRATCH="${RUNNER_TEMP:-/home/harry/.claude/jobs/a2d2f00c/tmp}"
