@@ -14,6 +14,18 @@
  * Imported by every voice; not meant to be imported on its own.
  */
 
+/* Tailwind's automatic source detection skips node_modules, so a consumer that
+ * renders <Button> gets the component and none of the utilities its classes
+ * name — an unstyled control, with no error anywhere to say why. The path is
+ * resolved relative to THIS file, which is inside the package, so the fix
+ * travels with the package instead of being a line every consumer has to
+ * remember to add to their own theme.css.
+ *
+ * tests/consumer/run.sh is what holds this: it asserts that classes only the
+ * primitives use (.tabular-nums, .rounded-full) reach the built stylesheet of
+ * an app that imports a voice. */
+@source "./dist";
+
 @theme inline {
     --color-bg: var(--bg);
     --color-bg-subtle: var(--bg-subtle);
