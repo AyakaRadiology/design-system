@@ -54,7 +54,7 @@ that it is the only one. Point `themeFile` in `design-lint.json` at it.
 ```
 
 Import that file from the app's CSS entry point, then use the utilities the
-mapping generates — `bg-bg`, `bg-bg-subtle`, `text-text-secondary`,
+mapping generates — `bg-bg`, `bg-bg-subtle`, `bg-bg-elevated`, `text-text-secondary`,
 `border-border`, `bg-accent text-accent-fg hover:bg-accent-hover`,
 `bg-danger-subtle text-danger`, `text-chart-1`. No `dark:` twins: the voice
 handles both modes once, which is why rule L4 rejects them.

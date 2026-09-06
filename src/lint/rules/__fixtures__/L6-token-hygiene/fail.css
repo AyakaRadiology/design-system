@@ -2,5 +2,6 @@
     --panel-gap: 8px;
     --accent: oklch(0.5 0.1 200);
     --x-accent: oklch(0.5 0.1 200);
+    --x-bg-elevated: oklch(0.29 0.015 225);
     --x-needle-tracker: var(--chart-1);
 }
