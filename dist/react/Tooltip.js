@@ -16,5 +16,5 @@ export const TooltipProvider = TooltipPrimitive.Provider;
  * because it is important.
  */
 export function Tooltip({ content, children, side = "top", className }) {
-    return (_jsxs(TooltipPrimitive.Root, { children: [_jsx(TooltipPrimitive.Trigger, { asChild: true, children: children }), _jsx(TooltipPrimitive.Portal, { children: _jsx(TooltipPrimitive.Content, { side: side, sideOffset: 4, className: cn("z-toast rounded-md border border-border bg-bg px-2 py-1 text-xs shadow-xs", className), children: content }) })] }));
+    return (_jsxs(TooltipPrimitive.Root, { children: [_jsx(TooltipPrimitive.Trigger, { asChild: true, children: children }), _jsx(TooltipPrimitive.Portal, { children: _jsx(TooltipPrimitive.Content, { side: side, sideOffset: 4, className: cn("z-toast rounded-md border border-border bg-bg-elevated px-2 py-1 text-xs shadow-xs", className), children: content }) })] }));
 }

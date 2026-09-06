@@ -86,6 +86,15 @@ describe("Dialog", () => {
         await userEvent.click(screen.getByRole("button", { name: "Open" }));
         expect(await screen.findByRole("dialog")).toHaveClass("z-modal");
     });
+
+    /* A floating surface names the elevated role, not the card role. On a
+     * voice that draws no shadows that step is the only thing saying it
+     * floats. */
+    it("draws itself on the elevated surface", async () => {
+        render(<Example />);
+        await userEvent.click(screen.getByRole("button", { name: "Open" }));
+        expect(await screen.findByRole("dialog")).toHaveClass("bg-bg-elevated");
+    });
 });
 
 describe("Tooltip", () => {
@@ -121,6 +130,12 @@ describe("Tooltip", () => {
         await userEvent.hover(screen.getByRole("button", { name: "Reset" }));
         await screen.findByRole("tooltip");
         expect(document.querySelector(".z-toast")).not.toBeNull();
+    });
+
+    it("draws itself on the elevated surface", async () => {
+        withProvider();
+        await userEvent.hover(screen.getByRole("button", { name: "Reset" }));
+        expect(await screen.findByRole("tooltip")).toHaveClass("bg-bg-elevated");
     });
 
     it("does not swallow the trigger's own accessible name", async () => {
