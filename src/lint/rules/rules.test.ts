@@ -116,10 +116,40 @@ describe("L5 — raw control", () => {
 describe("L6 — token hygiene", () => {
     it("catches an unprefixed property, a redefined schema token and an --x- collision", () => {
         const findings = check("L6", "L6-token-hygiene/fail.css");
-        expect(lines(findings)).toEqual([2, 3, 4]);
+        expect(lines(findings)).toEqual([2, 3, 4, 5]);
         expect(findings[0]?.message).toContain("neither a schema token nor an extension");
         expect(findings[1]?.message).toContain("redefined");
         expect(findings[2]?.message).toContain("duplicates the schema role");
+    });
+
+    /* --x-bg-elevated is in the fixture because bg-elevated was added to the
+     * schema AFTER this rule was written. Nothing about L6 was touched to make
+     * it fire: the collision set is read from tokens/schema.json, so a token
+     * promoted tomorrow is protected from being shadowed today. */
+    it("flags a role added to the schema after the rule was written", () => {
+        const findings = check("L6", "L6-token-hygiene/fail.css");
+        const collision = findings.find((finding) => finding.line === 5);
+        expect(collision?.message).toContain("--x-bg-elevated duplicates the schema role");
+        expect(collision?.message).toContain("bg-elevated");
+    });
+
+    /* The example above proves one token. This proves the mechanism: EVERY
+     * name in the schema is protected, so nobody has to remember to extend a
+     * list when they add a role. */
+    it("protects every schema role from being shadowed by an --x- name", () => {
+        for (const token of Object.keys(schema.tokens)) {
+            const css = `.probe { --${schema.extensionPrefix}${token}: 0; }`;
+            const findings =
+                RULES.L6.checkCss?.(
+                    "src/app.css",
+                    postcss.parse(css, { from: "src/app.css" }),
+                    context(),
+                ) ?? [];
+            expect(
+                findings.map((finding) => finding.message),
+                token,
+            ).toEqual([expect.stringContaining(`duplicates the schema role "${token}"`)]);
+        }
     });
 
     it("passes --x- extensions that name nothing the schema already has", () => {
