@@ -21,6 +21,10 @@
             "types": "./dist/react/index.d.ts",
             "default": "./dist/react/index.js"
         },
+        "./color": {
+            "types": "./dist/color.d.ts",
+            "default": "./dist/color.js"
+        },
         "./tailwind.css": "./tailwind.css",
         "./voices/*.css": "./voices/*.css",
         "./tokens/*.css": "./tokens/*.css",
