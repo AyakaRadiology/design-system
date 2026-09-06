@@ -31,17 +31,40 @@ function containerOf(node) {
  */
 export function collectCustomProperties(css) {
     const found = new Map();
-    const root = postcss.parse(css);
-    root.walkDecls((decl) => {
-        if (!decl.prop.startsWith("--"))
-            return;
-        const name = decl.prop.slice(2);
-        const list = found.get(name);
-        const entry = { selector: containerOf(decl), value: decl.value.trim() };
+    for (const declaration of walkCustomProperties(postcss.parse(css))) {
+        const list = found.get(declaration.name);
+        const entry = {
+            selector: declaration.selector,
+            value: declaration.value,
+        };
         if (list)
             list.push(entry);
         else
-            found.set(name, [entry]);
-    });
+            found.set(declaration.name, [entry]);
+    }
     return found;
+}
+/**
+ * Every custom-property declaration in an already-parsed stylesheet, with its
+ * source position.
+ *
+ * Separate from `collectCustomProperties` because the two callers want
+ * different things: the schema validators want the declarations grouped by
+ * name to answer "was this declared, and where"; a lint rule wants them one at
+ * a time with a line and column to point at.
+ */
+export function* walkCustomProperties(root) {
+    const declarations = [];
+    root.walkDecls((decl) => {
+        if (!decl.prop.startsWith("--"))
+            return;
+        declarations.push({
+            name: decl.prop.slice(2),
+            selector: containerOf(decl),
+            value: decl.value.trim(),
+            line: decl.source?.start?.line ?? 1,
+            col: decl.source?.start?.column ?? 1,
+        });
+    });
+    yield* declarations;
 }

@@ -32,5 +32,9 @@
         "tools/**/*.ts",
         "vitest.config.ts",
         "vitest.setup.ts"
-    ]
+    ],
+    // Fixtures are design-lint INPUT, not code. They are deliberately full of
+    // the things the rules reject, and several of them would not survive
+    // noUnusedLocals; the rules read them as text, never as a program.
+    "exclude": ["src/**/__fixtures__/**"]
 }

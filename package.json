@@ -45,8 +45,9 @@
         "typecheck": "tsc --noEmit",
         "lint": "biome check .",
         "test": "vitest run --passWithNoTests",
-        "check": "bun run gen && bun run typecheck && bun run lint && bun run validate-voices && bun run test && tools/check-dist.sh",
-        "validate-voices": "bun tools/validate-voices.ts"
+        "check": "bun run gen && bun run typecheck && bun run lint && bun run validate-voices && bun run test && bun run design-lint && tools/check-dist.sh",
+        "validate-voices": "bun tools/validate-voices.ts",
+        "design-lint": "node bin/design-lint.js --config design-lint.json"
     },
     "peerDependencies": {
         "react": "^19",

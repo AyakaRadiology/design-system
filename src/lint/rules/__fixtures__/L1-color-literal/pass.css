@@ -1,0 +1,4 @@
+.legacy-chip {
+    color: var(--text);
+    background: var(--bg-subtle);
+}
