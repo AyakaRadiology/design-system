@@ -186,6 +186,11 @@ describe("Field", () => {
             </Field>,
         );
         expect(screen.getByLabelText("Mode")).toBe(screen.getByRole("combobox"));
+        /* A button is a labelable element, so `label[for]` does name the Radix
+         * trigger. Asserted on the computed name rather than on the
+         * association, because the association is only worth having if a name
+         * comes out of it. */
+        expect(screen.getByRole("combobox")).toHaveAccessibleName("Mode");
     });
 });
 
@@ -226,6 +231,46 @@ describe("Select", () => {
         expect(onValueChange).toHaveBeenCalledWith("v2");
     });
 
+    /* Every assertion below is on the COMPUTED accessible name, not on the
+     * attribute being present. An attribute a screen reader would ignore is
+     * not a name, and the whole point of issue #11 is that the control was
+     * announcing something other than what the eye reads beside it. */
+    it("takes a name from aria-label when there is no visible caption", () => {
+        render(<Select options={[{ value: "seq", label: "sequence" }]} aria-label="sort" />);
+        expect(screen.getByRole("combobox")).toHaveAccessibleName("sort");
+    });
+
+    /* Preferred when the caption is already on screen: two sources for one
+     * name drift, and the visible one is the one that gets corrected. */
+    it("takes a name from a caption already on the page", () => {
+        render(
+            <>
+                <span id="sort-caption">sort</span>
+                <Select
+                    options={[{ value: "seq", label: "sequence" }]}
+                    aria-labelledby="sort-caption"
+                />
+            </>,
+        );
+        expect(screen.getByRole("combobox")).toHaveAccessibleName("sort");
+    });
+
+    /* The defect from issue #11, pinned so it cannot come back quietly. A
+     * combobox does not take its name from its contents, so the visible
+     * placeholder or value inside the trigger is NOT a name: unnamed, the
+     * control announces its value and nothing about what the value is for.
+     * This is why the two props above are not a nicety. */
+    it("has no accessible name at all when nobody gives it one", () => {
+        render(<Select options={[{ value: "seq", label: "sequence" }]} placeholder="sequence" />);
+        expect(screen.getByRole("combobox")).toHaveTextContent("sequence");
+        expect(screen.getByRole("combobox")).toHaveAccessibleName("");
+    });
+
+    it("accepts an id, so a caller can wire the label itself", () => {
+        render(<Select options={[]} id="sort" aria-label="sort" />);
+        expect(screen.getByRole("combobox")).toHaveAttribute("id", "sort");
+    });
+
     it("wears the same height and border as an Input", () => {
         render(<Select options={[]} />);
         expect(screen.getByRole("combobox")).toHaveClass("h-8", "border-border-strong");
@@ -250,6 +295,26 @@ describe("Switch", () => {
         await userEvent.click(toggle);
         expect(onCheckedChange).toHaveBeenCalledWith(true);
         expect(toggle).toHaveAttribute("data-state", "checked");
+    });
+
+    it("takes a name from aria-label when there is no visible caption", () => {
+        render(<Switch aria-label="Follow live" />);
+        expect(screen.getByRole("switch")).toHaveAccessibleName("Follow live");
+    });
+
+    it("takes a name from a caption already on the page", () => {
+        render(
+            <>
+                <span id="follow-caption">Follow live</span>
+                <Switch aria-labelledby="follow-caption" />
+            </>,
+        );
+        expect(screen.getByRole("switch")).toHaveAccessibleName("Follow live");
+    });
+
+    it("accepts an id, so a caller can wire the label itself", () => {
+        render(<Switch id="follow" aria-label="Follow" />);
+        expect(screen.getByRole("switch")).toHaveAttribute("id", "follow");
     });
 
     it("honours a controlled checked prop", () => {
@@ -282,5 +347,6 @@ describe("Field wires a Switch too", () => {
             </Field>,
         );
         expect(screen.getByLabelText("Follow live")).toBe(screen.getByRole("switch"));
+        expect(screen.getByRole("switch")).toHaveAccessibleName("Follow live");
     });
 });

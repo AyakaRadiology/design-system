@@ -6,7 +6,18 @@ export interface SwitchProps {
     name?: string;
     disabled?: boolean;
     "aria-describedby"?: string;
+    /**
+     * The control's accessible name, when there is no visible caption to point
+     * at. A switch is a shape, not a word: without a name it announces only
+     * its state.
+     */
     "aria-label"?: string;
+    /**
+     * The id of a caption that is already on screen. Prefer this over
+     * `aria-label` when the words exist: two sources for one name drift, and
+     * the visible one is the one that gets corrected.
+     */
+    "aria-labelledby"?: string;
     className?: string;
 }
 /**
