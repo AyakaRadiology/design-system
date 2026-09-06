@@ -45,9 +45,10 @@
         "typecheck": "tsc --noEmit",
         "lint": "biome check .",
         "test": "vitest run --passWithNoTests",
-        "check": "bun run gen && bun run typecheck && bun run lint && bun run validate-voices && bun run test && bun run design-lint && tools/check-dist.sh",
+        "check": "bun run gen && bun run typecheck && bun run lint && bun run validate-voices && bun run test && bun run design-lint && bun run consumer-smoke && tools/check-dist.sh",
         "validate-voices": "bun tools/validate-voices.ts",
-        "design-lint": "node bin/design-lint.js --config design-lint.json"
+        "design-lint": "node bin/design-lint.js --config design-lint.json",
+        "consumer-smoke": "tests/consumer/run.sh"
     },
     "peerDependencies": {
         "react": "^19",
@@ -72,6 +73,7 @@
         "@types/node": "^26.4.1",
         "@types/react": "^19.2.18",
         "@types/react-dom": "^19.2.7",
+        "@vitejs/plugin-react": "^6.1.1",
         "jsdom": "^30.0.1",
         "vitest": "^5.0.0"
     }

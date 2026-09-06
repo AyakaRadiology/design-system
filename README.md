@@ -88,6 +88,15 @@ contract and they are deliberately small: a prop that carries a domain type
 `react` and `react-dom` 19 and `tailwindcss` 4 are peer dependencies — the
 consumer owns those versions.
 
+You do **not** need an `@source` line for the primitives. Tailwind's automatic
+source detection skips `node_modules`, so a consumer would otherwise get
+`<Button>` with none of the utilities its classes name — an unstyled control,
+with nothing anywhere to say why. `tailwind.css` carries the `@source` itself,
+resolved relative to the package, so the fix travels with the dependency
+instead of being a line every app has to remember. `tests/consumer/run.sh`
+asserts that classes only the primitives use reach a real app's built
+stylesheet.
+
 ## The gate
 
 ```sh
