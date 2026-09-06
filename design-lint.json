@@ -11,5 +11,16 @@
         "L6": "error",
         "L7": "error"
     },
-    "allow": []
+    "allow": [
+        {
+            "rule": "L5",
+            "path": "src/react/Button.tsx",
+            "reason": "this IS the primitive \u2014 the intrinsic <button> has to exist somewhere, and here is where"
+        },
+        {
+            "rule": "L5",
+            "path": "src/react/IconButton.tsx",
+            "reason": "this IS the primitive \u2014 the intrinsic <button> has to exist somewhere, and here is where"
+        }
+    ]
 }
