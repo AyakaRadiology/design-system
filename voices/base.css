@@ -1,0 +1,119 @@
+/* Voice: base — light + dark, for general tool UI.
+ *
+ * The convergence voice. It gives every project one set of surfaces, borders,
+ * text levels, an accent and the status hues, so that no session has to invent
+ * a palette; it does not give any one project an identity. When a surface
+ * should read as itself — a monitor, a dashboard the owner looks at for
+ * pleasure — reach for a voice that has a look, not for a pile of overrides on
+ * this one (see AGENTS.md, "Adding a voice").
+ *
+ * Skeleton: IBM Carbon with the IBM identity stripped — Inter instead of Plex,
+ * a teal accent instead of IBM blue, 6/8px radii instead of zero-radius.
+ *
+ * Dark mode is class-based: put `dark` on <html>. Components never write a
+ * `dark:` twin; the two blocks below are where dark mode is handled, once.
+ *
+ * Usage, in the consumer's CSS entry point:
+ *   @import "tailwindcss";
+ *   @import "@ayaka/design-system/voices/base.css";
+ */
+
+@import "../tokens/scales.css";
+@import "../tailwind.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+    color-scheme: light;
+
+    /* neutrals — three background layers, two borders, three text levels */
+    --bg: oklch(1 0 0); /* surfaces: cards, panels, inputs */
+    --bg-subtle: oklch(0.977 0.002 265); /* page chrome, table headers, alt rows */
+    --bg-muted: oklch(0.945 0.003 265); /* inset wells, disabled fills */
+    --border: oklch(0.91 0.004 265); /* structural borders, dividers */
+    --border-strong: oklch(0.8 0.006 265); /* control borders, hover borders */
+    --text: oklch(0.22 0.01 265);
+    --text-secondary: oklch(0.48 0.012 265);
+    --text-tertiary: oklch(0.63 0.01 265);
+
+    /* accent — teal; the one hue that brands the project. Swap it ONLY in the
+     * consumer's theme.css, and only as a value. */
+    --accent: oklch(0.51 0.09 183); /* fills, links, focus — AA on --bg */
+    --accent-hover: oklch(0.44 0.08 183);
+    --accent-fg: oklch(0.99 0.01 183); /* text/icons/knobs on accent fills */
+    --accent-subtle: oklch(0.95 0.035 180); /* selected rows, tinted chips */
+
+    /* status — the only permitted non-accent hues; -fg is for text on solid fills */
+    --success: oklch(0.52 0.13 155);
+    --success-subtle: oklch(0.96 0.04 155);
+    --success-fg: oklch(0.99 0.01 155);
+    --warning: oklch(0.55 0.12 75);
+    --warning-subtle: oklch(0.97 0.05 90);
+    --warning-fg: oklch(0.99 0.01 90);
+    --danger: oklch(0.53 0.19 27);
+    --danger-hover: oklch(0.46 0.17 27); /* danger is the only status used as a
+                                            button fill, hence the only -hover */
+    --danger-subtle: oklch(0.96 0.02 20);
+    --danger-fg: oklch(0.99 0.01 20);
+    --info: oklch(0.52 0.13 245);
+    --info-subtle: oklch(0.96 0.02 240);
+    --info-fg: oklch(0.99 0.01 240);
+
+    /* series — categorical chart slots, the only hues outside accent+status.
+     *
+     * Five hues 72° apart, slot 1 next to the accent teal so the primary series
+     * reads as the brand. They sit in ONE lightness band, and that band is
+     * deliberately away from the statuses' (0.42 here against a status L of
+     * 0.52–0.55, and the dark block puts them below the dark statuses the same
+     * way). That gap is what carries the series-vs-status ΔE floor where the
+     * hue wheel cannot: the four status hues take up most of the wheel, so two
+     * of these slots sit within 30° of a status and would otherwise read as
+     * one. src/lint/voices.test.ts holds every pair to ≥ 10; the tightest here
+     * is chart-2 against info at 11.5. Past that, the answer is a different
+     * lightness band, not a lower floor. */
+    --chart-1: oklch(0.42 0.15 195);
+    --chart-2: oklch(0.42 0.15 267);
+    --chart-3: oklch(0.42 0.15 339);
+    --chart-4: oklch(0.42 0.15 51);
+    --chart-5: oklch(0.42 0.15 123);
+}
+
+.dark {
+    color-scheme: dark;
+
+    --bg: oklch(0.235 0.006 265); /* surfaces sit one step above page */
+    --bg-subtle: oklch(0.205 0.006 265); /* page chrome */
+    --bg-muted: oklch(0.285 0.007 265);
+    --border: oklch(0.32 0.008 265);
+    --border-strong: oklch(0.42 0.01 265);
+    --text: oklch(0.93 0.005 265);
+    --text-secondary: oklch(0.72 0.008 265);
+    --text-tertiary: oklch(0.56 0.008 265);
+
+    --accent: oklch(0.78 0.11 178); /* steps lighter on dark; dark fg */
+    --accent-hover: oklch(0.84 0.11 176);
+    --accent-fg: oklch(0.25 0.04 183);
+    --accent-subtle: oklch(0.35 0.045 183);
+
+    --success: oklch(0.75 0.14 155);
+    --success-subtle: oklch(0.33 0.05 155);
+    --success-fg: oklch(0.24 0.05 155);
+    --warning: oklch(0.79 0.13 85);
+    --warning-subtle: oklch(0.34 0.05 85);
+    --warning-fg: oklch(0.25 0.05 85);
+    --danger: oklch(0.72 0.16 25);
+    --danger-hover: oklch(0.78 0.16 25);
+    --danger-subtle: oklch(0.33 0.06 25);
+    --danger-fg: oklch(0.24 0.06 25);
+    --info: oklch(0.74 0.12 245);
+    --info-subtle: oklch(0.33 0.05 245);
+    --info-fg: oklch(0.24 0.05 245);
+
+    /* Same five hues, one band BELOW the dark statuses (0.62 against
+     * 0.72–0.79), for the reason the light block gives. */
+    --chart-1: oklch(0.62 0.15 195);
+    --chart-2: oklch(0.62 0.15 267);
+    --chart-3: oklch(0.62 0.15 339);
+    --chart-4: oklch(0.62 0.15 51);
+    --chart-5: oklch(0.62 0.15 123);
+}
