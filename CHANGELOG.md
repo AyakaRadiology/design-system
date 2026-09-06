@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/AyakaRadiology/design-system/compare/v0.1.1...v0.1.2) (2026-09-06)
+
+
+### Bug Fixes
+
+* **react:** Select and Switch accept an accessible name ([#14](https://github.com/AyakaRadiology/design-system/issues/14)) ([4e49e5b](https://github.com/AyakaRadiology/design-system/commit/4e49e5ba9658ff502d5494eeddb52e0766cc1df4))
+
 ## [0.1.1](https://github.com/AyakaRadiology/design-system/compare/v0.1.0...v0.1.1) (2026-09-06)
 
 

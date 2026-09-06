@@ -1,6 +1,6 @@
 {
     "name": "@ayaka/design-system",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "type": "module",
     "private": false,
     "description": "Frontend design schema, voices and primitives for Harry's tool UIs",
