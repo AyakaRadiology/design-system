@@ -25,6 +25,7 @@ const SAMPLE: Record<string, string> = {
     duration: "120ms",
     easing: "cubic-bezier(0.2, 0, 0, 1)",
     shadow: "color-mix(in oklab, var(--accent) 45%, transparent)",
+    ratio: "0.25",
 };
 
 function declarations(

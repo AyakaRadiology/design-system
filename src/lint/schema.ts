@@ -10,6 +10,7 @@ export const TOKEN_TYPES = [
     "duration",
     "easing",
     "shadow",
+    "ratio",
 ] as const;
 export type TokenType = (typeof TOKEN_TYPES)[number];
 
@@ -106,6 +107,7 @@ const TYPE_PATTERNS: Record<TokenType, RegExp> = {
     duration: /^[\d.]+m?s$/,
     easing: /^(cubic-bezier\(|linear$|linear\(|ease|steps\()/,
     shadow: /\S/,
+    ratio: /^(?:\d+|\d*\.\d+)$/,
 };
 
 function isTailwindNamespace(name: string, selector: string): boolean {

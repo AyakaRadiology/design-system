@@ -325,6 +325,12 @@
             "role": "motion",
             "required": true,
             "doc": "The one easing curve. Fast out of the gate, settled at the end."
+        },
+        "numeric-empty-scale": {
+            "type": "ratio",
+            "role": "type",
+            "required": true,
+            "doc": "How quiet a missing reading is: the placeholder's size as a fraction of the readout's own, floored at the xs step."
         }
     }
 }

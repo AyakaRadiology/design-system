@@ -61,6 +61,13 @@
 
     --motion-fast: 120ms; /* hover, press, a switch knob */
     --motion-base: 200ms; /* a dialog, a popover, a toast */
+
+    /* How quiet a missing reading is. A hero readout with no value should not
+     * shout at the size the value would: the placeholder is a quarter of the
+     * readout's own size, floored at the xs step so it stays legible in a
+     * dense row. A consumer that wants a different quiet sets this in its
+     * theme.css, per surface if it likes. */
+    --numeric-empty-scale: 0.25;
 }
 
 /* The z utilities (`z-raised`, `z-modal`, …). `inline` keeps the var()
@@ -104,6 +111,13 @@
      * widen a slot from CSS instead of forking the component. */
     .ds-numeric-slot {
         width: calc(var(--ds-numeric-chars) * 1ch);
+    }
+
+    /* `em`, so the ratio reads against the readout's own size rather than a
+     * size this file would have to guess; `max`, so shrinking a 14px row's
+     * reading cannot take the dash below the smallest legible step. */
+    .ds-numeric-empty {
+        font-size: max(calc(var(--numeric-empty-scale) * 1em), var(--text-xs));
     }
 
     .ds-dialog-body {

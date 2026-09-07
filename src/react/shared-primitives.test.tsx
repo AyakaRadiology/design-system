@@ -99,13 +99,15 @@ describe("Numeric value contract", () => {
         );
         rerender(<Numeric value={0} unit="mm" precision={1} reservedChars={5} />);
         expect(value).toHaveTextContent("0.0");
-        rerender(<Numeric value={null} unit="mm" precision={1} reservedChars={5} />);
+        rerender(
+            <Numeric value={null} unit="mm" precision={1} showUnitWhenEmpty reservedChars={5} />,
+        );
         expect(screen.getByText("—")).toHaveClass("text-text-tertiary");
         expect(screen.getByText("—")).toHaveAttribute("aria-hidden", "true");
         expect(screen.getByText("No value")).toHaveClass("sr-only");
-        expect(unit).toHaveClass("text-text-tertiary", "normal-case");
+        expect(screen.getByText("mm")).toHaveClass("text-text-tertiary", "normal-case");
         expect(slotChars(value)).toBe("5");
-        expect(slotChars(unit)).toBe("2");
+        expect(slotChars(screen.getByText("mm"))).toBe("2");
     });
 
     /* The count is only half the contract; the other half is the rule that
@@ -169,37 +171,54 @@ describe("Numeric value contract", () => {
         expect(slotChars(screen.getByText("mm/s"))).toBe("4");
     });
 
-    /* #551: at a hero size the placeholder rendered at 12px beside a 112px
-     * unit. The class assertion is the one that would have caught it — jsdom
-     * loads no stylesheet, so a font-size utility is invisible to the computed
-     * value — and the computed assertion holds the inheritance it depends on. */
-    it("renders the empty glyph at the readout's own size, however large", () => {
-        const hero = "7rem";
+    /* The empty readout is deliberately quiet, and both halves of that are
+     * contract: needle-simulator #1020 gates the widest light run in an empty
+     * CT-console hero at 40px, and needle-guide #551 was a 12px dash beside a
+     * 112px unit in full value colour. The dash was never the problem. */
+    it("keeps the empty readout quiet at a hero size", () => {
+        const heroPx = 112;
         render(
-            <div style={{ fontSize: hero }}>
+            <div style={{ fontSize: `${heroPx / 16}rem` }}>
                 <Numeric value={null} unit="mm" reservedChars={4} />
             </div>,
         );
         const glyph = screen.getByText("—");
-        expect(glyph.className).not.toMatch(/\btext-(?:xs|sm|base|lg|xl|2xl)\b/);
-        expect(getComputedStyle(glyph).fontSize).toBe("112px");
-        expect(getComputedStyle(glyph).fontSize).toBe(
-            getComputedStyle(screen.getByText("mm")).fontSize,
+        expect(glyph).toHaveClass("ds-numeric-empty", "text-text-tertiary");
+        expect(screen.queryByText("mm")).toBeNull();
+        /* The box the reading will land in does not shrink with its
+         * placeholder: only the glyph is scaled. */
+        expect(getComputedStyle(glyph.parentElement as Element).fontSize).toBe(`${heroPx}px`);
+
+        /* jsdom loads no stylesheet, so the size itself is asserted where it
+         * is declared, and the ratio is read back rather than restated: 0.25
+         * of a 112px hero is the 28px this contract promises. */
+        const scale = Number(declarations(":root")["--numeric-empty-scale"]);
+        expect(scale).toBe(0.25);
+        expect(scale * heroPx).toBe(28);
+        expect(declarations(".ds-numeric-empty")["font-size"]).toBe(
+            "max(calc(var(--numeric-empty-scale) * 1em), var(--text-xs))",
         );
-        expect(screen.getByText("mm")).toHaveClass("text-text-tertiary");
     });
 
-    it("drops the unit's text but keeps its slot while the value is missing", () => {
+    it("keeps the floor above the smallest legible step in a dense row", () => {
+        /* A 14px row scaled by the ratio is 3.5px, which is why the rule is a
+         * max() against the xs step rather than a bare multiplication. */
+        const scale = Number(declarations(":root")["--numeric-empty-scale"]);
+        expect(scale * 14).toBeLessThan(12);
+        expect(declarations(".ds-numeric-empty")["font-size"]).toContain("var(--text-xs)");
+    });
+
+    it("brings the unit back, muted, only when asked", () => {
         const { container, rerender } = render(
-            <Numeric value={null} unit="mm" reservedChars={4} hideUnitWhenEmpty />,
+            <Numeric value={null} unit="mm" reservedChars={4} />,
         );
-        const unit = container.querySelector<HTMLElement>('[data-slot="unit"]');
-        expect(unit).toBeInTheDocument();
-        expect(unit).toBeEmptyDOMElement();
+        expect(container.querySelector('[data-slot="unit"]')).toBeNull();
+        rerender(<Numeric value={null} unit="mm" reservedChars={4} showUnitWhenEmpty />);
+        const unit = screen.getByText("mm");
+        expect(unit).toHaveClass("text-text-tertiary");
         expect(slotChars(unit)).toBe("2");
-        rerender(<Numeric value={12} unit="mm" reservedChars={4} hideUnitWhenEmpty />);
-        expect(screen.getByText("mm")).toBe(unit);
-        expect(slotChars(unit)).toBe("2");
+        rerender(<Numeric value={12} unit="mm" reservedChars={4} />);
+        expect(screen.getByText("mm")).toHaveClass("text-text-secondary");
     });
 });
 

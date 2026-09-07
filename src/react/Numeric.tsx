@@ -40,10 +40,11 @@ export type NumericProps = NumericAttributes &
                */
               reservedUnitChars?: number;
               /**
-               * Drop the unit's text while `value` is null, keeping its
-               * reserved slot so nothing shifts when the reading arrives.
+               * Keep the unit visible, muted, while `value` is null. Off by
+               * default: an empty readout should read as quiet, and a bright
+               * unit beside a small dash is the loudest thing on the surface.
                */
-              hideUnitWhenEmpty?: boolean;
+              showUnitWhenEmpty?: boolean;
               children?: never;
           }
         | {
@@ -54,7 +55,7 @@ export type NumericProps = NumericAttributes &
               precision?: never;
               reservedChars?: never;
               reservedUnitChars?: never;
-              hideUnitWhenEmpty?: never;
+              showUnitWhenEmpty?: never;
           }
     );
 
@@ -65,7 +66,7 @@ export function Numeric({
     precision = DEFAULT_PRECISION,
     reservedChars = DEFAULT_RESERVED_CHARS,
     reservedUnitChars,
-    hideUnitWhenEmpty = false,
+    showUnitWhenEmpty = false,
     children,
     className,
     ...props
@@ -101,11 +102,11 @@ export function Numeric({
             >
                 {empty ? (
                     <>
-                        {/* No size of its own: the placeholder is the value, so
-                         * it reads at whatever size the readout is set in — a
-                         * fixed small step turns a hero reading into a speck
-                         * beside its own unit. */}
-                        <span aria-hidden="true" className="text-text-tertiary">
+                        {/* Sized by `.ds-numeric-empty` against the readout's
+                         * own size, never by a step chosen here: a fixed 12px
+                         * dash is a speck under a hero reading, and a
+                         * full-size one shouts about a value nobody has. */}
+                        <span aria-hidden="true" className="ds-numeric-empty text-text-tertiary">
                             {EMPTY_GLYPH}
                         </span>
                         <span className="sr-only">No value</span>
@@ -114,7 +115,7 @@ export function Numeric({
                     value.toFixed(precision)
                 )}
             </span>
-            {typeof unit === "string" && (
+            {typeof unit === "string" && (!empty || showUnitWhenEmpty) && (
                 <span
                     data-slot="unit"
                     className={cn(
@@ -127,7 +128,7 @@ export function Numeric({
                         } as SlotStyle
                     }
                 >
-                    {empty && hideUnitWhenEmpty ? null : unit}
+                    {unit}
                 </span>
             )}
         </span>

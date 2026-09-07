@@ -128,7 +128,7 @@ must still fit the viewport; test actual geometry in consumer Playwright.
 ```
 
 `Numeric({ value: number | null, unit?: string, precision?: number,
-reservedChars?: number, reservedUnitChars?: number, hideUnitWhenEmpty?: boolean,
+reservedChars?: number, reservedUnitChars?: number, showUnitWhenEmpty?: boolean,
 ...spanAttributes })` reserves separate value and unit
 slots. `precision` is an integer 0–100 (default 0); `reservedChars` is a positive
 integer (default 6), in monospace `ch`. The unit slot defaults to the unit
@@ -144,10 +144,11 @@ width through the `.ds-numeric-slot` rule in `tokens/scales.css`, so a consumer
 can widen a slot from CSS — and an app importing no voice gets no reserved
 width, because it has imported none of the package's CSS.
 
-Null renders one muted `—`, announced as “No value”, at the readout's own font
-size — never a fixed small step, which is what makes it survive a hero-sized
-figure. The unit stays visible and dimmed beside it; `hideUnitWhenEmpty` drops
-the unit's text and keeps its slot, so nothing shifts when the reading arrives.
+Null renders one muted `—`, announced as “No value”, at
+`--numeric-empty-scale` of the readout's own size (0.25, floored at the xs
+step), inside a value box that keeps its full width. The unit is hidden while
+the value is missing; `showUnitWhenEmpty` brings it back, muted. The scale is a
+schema token, so an app tunes it per surface in its own `theme.css`.
 Zero is a reading. NaN/infinity and invalid precision/width
 throw. Unit case is preserved under uppercase labels. The existing
 `<Numeric unit="ms">42</Numeric>` form stays source-compatible for preformatted

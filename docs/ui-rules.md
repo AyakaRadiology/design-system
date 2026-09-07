@@ -92,8 +92,9 @@ This governs product/tool UI structure. For aesthetic direction on expressive su
 
 Use `Numeric value={numberOrNull} unit="mm" precision={1} reservedChars={6}`
 for machine readings. The missing-value glyph is **`—`**: one muted em dash,
-never `--.-`, zero, or an empty string. The unit remains visible in a muted,
-fixed-width slot. The value slot reserves `reservedChars` monospace `ch`
+never `--.-`, zero, or an empty string. The unit is hidden while the value is
+missing; `showUnitWhenEmpty` brings it back, muted. The value slot reserves
+`reservedChars` monospace `ch`
 (default 6), including the sign and decimal point; `precision` defaults to 0.
 Size it for the full expected range. Digits are tabular; units always preserve
 case, even inside an uppercase label. Null alone means missing; NaN/infinity
@@ -110,10 +111,23 @@ unit string. Pin it wherever the unit itself changes — a latency readout that
 counts in `ms`, then `s`, then `min` moves every cell to its right twice,
 while the machine is doing nothing unusual: `reservedUnitChars={3}`.
 
-The empty state has a size contract. The placeholder carries no font size of
-its own, so it reads at whatever size the readout is set in, and the unit goes
-muted beside it. `hideUnitWhenEmpty` drops the unit's text while the value is
-null and keeps its reserved slot, so nothing shifts when the reading arrives.
+The empty state has a size contract, and it is a quiet one. The placeholder
+renders at `--numeric-empty-scale` of the readout's own size (0.25), floored at
+the xs step so it stays legible in a dense row, and muted. The reserved value
+box keeps its size, so the reading lands where it was always going to. The unit
+is hidden: a bright unit beside a small dash is the loudest thing on a surface
+that has nothing to report, and it was the actual regression in needle-guide
+#551. `showUnitWhenEmpty` brings it back, muted, for a readout whose unit is
+part of the label.
+
+`--numeric-empty-scale` is a schema token, so a consumer tunes it — globally or
+per surface — in the app's `theme.css`, the one file design-lint allows to set
+one:
+
+```css
+/* the app's theme.css */
+.hero-readout { --numeric-empty-scale: 0.35; }
+```
 
 Hero readouts — a single large figure on a monitor — are sized by the consumer
 on a wrapper, never by the primitive:
@@ -126,13 +140,14 @@ on a wrapper, never by the primitive:
 
 ```tsx
 <div className="hero-readout">
-    <Numeric value={distance} unit="mm" precision={1} reservedChars={5} hideUnitWhenEmpty />
+    <Numeric value={distance} unit="mm" precision={1} reservedChars={5} />
 </div>
 ```
 
 The size is a token and a class because `text-[7rem]` in a component is an L3
-finding, and because the placeholder inherits the size: a hero readout with a
-fixed small glyph is the regression this contract exists to prevent.
+finding. At 7rem the placeholder is 28px and the unit is absent, which is what
+keeps an empty hero quiet enough to ignore while the machine has nothing to
+say.
 
 `StatusPill status={tone}` uses this shared mapping (also exported as
 `STATUS_STATES` and `StatusState<Tone>`):

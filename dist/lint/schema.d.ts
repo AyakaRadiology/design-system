@@ -1,4 +1,4 @@
-export declare const TOKEN_TYPES: readonly ["color", "font", "length", "integer", "duration", "easing", "shadow"];
+export declare const TOKEN_TYPES: readonly ["color", "font", "length", "integer", "duration", "easing", "shadow", "ratio"];
 export type TokenType = (typeof TOKEN_TYPES)[number];
 export declare const TOKEN_ROLES: readonly ["surface", "border", "text", "accent", "status", "series", "signature", "type", "font", "z", "motion"];
 export type TokenRole = (typeof TOKEN_ROLES)[number];
