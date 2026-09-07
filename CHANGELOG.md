@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/AyakaRadiology/design-system/compare/v0.2.1...v0.3.0) (2026-09-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* **primitives:** Numeric's `hideUnitWhenEmpty` is replaced by `showUnitWhenEmpty`. The unit is now hidden by default while `value` is null; pass `showUnitWhenEmpty` for a readout whose unit is part of its label. No consumer had adopted `hideUnitWhenEmpty`.
+
+### Bug Fixes
+
+* **primitives:** quiet the empty Numeric readout and hide its unit by default ([#28](https://github.com/AyakaRadiology/design-system/issues/28)) ([95bc79b](https://github.com/AyakaRadiology/design-system/commit/95bc79b271115075abb05da347c01ed3d52a9565))
+
 ## [0.2.1](https://github.com/AyakaRadiology/design-system/compare/v0.2.0...v0.2.1) (2026-09-07)
 
 
