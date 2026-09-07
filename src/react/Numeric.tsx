@@ -5,6 +5,7 @@ const DEFAULT_PRECISION = 0;
 const MAX_PRECISION = 100;
 const DEFAULT_RESERVED_CHARS = 6;
 const EMPTY_GLYPH = "—";
+const COMPACT_UNIT = /^[°%]/u;
 const EMPTY_ALIGN_CLASSES = {
     inherit: "text-right",
     start: "text-left",
@@ -50,22 +51,38 @@ export type NumericProps = NumericAttributes &
                * unit beside a small dash is the loudest thing on the surface.
                */
               showUnitWhenEmpty?: boolean;
+              /**
+               * Keep the unit's reserved width while `value` is null, but do
+               * not show its text. Useful when adjacent hero readouts must
+               * not move as one sensor drops (default false).
+               */
+              reserveUnitSlotWhenEmpty?: boolean;
               /** Alignment of the empty glyph within the reserved value slot (default inherit). */
               emptyAlign?: "inherit" | "start" | "center";
+              unitSeparator?: never;
               children?: never;
           }
         | {
               /** Compatibility for preformatted figures; prefer value for new readouts. */
               children: ReactNode;
               unit?: ReactNode;
+              /** Separator before the unit (default auto: none for °/%; a space otherwise). */
+              unitSeparator?: "auto" | "space" | "none";
               value?: never;
               precision?: never;
               reservedChars?: never;
               reservedUnitChars?: never;
               showUnitWhenEmpty?: never;
+              reserveUnitSlotWhenEmpty?: never;
               emptyAlign?: never;
           }
     );
+
+function unitSeparator(unit: ReactNode, separator: "auto" | "space" | "none") {
+    if (separator === "none") return null;
+    if (separator === "space") return " ";
+    return typeof unit === "string" && COMPACT_UNIT.test(unit) ? null : " ";
+}
 
 /** A fixed value slot and a separate, case-preserving unit slot. */
 export function Numeric({
@@ -75,7 +92,9 @@ export function Numeric({
     reservedChars = DEFAULT_RESERVED_CHARS,
     reservedUnitChars,
     showUnitWhenEmpty = false,
+    reserveUnitSlotWhenEmpty = false,
     emptyAlign = "inherit",
+    unitSeparator: separator = "auto",
     children,
     className,
     ...props
@@ -85,7 +104,10 @@ export function Numeric({
             <span className={cn("font-mono tabular-nums", className)} {...props}>
                 {children}
                 {unit !== undefined && unit !== null && (
-                    <span className="text-text-secondary normal-case"> {unit}</span>
+                    <span className="text-text-secondary normal-case">
+                        {unitSeparator(unit, separator)}
+                        {unit}
+                    </span>
                 )}
             </span>
         );
@@ -128,22 +150,24 @@ export function Numeric({
                     value.toFixed(precision)
                 )}
             </span>
-            {typeof unit === "string" && (!empty || showUnitWhenEmpty) && (
-                <span
-                    data-slot="unit"
-                    className={cn(
-                        "ds-numeric-slot inline-block shrink-0 whitespace-nowrap normal-case",
-                        empty ? "text-text-tertiary" : "text-text-secondary",
-                    )}
-                    style={
-                        {
-                            "--ds-numeric-chars": reservedUnitChars ?? unit.length,
-                        } as SlotStyle
-                    }
-                >
-                    {unit}
-                </span>
-            )}
+            {typeof unit === "string" &&
+                (!empty || showUnitWhenEmpty || reserveUnitSlotWhenEmpty) && (
+                    <span
+                        data-slot="unit"
+                        aria-hidden={empty && !showUnitWhenEmpty ? "true" : undefined}
+                        className={cn(
+                            "ds-numeric-slot inline-block shrink-0 whitespace-nowrap normal-case",
+                            empty ? "text-text-tertiary" : "text-text-secondary",
+                        )}
+                        style={
+                            {
+                                "--ds-numeric-chars": reservedUnitChars ?? unit.length,
+                            } as SlotStyle
+                        }
+                    >
+                        {empty && !showUnitWhenEmpty ? null : unit}
+                    </span>
+                )}
         </span>
     );
 }

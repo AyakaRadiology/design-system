@@ -93,7 +93,7 @@ describe("Dialog", () => {
     it("draws itself on the elevated surface", async () => {
         render(<Example />);
         await userEvent.click(screen.getByRole("button", { name: "Open" }));
-        expect(await screen.findByRole("dialog")).toHaveClass("bg-bg-elevated");
+        expect(await screen.findByRole("dialog")).toHaveClass("bg-dialog-surface");
     });
 });
 

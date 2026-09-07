@@ -150,13 +150,17 @@ cat >"$APP/src/styles/theme.css" <<'CSS'
     font-size: var(--x-hero-readout);
 }
 
+.retone-dialog {
+    --dialog-surface: var(--bg-muted);
+}
+
 @theme inline {
     --color-x-needle-tracker: var(--x-needle-tracker);
 }
 CSS
 
 cat >"$APP/src/components/Status.tsx" <<'TSX'
-import { BuildStamp, Button, Dialog, DialogBody, DialogContent, Numeric, Panel, RadioGroup, StatusPill, TooltipProvider } from "@ayaka/design-system/react";
+import { BuildStamp, Button, Dialog, DialogBody, DialogContent, DialogTrigger, Numeric, Panel, RadioGroup, StatusPill, Switch, TooltipProvider } from "@ayaka/design-system/react";
 import { useState } from "react";
 
 export function Status() {
@@ -168,6 +172,8 @@ export function Status() {
                 <StatusPill status="success" detail="Receiving samples">connected</StatusPill>
             </TooltipProvider>
             <Numeric unit="ms">42</Numeric>
+            <Numeric unit="°">42</Numeric>
+            <Numeric unit="%">42</Numeric>
             <Numeric value={null} unit="mm" precision={1} reservedChars={6} />
             <Numeric value={900} unit="ms" reservedUnitChars={3} />
             <div className="hero-readout">
@@ -180,6 +186,7 @@ export function Status() {
                 <Numeric value={null} reservedChars={5} emptyAlign="start" />
             </div>
             <Numeric value={null} unit="mm" precision={1} reservedChars={5} showUnitWhenEmpty />
+            <Numeric value={null} unit="mm" reservedUnitChars={3} reserveUnitSlotWhenEmpty />
             <BuildStamp name="Probe" describe="v0.1.2-3-gabc" buildTime="2026-09-07T00:00:00Z" />
             <BuildStamp
                 name="Probe"
@@ -187,6 +194,14 @@ export function Status() {
                 buildTime="2026-09-07T00:00:00Z"
                 formatBuildTime={(iso) => `built ${iso.slice(0, 10)}`}
             />
+            <BuildStamp
+                name="Probe"
+                describe="v0.1.2-3-gabc"
+                buildTime="2026-09-07T00:00:00Z"
+                onClick={() => {}}
+                aria-label="Pin full build SHA"
+            />
+            <Switch aria-label="Follow live" />
             <output data-radio-value>{source}</output>
             <RadioGroup
                 aria-label="Source"
@@ -199,8 +214,13 @@ export function Status() {
                 ]}
             />
             <Dialog>
-                <DialogContent title="Help">
-                    <DialogBody>Scrollable help</DialogBody>
+                <DialogTrigger>Open re-toned dialog</DialogTrigger>
+                <DialogContent title="Help" className="retone-dialog">
+                    <DialogBody data-dialog-body>
+                        {Array.from({ length: 100 }, (_, index) => (
+                            <p key={index}>Scrollable help line {index + 1}</p>
+                        ))}
+                    </DialogBody>
                 </DialogContent>
             </Dialog>
         </Panel>
@@ -266,7 +286,8 @@ assert_css "the primitives' own utilities (is @source still in tailwind.css?)" '
 assert_css "the primitives' own utilities (is @source still in tailwind.css?)" '\.rounded-full'
 assert_css "viewport-bound dialog" 'max-height: *calc\(100svh'
 assert_css "dialog scroll body" '\.overflow-y-auto'
-assert_css "voice scrollbar" 'scrollbar-color: *var\(--text-secondary\) var\(--bg-elevated\)'
+assert_css "dialog surface default" -- '--dialog-surface: *var\(--bg-elevated\)'
+assert_css "voice scrollbar" 'scrollbar-color: *var\(--text-secondary\) var\(--dialog-surface\)'
 assert_css "touch scroll cue" '\.ds-dialog-body:{1,2}after'
 assert_css "status motion guard" 'animation: *none;'
 assert_css "unit case protection" '\.normal-case'
@@ -446,6 +467,60 @@ try {
 }
 JS
 (cd "$APP" && node numeric-browser-probe.mjs)
+
+echo "==> DialogBody fade matches a re-toned DialogContent screenshot pixel"
+cat >"$APP/dialog-browser-probe.mjs" <<'JS'
+import assert from "node:assert/strict";
+import { chromium } from "playwright";
+import { preview } from "vite";
+
+const server = await preview({
+    root: ".",
+    logLevel: "silent",
+    preview: { host: "127.0.0.1", port: 0 },
+});
+const address = server.httpServer.address();
+if (!address || typeof address === "string") throw new Error("Vite preview did not bind TCP");
+
+const browser = await chromium.launch({ headless: true });
+try {
+    const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
+    await page.goto(`http://127.0.0.1:${address.port}`, { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Open re-toned dialog" }).click();
+    const content = page.getByRole("dialog", { name: "Help" });
+    const body = page.locator("[data-dialog-body]");
+    const contentBox = await content.boundingBox();
+    const bodyBox = await body.boundingBox();
+    if (!contentBox || !bodyBox) throw new Error("Dialog probe geometry is missing");
+
+    const surfacePixel = await page.screenshot({
+        clip: {
+            x: Math.floor(contentBox.x + contentBox.width - 24),
+            y: Math.floor(contentBox.y + 8),
+            width: 1,
+            height: 1,
+        },
+    });
+    const fadeBottomPixel = await page.screenshot({
+        clip: {
+            x: Math.floor(bodyBox.x + bodyBox.width / 2),
+            y: Math.floor(bodyBox.y + bodyBox.height - 1),
+            width: 1,
+            height: 1,
+        },
+    });
+    assert.deepEqual(
+        fadeBottomPixel,
+        surfacePixel,
+        "the fade's bottom screenshot pixel must equal the DialogContent background",
+    );
+    console.log("fade bottom pixel equals the re-toned dialog surface");
+} finally {
+    await browser.close();
+    await server.close();
+}
+JS
+(cd "$APP" && node dialog-browser-probe.mjs)
 
 echo "==> the gate, run from the tarball by a stock node, on a compliant app"
 if ! (cd "$APP" && node node_modules/@ayaka/design-system/bin/design-lint.js --config design-lint.json); then

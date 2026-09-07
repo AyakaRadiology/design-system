@@ -49,6 +49,10 @@ describe("DialogBody", () => {
         const dialog = screen.getByRole("dialog", { name: "Help" });
         const body = screen.getByLabelText("Help content");
         expect(dialog).toHaveClass("ds-dialog-content", "flex", "flex-col");
+        expect(declarations(".ds-dialog-content")).toMatchObject({
+            "--dialog-surface": "var(--bg-elevated)",
+        });
+        expect(dialog).toHaveClass("bg-dialog-surface");
         expect(body).toHaveClass("ds-dialog-body", "min-h-0", "overflow-y-auto");
         expect(body.parentElement).toHaveClass("flex", "min-h-0", "flex-col");
         expect(screen.getByRole("heading")).toHaveClass("shrink-0");
@@ -61,13 +65,13 @@ describe("DialogBody", () => {
         expect(declarations(".ds-dialog-body")).toMatchObject({
             "max-height": "100svh",
             "scrollbar-width": "thin",
-            "scrollbar-color": "var(--text-secondary) var(--bg-elevated)",
+            "scrollbar-color": "var(--text-secondary) var(--dialog-surface)",
             "scrollbar-gutter": "stable",
         });
         expect(declarations(".ds-dialog-body::after")).toMatchObject({
             position: "sticky",
             bottom: "0",
-            background: "linear-gradient(transparent, var(--bg-elevated))",
+            background: "linear-gradient(transparent, var(--dialog-surface) 75%)",
             "pointer-events": "none",
         });
     });
@@ -78,6 +82,30 @@ describe("Numeric value contract", () => {
         expectTypeOf<{ value: number; children: string }>().not.toMatchTypeOf<NumericProps>();
         expectTypeOf<{ value: null; unit: string }>().toMatchTypeOf<NumericProps>();
         expectTypeOf<{ children: string; unit: string }>().toMatchTypeOf<NumericProps>();
+    });
+
+    it.each([
+        ["°", "42°"],
+        ["%", "42%"],
+        ["mm", "42 mm"],
+    ])("uses the automatic separator for a preformatted %s unit", (unit, expected) => {
+        const { container } = render(<Numeric unit={unit}>42</Numeric>);
+        expect(container.textContent).toBe(expected);
+    });
+
+    it("allows a preformatted unit separator override", () => {
+        const { container, rerender } = render(
+            <Numeric unit="mm" unitSeparator="none">
+                42
+            </Numeric>,
+        );
+        expect(container.textContent).toBe("42mm");
+        rerender(
+            <Numeric unit="%" unitSeparator="space">
+                42
+            </Numeric>,
+        );
+        expect(container.textContent).toBe("42 %");
     });
 
     it("keeps both widths across value, zero and empty, preserving unit case", () => {
@@ -264,6 +292,30 @@ describe("Numeric value contract", () => {
         rerender(<Numeric value={12} unit="mm" reservedChars={4} />);
         expect(screen.getByText("mm")).toHaveClass("text-text-secondary");
     });
+
+    it("can reserve a blank unit slot while the value is empty", () => {
+        const { container, rerender } = render(
+            <Numeric value={null} unit="mm" reservedUnitChars={3} reserveUnitSlotWhenEmpty />,
+        );
+        const reserved = container.querySelector<HTMLElement>('[data-slot="unit"]');
+        expect(reserved).toBeEmptyDOMElement();
+        expect(reserved).toHaveAttribute("aria-hidden", "true");
+        expect(slotChars(reserved)).toBe("3");
+
+        rerender(<Numeric value={null} unit="mm" reservedUnitChars={3} />);
+        expect(container.querySelector('[data-slot="unit"]')).toBeNull();
+
+        rerender(
+            <Numeric
+                value={null}
+                unit="mm"
+                reservedUnitChars={3}
+                reserveUnitSlotWhenEmpty
+                showUnitWhenEmpty
+            />,
+        );
+        expect(screen.getByText("mm")).not.toHaveAttribute("aria-hidden");
+    });
 });
 
 describe("StatusPill semantics", () => {
@@ -336,6 +388,13 @@ const options = [
 ];
 
 describe("RadioGroup", () => {
+    it("marks every package radio as a design-system control", () => {
+        render(<RadioGroup aria-label="Source" options={options} />);
+        for (const radio of screen.getAllByRole("radio")) {
+            expect(radio).toHaveAttribute("data-ds-control", "radio");
+        }
+    });
+
     it("tabs to the selection; arrows select, skip disabled items, and wrap", async () => {
         render(<RadioGroup aria-label="Source" options={options} defaultValue="one" />);
         expect(screen.getByRole("radiogroup", { name: "Source" })).toBeInTheDocument();
@@ -552,5 +611,24 @@ describe("BuildStamp", () => {
             "datetime",
             "2026-09-07T12:34:56Z",
         );
+    });
+
+    it("renders onClick as a keyboard-activatable Button-styled control", async () => {
+        const click = vi.fn();
+        render(
+            <BuildStamp
+                name="Guide"
+                describe="v0.1.2"
+                buildTime="2026-09-07T12:34:56Z"
+                onClick={click}
+            />,
+        );
+        const stamp = screen.getByRole("button", { name: /Guide v0\.1\.2/ });
+        expect(stamp).toHaveAttribute("type", "button");
+        expect(stamp).toHaveClass("bg-bg-elevated", "hover:bg-bg-subtle");
+        stamp.focus();
+        await userEvent.keyboard("{Enter}");
+        await userEvent.keyboard(" ");
+        expect(click).toHaveBeenCalledTimes(2);
     });
 });

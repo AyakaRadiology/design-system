@@ -19,20 +19,30 @@ export type NumericProps = NumericAttributes & ({
      * unit beside a small dash is the loudest thing on the surface.
      */
     showUnitWhenEmpty?: boolean;
+    /**
+     * Keep the unit's reserved width while `value` is null, but do
+     * not show its text. Useful when adjacent hero readouts must
+     * not move as one sensor drops (default false).
+     */
+    reserveUnitSlotWhenEmpty?: boolean;
     /** Alignment of the empty glyph within the reserved value slot (default inherit). */
     emptyAlign?: "inherit" | "start" | "center";
+    unitSeparator?: never;
     children?: never;
 } | {
     /** Compatibility for preformatted figures; prefer value for new readouts. */
     children: ReactNode;
     unit?: ReactNode;
+    /** Separator before the unit (default auto: none for °/%; a space otherwise). */
+    unitSeparator?: "auto" | "space" | "none";
     value?: never;
     precision?: never;
     reservedChars?: never;
     reservedUnitChars?: never;
     showUnitWhenEmpty?: never;
+    reserveUnitSlotWhenEmpty?: never;
     emptyAlign?: never;
 });
 /** A fixed value slot and a separate, case-preserving unit slot. */
-export declare function Numeric({ value, unit, precision, reservedChars, reservedUnitChars, showUnitWhenEmpty, emptyAlign, children, className, ...props }: NumericProps): import("react").JSX.Element;
+export declare function Numeric({ value, unit, precision, reservedChars, reservedUnitChars, showUnitWhenEmpty, reserveUnitSlotWhenEmpty, emptyAlign, unitSeparator: separator, children, className, ...props }: NumericProps): import("react").JSX.Element;
 export {};

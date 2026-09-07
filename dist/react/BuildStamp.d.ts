@@ -1,5 +1,5 @@
-import type { HTMLAttributes } from "react";
-export interface BuildStampProps extends Omit<HTMLAttributes<HTMLSpanElement>, "children"> {
+import type { ButtonHTMLAttributes, HTMLAttributes } from "react";
+interface BuildStampMetadata {
     name: string;
     /** The consumer's git describe output, including dirty suffix if present. */
     describe: string;
@@ -16,5 +16,13 @@ export interface BuildStampProps extends Omit<HTMLAttributes<HTMLSpanElement>, "
      */
     formatBuildTime?: (iso: string) => string;
 }
+export interface StaticBuildStampProps extends BuildStampMetadata, Omit<HTMLAttributes<HTMLSpanElement>, "children" | "onClick"> {
+    onClick?: never;
+}
+export interface InteractiveBuildStampProps extends BuildStampMetadata, Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children" | "name"> {
+    onClick: NonNullable<ButtonHTMLAttributes<HTMLButtonElement>["onClick"]>;
+}
+export type BuildStampProps = StaticBuildStampProps | InteractiveBuildStampProps;
 /** Opaque plate keeps the voice's AA text/surface pair legible over any image. */
-export declare function BuildStamp({ name, describe, buildTime, formatBuildTime, className, ...props }: BuildStampProps): import("react").JSX.Element;
+export declare function BuildStamp(props: BuildStampProps): import("react").JSX.Element;
+export {};

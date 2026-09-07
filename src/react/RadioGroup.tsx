@@ -130,6 +130,7 @@ export function RadioGroup({
             {options.map((option, index) => (
                 <div key={option.value} className="flex min-h-8 items-center gap-2">
                     <RadioGroupPrimitive.Item
+                        data-ds-control="radio"
                         id={`${groupId}-${index}`}
                         value={option.value}
                         disabled={option.disabled}
