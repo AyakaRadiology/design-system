@@ -1,10 +1,26 @@
-import type { HTMLAttributes, ReactNode } from "react";
+import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
 import { cn } from "./cn.js";
 
 const DEFAULT_PRECISION = 0;
 const MAX_PRECISION = 100;
 const DEFAULT_RESERVED_CHARS = 6;
 const EMPTY_GLYPH = "—";
+
+/* React's CSSProperties has no room for a custom property, so the one this
+ * component sets is declared here rather than asserted away with `any`. The
+ * width itself is `.ds-numeric-slot` in tokens/scales.css: a slot width is a
+ * count of monospace characters, and a class that reads the count off this
+ * property keeps the width overridable from CSS — an inline `width` is the one
+ * thing a consumer cannot reach. */
+interface SlotStyle extends CSSProperties {
+    "--ds-numeric-chars": number;
+}
+
+function assertSlotWidth(prop: string, chars: number) {
+    if (!Number.isInteger(chars) || chars < 1) {
+        throw new RangeError(`Numeric ${prop} must be a positive integer`);
+    }
+}
 
 type NumericAttributes = Omit<HTMLAttributes<HTMLSpanElement>, "children">;
 
@@ -17,6 +33,17 @@ export type NumericProps = NumericAttributes &
               precision?: number;
               /** Fixed value width in ch, including sign/decimal point (default 6). */
               reservedChars?: number;
+              /**
+               * Fixed unit width in ch (default: the unit's own length). Pin it
+               * for a unit that changes — ms/s/min — so the cells beside the
+               * readout do not move when the unit does.
+               */
+              reservedUnitChars?: number;
+              /**
+               * Drop the unit's text while `value` is null, keeping its
+               * reserved slot so nothing shifts when the reading arrives.
+               */
+              hideUnitWhenEmpty?: boolean;
               children?: never;
           }
         | {
@@ -26,6 +53,8 @@ export type NumericProps = NumericAttributes &
               value?: never;
               precision?: never;
               reservedChars?: never;
+              reservedUnitChars?: never;
+              hideUnitWhenEmpty?: never;
           }
     );
 
@@ -35,6 +64,8 @@ export function Numeric({
     unit,
     precision = DEFAULT_PRECISION,
     reservedChars = DEFAULT_RESERVED_CHARS,
+    reservedUnitChars,
+    hideUnitWhenEmpty = false,
     children,
     className,
     ...props
@@ -52,9 +83,8 @@ export function Numeric({
     if (!Number.isInteger(precision) || precision < 0 || precision > MAX_PRECISION) {
         throw new RangeError(`Numeric precision must be an integer from 0 to ${MAX_PRECISION}`);
     }
-    if (!Number.isInteger(reservedChars) || reservedChars < 1) {
-        throw new RangeError("Numeric reservedChars must be a positive integer");
-    }
+    assertSlotWidth("reservedChars", reservedChars);
+    if (reservedUnitChars !== undefined) assertSlotWidth("reservedUnitChars", reservedUnitChars);
     if (value !== null && !Number.isFinite(value)) {
         throw new RangeError("Numeric value must be finite or null");
     }
@@ -66,12 +96,16 @@ export function Numeric({
         >
             <span
                 data-slot="value"
-                className="inline-block shrink-0 whitespace-nowrap text-right"
-                style={{ width: `${reservedChars}ch` }}
+                className="ds-numeric-slot inline-block shrink-0 whitespace-nowrap text-right"
+                style={{ "--ds-numeric-chars": reservedChars } as SlotStyle}
             >
                 {empty ? (
                     <>
-                        <span aria-hidden="true" className="text-xs text-text-tertiary">
+                        {/* No size of its own: the placeholder is the value, so
+                         * it reads at whatever size the readout is set in — a
+                         * fixed small step turns a hero reading into a speck
+                         * beside its own unit. */}
+                        <span aria-hidden="true" className="text-text-tertiary">
                             {EMPTY_GLYPH}
                         </span>
                         <span className="sr-only">No value</span>
@@ -84,12 +118,16 @@ export function Numeric({
                 <span
                     data-slot="unit"
                     className={cn(
-                        "inline-block shrink-0 whitespace-nowrap normal-case",
+                        "ds-numeric-slot inline-block shrink-0 whitespace-nowrap normal-case",
                         empty ? "text-text-tertiary" : "text-text-secondary",
                     )}
-                    style={{ width: `${unit.length}ch` }}
+                    style={
+                        {
+                            "--ds-numeric-chars": reservedUnitChars ?? unit.length,
+                        } as SlotStyle
+                    }
                 >
-                    {unit}
+                    {empty && hideUnitWhenEmpty ? null : unit}
                 </span>
             )}
         </span>

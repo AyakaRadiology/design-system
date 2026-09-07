@@ -91,14 +91,48 @@ This governs product/tool UI structure. For aesthetic direction on expressive su
 ## Shared readouts and status
 
 Use `Numeric value={numberOrNull} unit="mm" precision={1} reservedChars={6}`
-for machine readings. The missing-value glyph is **`—`**: one small muted em
-dash, never `--.-`, zero, or an empty string. The unit remains visible in a
-muted, fixed-width slot. The value slot reserves `reservedChars` monospace `ch`
+for machine readings. The missing-value glyph is **`—`**: one muted em dash,
+never `--.-`, zero, or an empty string. The unit remains visible in a muted,
+fixed-width slot. The value slot reserves `reservedChars` monospace `ch`
 (default 6), including the sign and decimal point; `precision` defaults to 0.
 Size it for the full expected range. Digits are tabular; units always preserve
 case, even inside an uppercase label. Null alone means missing; NaN/infinity
 are errors, not a missing-value fallback. The compatibility children form
 remains available for preformatted figures but does not reserve fixed slots.
+
+Both slots take their width from the `.ds-numeric-slot` rule the package
+ships, driven by a `--ds-numeric-chars` count — so a consumer widens a slot in
+CSS rather than by forking the component, and an app that imports no voice
+(and therefore no `tokens/scales.css`) gets no reserved width at all.
+
+`reservedUnitChars` pins the unit slot, which otherwise takes the width of the
+unit string. Pin it wherever the unit itself changes — a latency readout that
+counts in `ms`, then `s`, then `min` moves every cell to its right twice,
+while the machine is doing nothing unusual: `reservedUnitChars={3}`.
+
+The empty state has a size contract. The placeholder carries no font size of
+its own, so it reads at whatever size the readout is set in, and the unit goes
+muted beside it. `hideUnitWhenEmpty` drops the unit's text while the value is
+null and keeps its reserved slot, so nothing shifts when the reading arrives.
+
+Hero readouts — a single large figure on a monitor — are sized by the consumer
+on a wrapper, never by the primitive:
+
+```css
+/* the app's theme.css */
+:root { --x-hero-readout: 7rem; }
+.hero-readout { font-size: var(--x-hero-readout); }
+```
+
+```tsx
+<div className="hero-readout">
+    <Numeric value={distance} unit="mm" precision={1} reservedChars={5} hideUnitWhenEmpty />
+</div>
+```
+
+The size is a token and a class because `text-[7rem]` in a component is an L3
+finding, and because the placeholder inherits the size: a hero readout with a
+fixed small glyph is the regression this contract exists to prevent.
 
 `StatusPill status={tone}` uses this shared mapping (also exported as
 `STATUS_STATES` and `StatusState<Tone>`):
@@ -117,10 +151,15 @@ transitions on the pill and its descendants. Optional `detail` supplements
 that label with a tooltip on a focusable trigger; wrap the app in
 `TooltipProvider`. Keep actionable or essential information in visible UI.
 
-`BuildStamp` prints the app name, git describe and ISO build time on an opaque
+`BuildStamp` prints the app name, git describe and build time on an opaque
 `bg-bg-elevated` plate with `text-text-secondary`. This pair is contrast-tested
 in every voice/mode, including over bright imagery. The consumer supplies
 metadata and chooses placement; the primitive does not fetch or invent it.
+`buildTime` displays verbatim: an ISO 8601 string is wrapped in `<time>` with
+the ISO value as its `datetime`, and a string the consumer has already worded
+(`built 2026-01-01 00:00 UTC`) is printed as-is, without a `<time>` claiming a
+datetime it is not. `formatBuildTime={(iso) => …}` words an ISO build time for
+display while the machine-readable value stays the ISO string.
 
 `DialogBody` owns internal scrolling inside `DialogContent`. Title,
 description and actions stay outside the scroll region. The dialog reserves
