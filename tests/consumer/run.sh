@@ -25,9 +25,12 @@
 #     own source — which is how a consumer runs it in CI. It has to pass a
 #     compliant app and then fail the same app with one colour literal added,
 #     because a gate that only ever passes is indistinguishable from no gate.
+#   * The packed app is served to Playwright's Chromium in five fresh browser
+#     contexts, so React/Radix event ordering is tested outside jsdom.
 #
-# No network: every dependency is linked out of this repository's own
-# node_modules, so the only thing installed is the package under test.
+# The app's dependencies are linked out of this repository's own node_modules,
+# so the only package installed into the probe is the package under test.
+# Playwright downloads its pinned Chromium build when the local cache is empty.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -47,7 +50,7 @@ done
 # failed on `bun install --frozen-lockfile` with the package missing. Checking
 # package.json rather than the directory is what makes a local run mean what a
 # CI run means.
-for dependency in react react-dom vite @vitejs/plugin-react @tailwindcss/vite tailwindcss; do
+for dependency in react react-dom vite @vitejs/plugin-react @tailwindcss/vite tailwindcss playwright; do
     if ! node -e "
         const pkg = require('$ROOT/package.json');
         const declared = { ...pkg.dependencies, ...pkg.devDependencies, ...pkg.peerDependencies };
@@ -61,6 +64,10 @@ for dependency in react react-dom vite @vitejs/plugin-react @tailwindcss/vite ta
         exit 1
     fi
 done
+
+export PLAYWRIGHT_BROWSERS_PATH="$ROOT/node_modules/.cache/ms-playwright"
+echo "==> ensuring Playwright's Chromium build is installed"
+node "$ROOT/node_modules/playwright/cli.js" install --only-shell chromium
 
 # mktemp honors the caller's TMPDIR locally and on CI.
 WORK="$(mktemp -d)"
@@ -146,8 +153,11 @@ CSS
 
 cat >"$APP/src/components/Status.tsx" <<'TSX'
 import { BuildStamp, Button, Dialog, DialogBody, DialogContent, Numeric, Panel, RadioGroup, StatusPill, TooltipProvider } from "@ayaka/design-system/react";
+import { useState } from "react";
 
 export function Status() {
+    const [source, setSource] = useState("one");
+
     return (
         <Panel title="Tracker" actions={<Button size="sm">Reset</Button>}>
             <TooltipProvider>
@@ -167,7 +177,17 @@ export function Status() {
                 buildTime="2026-09-07T00:00:00Z"
                 formatBuildTime={(iso) => `built ${iso.slice(0, 10)}`}
             />
-            <RadioGroup aria-label="Source" options={[{ value: "one", label: "One" }]} />
+            <output data-radio-value>{source}</output>
+            <RadioGroup
+                aria-label="Source"
+                value={source}
+                onValueChange={setSource}
+                options={[
+                    { value: "one", label: "One" },
+                    { value: "two", label: "Two" },
+                    { value: "three", label: "Three" },
+                ]}
+            />
             <Dialog>
                 <DialogContent title="Help">
                     <DialogBody>Scrollable help</DialogBody>
@@ -283,6 +303,63 @@ if [ "$(cd "$APP" && node color-probe.mjs)" != "ok" ]; then
     exit 1
 fi
 echo "    @ayaka/design-system/color resolves through the exports map"
+
+echo "==> RadioGroup keyboard selection in five fresh Chromium contexts"
+cat >"$APP/radio-browser-probe.mjs" <<'JS'
+import assert from "node:assert/strict";
+import { chromium } from "playwright";
+import { preview } from "vite";
+
+const TRIALS = 5;
+const server = await preview({
+    root: ".",
+    logLevel: "silent",
+    preview: { host: "127.0.0.1", port: 0 },
+});
+const address = server.httpServer.address();
+if (!address || typeof address === "string") throw new Error("Vite preview did not bind TCP");
+
+const browser = await chromium.launch({ headless: true });
+try {
+    for (let trial = 1; trial <= TRIALS; trial += 1) {
+        const context = await browser.newContext();
+        try {
+            const page = await context.newPage();
+            await page.goto(`http://127.0.0.1:${address.port}`, { waitUntil: "networkidle" });
+            const value = page.locator("[data-radio-value]");
+            const one = page.getByRole("radio", { name: "One" });
+            const two = page.getByRole("radio", { name: "Two" });
+            const three = page.getByRole("radio", { name: "Three" });
+
+            await one.focus();
+            await one.press("ArrowDown");
+            assert.equal(await value.textContent(), "two", `trial ${trial}: ArrowDown`);
+            assert.equal(await two.getAttribute("aria-checked"), "true");
+
+            await two.press("ArrowRight");
+            assert.equal(await value.textContent(), "three", `trial ${trial}: ArrowRight`);
+            await three.press("ArrowDown");
+            assert.equal(
+                await value.textContent(),
+                "one",
+                `trial ${trial}: ArrowDown after ArrowRight`,
+            );
+
+            await three.focus();
+            await three.press(" ");
+            assert.equal(await value.textContent(), "three", `trial ${trial}: Space`);
+            assert.equal(await three.getAttribute("aria-checked"), "true");
+        } finally {
+            await context.close();
+        }
+    }
+    console.log(`${TRIALS}/${TRIALS} fresh Chromium contexts selected on every key`);
+} finally {
+    await browser.close();
+    await server.close();
+}
+JS
+(cd "$APP" && node radio-browser-probe.mjs)
 
 echo "==> the gate, run from the tarball by a stock node, on a compliant app"
 if ! (cd "$APP" && node node_modules/@ayaka/design-system/bin/design-lint.js --config design-lint.json); then

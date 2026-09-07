@@ -1,12 +1,19 @@
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
-import { type FocusEvent, type KeyboardEvent, type ReactNode, useId, useRef } from "react";
+import { type KeyboardEvent, type ReactNode, useId } from "react";
 import { cn } from "./cn.js";
 
-/* The keys that move the roving focus and, per WAI-ARIA, must take the
- * selection with them. Home/End are deliberately absent: Radix does not select
- * on them either, and this component follows Radix's model rather than
- * inventing a second one. */
-const SELECTING_KEYS = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
+const RADIOGROUP_SELECTOR = '[role="radiogroup"]';
+const ENABLED_RADIO_SELECTOR = '[role="radio"]:not(:disabled)';
+const SPACE_KEY = " ";
+const ENTER_KEY = "Enter";
+
+function navigationDirection(key: string, dir: RadioGroupProps["dir"]): -1 | 0 | 1 {
+    if (key === "ArrowDown") return 1;
+    if (key === "ArrowUp") return -1;
+    if (key === "ArrowRight") return dir === "rtl" ? -1 : 1;
+    if (key === "ArrowLeft") return dir === "rtl" ? 1 : -1;
+    return 0;
+}
 
 export interface RadioGroupOption {
     value: string;
@@ -34,25 +41,15 @@ export interface RadioGroupProps {
 }
 
 /**
- * Radix owns roving focus, Space selection and form participation.
+ * Radix owns the radio semantics, roving tab stop and form participation.
  *
- * Selection-follows-focus is ours, because Radix's own version does not fire
- * under React 19. Radix arms an "an arrow key is down" ref from a listener on
- * `document` and reads it when the item receives focus; React 19 delivers the
- * event to the handlers on its root container first, and the roving-focus
- * handler there defers the focus move to a macrotask. What survives is arrows
- * that move focus and a Space that selects — not the radio pattern a keyboard
- * user expects.
- *
- * So the intent is recorded here instead, from the item's own React keydown
- * handler (item handlers run before the group's, so it is recorded before
- * anything moves) and cleared one macrotask after the key is released, which
- * is necessarily after the deferred focus move it authorised. The commit is a
- * `click()` on the newly focused item — the same move Radix makes — so the
- * change event, the controlled/uncontrolled split and the hidden form input
- * all behave exactly as they do for a mouse click. Radix's own handler runs
- * after this one and finds the item already checked, where its `if (!checked)`
- * guard makes it a no-op rather than a second selection.
+ * Keyboard selection is handled synchronously here. Radix 1.4.7 coordinates
+ * arrow selection through a `document` listener, but React 19 handles the
+ * root-container event first; depending on timing, focus can move before Radix
+ * records that an arrow is held. Committing with the target item's click keeps
+ * controlled and uncontrolled state, callbacks and the hidden form input on
+ * Radix's normal path. Stopping the keydown prevents its document listener
+ * from observing the same arrow and moving or selecting a second time.
  */
 export function RadioGroup({
     options,
@@ -70,22 +67,43 @@ export function RadioGroup({
     ...aria
 }: RadioGroupProps) {
     const groupId = useId();
-    const selectingKeyHeld = useRef(false);
-    const rememberSelectingKey = (event: KeyboardEvent<HTMLButtonElement>) => {
-        if (SELECTING_KEYS.has(event.key)) selectingKeyHeld.current = true;
-    };
-    /* One macrotask later, not immediately: the focus move this keypress
-     * authorised is itself a macrotask, queued while the key was still down,
-     * so it runs first. Clearing here rather than only on focus is what keeps
-     * a keypress that moved nothing (the last item of a group that does not
-     * loop) from selecting whatever is focused next. */
-    const releaseSelectingKey = () => {
-        setTimeout(() => {
-            selectingKeyHeld.current = false;
-        });
-    };
-    const selectOnKeyboardFocus = (event: FocusEvent<HTMLButtonElement>) => {
-        if (selectingKeyHeld.current) event.currentTarget.click();
+    const handleItemKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+        if (event.key === ENTER_KEY) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
+        if (event.key === SPACE_KEY) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.click();
+            return;
+        }
+
+        const direction = navigationDirection(event.key, dir);
+        if (direction === 0) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const group = event.currentTarget.closest(RADIOGROUP_SELECTOR);
+        if (!group) throw new Error("RadioGroup item is missing its radiogroup root");
+        const items = Array.from(group.querySelectorAll<HTMLButtonElement>(ENABLED_RADIO_SELECTOR));
+        const currentIndex = items.indexOf(event.currentTarget);
+        if (currentIndex === -1)
+            throw new Error("Focused RadioGroup item is not in the roving order");
+
+        let nextIndex = currentIndex + direction;
+        if (nextIndex < 0 || nextIndex >= items.length) {
+            if (loop === false) return;
+            nextIndex = (nextIndex + items.length) % items.length;
+        }
+
+        const nextItem = items[nextIndex];
+        if (!nextItem || nextItem === event.currentTarget) return;
+        nextItem.click();
+        nextItem.focus();
     };
     return (
         <RadioGroupPrimitive.Root
@@ -115,9 +133,7 @@ export function RadioGroup({
                         id={`${groupId}-${index}`}
                         value={option.value}
                         disabled={option.disabled}
-                        onKeyDown={rememberSelectingKey}
-                        onKeyUp={releaseSelectingKey}
-                        onFocus={selectOnKeyboardFocus}
+                        onKeyDown={handleItemKeyDown}
                         className="peer flex size-4 shrink-0 items-center justify-center rounded-full border border-border-strong bg-bg data-[state=checked]:border-accent disabled:opacity-50"
                     >
                         <RadioGroupPrimitive.Indicator className="size-2 rounded-full bg-accent" />

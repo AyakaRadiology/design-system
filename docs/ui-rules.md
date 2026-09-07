@@ -88,6 +88,8 @@ No `dark:` variants, no focus classes, no invented colors — tokens cover all t
 
 This governs product/tool UI structure. For aesthetic direction on expressive surfaces (landing pages, campaigns), the frontend-design skill applies on top — but tokens still hold.
 
+`RadioGroup` uses Model A (native radio): every arrow moves focus and selection together, Space commits the focused option, and Enter does nothing.
+
 ## Shared readouts and status
 
 Use `Numeric value={numberOrNull} unit="mm" precision={1} reservedChars={6}`

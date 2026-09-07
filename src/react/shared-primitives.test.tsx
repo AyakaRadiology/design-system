@@ -300,28 +300,16 @@ describe("RadioGroup", () => {
         await userEvent.tab();
         expect(one).toHaveFocus();
         expect(one).toBeChecked();
-        // Radix defers roving focus to a timer; keep the key held until that
-        // focus event selects the item, as a physical keypress does.
-        await userEvent.keyboard("{ArrowDown>}");
-        await waitFor(() => expect(three).toBeChecked());
-        await userEvent.keyboard("{/ArrowDown}");
+        await userEvent.keyboard("{ArrowDown}");
+        expect(three).toBeChecked();
         expect(three).toHaveFocus();
         expect(one).not.toBeChecked();
-        await userEvent.keyboard("{ArrowDown>}");
-        await waitFor(() => expect(one).toBeChecked());
-        await userEvent.keyboard("{/ArrowDown}");
+        await userEvent.keyboard("{ArrowDown}");
+        expect(one).toBeChecked();
         expect(screen.getByRole("radio", { name: "Two" })).toBeDisabled();
     });
 
-    /* React 19 delivers a keydown to the root container before it reaches
-     * `document`, and Radix arms its "an arrow key is down" flag from a
-     * `document` listener. Roving focus has therefore already moved by the
-     * time that flag is set, so the focused option was never checked: arrows
-     * moved focus and only Space selected. This asserts the WAI-ARIA radio
-     * behaviour with a single, released keypress — a held key would hide the
-     * regression, because the second keydown arms the flag for the first
-     * item's focus. */
-    it("selects the option the arrow key moved to, under React 19", async () => {
+    it("commits ArrowDown twice and ArrowUp once synchronously under React 19", async () => {
         expect(version).toMatch(/^19\./);
         const change = vi.fn();
         render(
@@ -333,27 +321,89 @@ describe("RadioGroup", () => {
             />,
         );
         await userEvent.tab();
-        await userEvent.keyboard("{ArrowDown}");
-        expect(screen.getByRole("radio", { name: "Three" })).toBeChecked();
-        expect(screen.getByRole("radio", { name: "Three" })).toHaveFocus();
-        expect(screen.getByRole("radio", { name: "One" })).not.toBeChecked();
-        expect(change).toHaveBeenLastCalledWith("three");
+        const documentKeydown = vi.fn();
+        document.addEventListener("keydown", documentKeydown);
+        try {
+            fireEvent.keyDown(screen.getByRole("radio", { name: "One" }), {
+                key: "ArrowDown",
+            });
+            expect(change).toHaveBeenNthCalledWith(1, "three");
+            expect(screen.getByRole("radio", { name: "Three" })).toHaveFocus();
+
+            fireEvent.keyDown(screen.getByRole("radio", { name: "Three" }), {
+                key: "ArrowDown",
+            });
+            expect(change).toHaveBeenNthCalledWith(2, "one");
+            expect(screen.getByRole("radio", { name: "One" })).toHaveFocus();
+
+            fireEvent.keyDown(screen.getByRole("radio", { name: "One" }), { key: "ArrowUp" });
+            expect(change).toHaveBeenNthCalledWith(3, "three");
+            expect(screen.getByRole("radio", { name: "Three" })).toHaveFocus();
+            expect(screen.getByRole("radio", { name: "Three" })).toBeChecked();
+            expect(change).toHaveBeenCalledTimes(3);
+            expect(documentKeydown).not.toHaveBeenCalled();
+        } finally {
+            document.removeEventListener("keydown", documentKeydown);
+        }
     });
 
-    it("Space selects an initially unchecked option and submits its value", async () => {
+    it("commits ArrowDown after a horizontal arrow in a vertical group", async () => {
+        const change = vi.fn();
+        render(
+            <RadioGroup
+                aria-label="Source"
+                options={options}
+                defaultValue="one"
+                onValueChange={change}
+            />,
+        );
+        await userEvent.tab();
+        fireEvent.keyDown(screen.getByRole("radio", { name: "One" }), { key: "ArrowRight" });
+        expect(change).toHaveBeenNthCalledWith(1, "three");
+        fireEvent.keyDown(screen.getByRole("radio", { name: "Three" }), {
+            key: "ArrowDown",
+        });
+        expect(change).toHaveBeenNthCalledWith(2, "one");
+        expect(screen.getByRole("radio", { name: "One" })).toBeChecked();
+        expect(screen.getByRole("radio", { name: "One" })).toHaveFocus();
+    });
+
+    it("Space synchronously commits a focused unchecked option and submits its value", async () => {
+        const change = vi.fn();
         const { container } = render(
             <form>
-                <RadioGroup aria-label="Source" name="source" options={options} />
+                <RadioGroup
+                    aria-label="Source"
+                    name="source"
+                    options={options}
+                    onValueChange={change}
+                />
             </form>,
         );
         await userEvent.tab();
         const one = screen.getByRole("radio", { name: "One" });
         expect(one).not.toBeChecked();
-        await userEvent.keyboard(" ");
+        fireEvent.keyDown(one, { key: " " });
+        expect(change).toHaveBeenCalledWith("one");
         expect(one).toBeChecked();
         const form = container.querySelector("form");
         if (!form) throw new Error("Form missing");
         expect(new FormData(form).get("source")).toBe("one");
+    });
+
+    it("keeps Enter harmless and does not submit its form", async () => {
+        const submit = vi.fn((event: React.FormEvent) => event.preventDefault());
+        render(
+            <form onSubmit={submit}>
+                <RadioGroup aria-label="Source" options={options} />
+            </form>,
+        );
+        await userEvent.tab();
+        const one = screen.getByRole("radio", { name: "One" });
+        expect(() => fireEvent.keyDown(one, { key: "Enter" })).not.toThrow();
+        fireEvent.keyUp(one, { key: "Enter" });
+        expect(submit).not.toHaveBeenCalled();
+        expect(one).not.toBeChecked();
     });
 
     it("supports horizontal RTL arrows, controlled updates, and visible label clicks", async () => {
@@ -378,10 +428,8 @@ describe("RadioGroup", () => {
         expect(change).toHaveBeenLastCalledWith("one");
     });
 
-    /* The intent to select outlives the keypress by one macrotask, because
-     * the focus move it authorises is itself deferred. This is the other end
-     * of that: an arrow that moved nothing must not follow the user back into
-     * the group and check whatever they land on. */
+    /* A boundary arrow with no destination must remain local to that keypress;
+     * a later focus event is not a selection event. */
     it("does not carry a spent arrow key into a later focus", async () => {
         const change = vi.fn();
         render(
