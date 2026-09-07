@@ -81,7 +81,8 @@ import { Button, Panel, StatusPill } from "@ayaka/design-system/react";
 ```
 
 `Button`, `IconButton`, `Numeric`, `StatusPill`, `Toolbar`, `Panel`, `Field`,
-`Input`, `Select`, `Switch`, `Dialog`, `Tooltip`. The props **are** the
+`Input`, `Select`, `Switch`, `RadioGroup`, `Dialog`, `DialogBody`, `Tooltip`,
+`BuildStamp`. The props **are** the
 contract and they are deliberately small: a prop that carries a domain type
 (`NeedleData`, `Volume`) belongs in the product repo, not here.
 
@@ -96,6 +97,98 @@ resolved relative to the package, so the fix travels with the dependency
 instead of being a line every app has to remember. `tests/consumer/run.sh`
 asserts that classes only the primitives use reach a real app's built
 stylesheet.
+
+### Dialog scrolling
+
+```tsx
+<Dialog>
+  <DialogTrigger asChild><Button>Help</Button></DialogTrigger>
+  <DialogContent title="Help" description="Using the tracker" actions={
+    <DialogClose asChild><Button>Close</Button></DialogClose>
+  }>
+    <DialogBody aria-label="Tracker help">…long help content…</DialogBody>
+  </DialogContent>
+</Dialog>
+```
+
+`DialogBody(props: DialogBodyProps)` accepts div HTML attributes. Put it
+directly inside `DialogContent`; the title/description and `actions` are the
+fixed header/footer. The dialog is bounded by `100svh` minus spacing-4 gutters;
+the body shrinks to the remaining height and scrolls internally. A thin
+voice-colored scrollbar and sticky bottom fade make scrolling discoverable
+on touch. No header-height calculation is needed at the call site. Existing
+short dialogs can continue using plain children. Oversized headers/actions
+must still fit the viewport; test actual geometry in consumer Playwright.
+
+### Numeric values
+
+```tsx
+<Numeric value={12.34} unit="mm" precision={1} reservedChars={6} />
+<Numeric value={null} unit="mm" precision={1} reservedChars={6} />
+```
+
+`Numeric({ value: number | null, unit?: string, precision?: number,
+reservedChars?: number, ...spanAttributes })` reserves separate value and unit
+slots. `precision` is an integer 0–100 (default 0); `reservedChars` is a positive
+integer (default 6), in monospace `ch`. The unit width is its string length in
+`ch` and never shrinks as the reading changes. Choose enough value characters
+for the sign, decimal point and expected range; overflowing values remain
+visible rather than being clipped. `toFixed` formatting applies (including
+JavaScript's exponential notation at magnitudes ≥ 1e21).
+
+Null renders one muted `—`, announced as “No value”, while the unit stays
+visible and dimmed. Zero is a reading. NaN/infinity and invalid precision/width
+throw. Unit case is preserved under uppercase labels. The existing
+`<Numeric unit="ms">42</Numeric>` form stays source-compatible for preformatted
+content; it keeps its natural layout. `value` and children are mutually
+exclusive. See [the shared UI rules](docs/ui-rules.md#shared-readouts-and-status).
+
+### Status semantics and detail
+
+`StatusPill({ status: Status, detail?: ReactNode, children: ReactNode,
+...spanAttributes })` preserves the existing `status` API. `STATUS_STATES`
+exports the tone-to-state mapping and `StatusState<Tone = Status>` derives
+its state union: success = healthy/live, warning = degraded/stale/lost,
+danger = error/invalid/offline, info = connecting, neutral = unknown/loading.
+The [shared UI rules](docs/ui-rules.md#shared-readouts-and-status) are the
+consumer reference. No status blinks; shared voice CSS enforces this.
+
+```tsx
+<TooltipProvider>
+  <StatusPill status="warning" detail="No samples for 5 seconds">Stale</StatusPill>
+</TooltipProvider>
+```
+
+With detail, the pill is a Tab-reachable tooltip trigger; detail opens on
+hover or focus, is linked by `aria-describedby`, and dismisses on Escape.
+Without detail the pill adds no tab stop. Detail is supplemental, never the
+only place essential information lives.
+
+### Build metadata
+
+`BuildStamp({ name: string, describe: string, buildTime: string,
+...spanAttributes })` renders an opaque elevated-surface plate with AA-tested
+secondary text, suitable for a dark footer or bright image. Supply ISO 8601
+`buildTime` and the actual `git describe` string, including a dirty suffix.
+Time is displayed verbatim in a `<time dateTime>`; the package performs no
+fetching or locale conversion. The consumer owns placement and loading/error
+handling. No opacity is applied to the plate.
+
+### Radio selection
+
+`RadioGroup({ options: RadioGroupOption[], value?: string,
+defaultValue?: string, onValueChange?: (value: string) => void,
+orientation?: "horizontal" | "vertical", dir?: "ltr" | "rtl", loop?: boolean,
+id?: string, name?: string, disabled?: boolean, required?: boolean,
+className?: string, ...aria })` renders labeled options. Each option is
+`{ value: string, label: ReactNode, disabled?: boolean }`; values must be unique.
+The forwarded ARIA fields are `aria-label`, `aria-labelledby`,
+`aria-describedby`, and boolean `aria-invalid`. Provide an accessible group
+name directly or via `Field`. Labels contain text, not nested controls.
+
+Vertical is the default; Radix owns Tab entry, Space selection, arrow navigation,
+disabled-item skipping, looping (default true), RTL and native form values.
+See [Radix Radio Group](https://www.radix-ui.com/primitives/docs/components/radio-group).
 
 ### Labels and case
 

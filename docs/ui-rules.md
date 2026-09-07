@@ -87,3 +87,44 @@ No `dark:` variants, no focus classes, no invented colors — tokens cover all t
 ## Scope
 
 This governs product/tool UI structure. For aesthetic direction on expressive surfaces (landing pages, campaigns), the frontend-design skill applies on top — but tokens still hold.
+
+## Shared readouts and status
+
+Use `Numeric value={numberOrNull} unit="mm" precision={1} reservedChars={6}`
+for machine readings. The missing-value glyph is **`—`**: one small muted em
+dash, never `--.-`, zero, or an empty string. The unit remains visible in a
+muted, fixed-width slot. The value slot reserves `reservedChars` monospace `ch`
+(default 6), including the sign and decimal point; `precision` defaults to 0.
+Size it for the full expected range. Digits are tabular; units always preserve
+case, even inside an uppercase label. Null alone means missing; NaN/infinity
+are errors, not a missing-value fallback. The compatibility children form
+remains available for preformatted figures but does not reserve fixed slots.
+
+`StatusPill status={tone}` uses this shared mapping (also exported as
+`STATUS_STATES` and `StatusState<Tone>`):
+
+| Tone | States |
+|---|---|
+| success | healthy, live |
+| warning | degraded, stale, lost |
+| danger | error, invalid, offline |
+| info | connecting |
+| neutral | unknown, loading |
+
+Always show a meaningful label: color alone is insufficient. No status may
+blink or pulse, including errors; the shared CSS disables animations and
+transitions on the pill and its descendants. Optional `detail` supplements
+that label with a tooltip on a focusable trigger; wrap the app in
+`TooltipProvider`. Keep actionable or essential information in visible UI.
+
+`BuildStamp` prints the app name, git describe and ISO build time on an opaque
+`bg-bg-elevated` plate with `text-text-secondary`. This pair is contrast-tested
+in every voice/mode, including over bright imagery. The consumer supplies
+metadata and chooses placement; the primitive does not fetch or invent it.
+
+`DialogBody` owns internal scrolling inside `DialogContent`. Title,
+description and actions stay outside the scroll region. The dialog reserves
+spacing-4 viewport gutters using `svh`; flex layout subtracts actual header
+and footer sizes. Every voice supplies the scrollbar colors and functional
+bottom fade through its tokens. The fade is a scroll cue, not a decorative
+gradient; do not remove it merely because a touch browser hides scrollbars.

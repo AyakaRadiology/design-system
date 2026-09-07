@@ -90,3 +90,39 @@
         outline-offset: 2px;
     }
 }
+
+@layer components {
+    /* One spacing-4 gutter above and below. Flex shrink allocates the rest
+     * after the actual header/footer heights, without guessed header math. */
+    .ds-dialog-content {
+        max-height: calc(100svh - var(--spacing) * 8);
+    }
+
+    .ds-dialog-body {
+        max-height: 100svh;
+        scrollbar-width: thin;
+        scrollbar-color: var(--text-secondary) var(--bg-elevated);
+        scrollbar-gutter: stable;
+    }
+
+    /* Touch platforms may hide native scrollbars. This functional fade uses
+     * the voice's dialog surface; it is a scroll cue, not a decorative glow. */
+    .ds-dialog-body::after {
+        content: "";
+        display: block;
+        position: sticky;
+        bottom: 0;
+        height: calc(var(--spacing) * 2);
+        margin-top: calc(var(--spacing) * -2);
+        background: linear-gradient(transparent, var(--bg-elevated));
+        pointer-events: none;
+    }
+}
+
+/* Status must remain readable in every state. Even a consumer's animation
+ * utility must not reintroduce blinking on the pill or its label. */
+.ds-status-pill,
+.ds-status-pill * {
+    animation: none;
+    transition: none;
+}

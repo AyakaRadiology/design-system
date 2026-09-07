@@ -62,10 +62,8 @@ for dependency in react react-dom vite @vitejs/plugin-react @tailwindcss/vite ta
     fi
 done
 
-# $RUNNER_TEMP on a GitHub runner; the job's own scratch directory otherwise.
-SCRATCH="${RUNNER_TEMP:-/home/harry/.claude/jobs/a2d2f00c/tmp}"
-[ -d "$SCRATCH" ] || SCRATCH="${TMPDIR:-/tmp}"
-WORK="$(mktemp -d -p "$SCRATCH" design-lint-consumer-XXXXXX)"
+# mktemp honors the caller's TMPDIR locally and on CI.
+WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
 echo "==> packing the tarball a consumer would install"
@@ -137,13 +135,23 @@ cat >"$APP/src/styles/theme.css" <<'CSS'
 CSS
 
 cat >"$APP/src/components/Status.tsx" <<'TSX'
-import { Button, Numeric, Panel, StatusPill } from "@ayaka/design-system/react";
+import { BuildStamp, Button, Dialog, DialogBody, DialogContent, Numeric, Panel, RadioGroup, StatusPill, TooltipProvider } from "@ayaka/design-system/react";
 
 export function Status() {
     return (
         <Panel title="Tracker" actions={<Button size="sm">Reset</Button>}>
-            <StatusPill status="success">connected</StatusPill>
+            <TooltipProvider>
+                <StatusPill status="success" detail="Receiving samples">connected</StatusPill>
+            </TooltipProvider>
             <Numeric unit="ms">42</Numeric>
+            <Numeric value={null} unit="mm" precision={1} reservedChars={6} />
+            <BuildStamp name="Probe" describe="v0.1.2-3-gabc" buildTime="2026-09-07T00:00:00Z" />
+            <RadioGroup aria-label="Source" options={[{ value: "one", label: "One" }]} />
+            <Dialog>
+                <DialogContent title="Help">
+                    <DialogBody>Scrollable help</DialogBody>
+                </DialogContent>
+            </Dialog>
         </Panel>
     );
 }
@@ -205,6 +213,14 @@ assert_css "--x- extension token"     -- '--x-needle-tracker'
 # anywhere to say why. This is the assertion that holds that line in place.
 assert_css "the primitives' own utilities (is @source still in tailwind.css?)" '\.tabular-nums'
 assert_css "the primitives' own utilities (is @source still in tailwind.css?)" '\.rounded-full'
+assert_css "viewport-bound dialog" 'max-height: *calc\(100svh'
+assert_css "dialog scroll body" '\.overflow-y-auto'
+assert_css "voice scrollbar" 'scrollbar-color: *var\(--text-secondary\) var\(--bg-elevated\)'
+assert_css "touch scroll cue" '\.ds-dialog-body:{1,2}after'
+assert_css "status motion guard" 'animation: *none;'
+assert_css "unit case protection" '\.normal-case'
+assert_css "build stamp plate" 'background-color: *var\(--bg-elevated\)'
+assert_css "radio indicator" '\.size-2'
 
 # The consumer's override has to WIN, not merely be present: the voice sets
 # --accent on hue 178 and theme.css re-sets it on 195, so the last declaration

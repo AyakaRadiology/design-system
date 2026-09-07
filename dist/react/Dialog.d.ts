@@ -1,11 +1,14 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import type { ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 /** The controlled root. Re-exported unchanged: it renders nothing to style. */
 export declare const Dialog: import("react").FC<DialogPrimitive.DialogProps>;
 /** Wraps its child as the opener. Pass `asChild` semantics a Button. */
 export declare const DialogTrigger: import("react").ForwardRefExoticComponent<DialogPrimitive.DialogTriggerProps & import("react").RefAttributes<HTMLButtonElement>>;
 /** Closes the dialog from inside. Useful for a Cancel in `actions`. */
 export declare const DialogClose: import("react").ForwardRefExoticComponent<DialogPrimitive.DialogCloseProps & import("react").RefAttributes<HTMLButtonElement>>;
+export type DialogBodyProps = HTMLAttributes<HTMLDivElement>;
+/** Scrollable content; put the title/description and actions on DialogContent. */
+export declare function DialogBody({ className, ...props }: DialogBodyProps): import("react").JSX.Element;
 export interface DialogContentProps {
     /**
      * Required. A dialog with no accessible name is announced as a nameless
