@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/AyakaRadiology/design-system/compare/v0.2.0...v0.2.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* **primitives:** radio selection follows focus, Numeric reserved unit slot and empty size, BuildStamp formatter ([#26](https://github.com/AyakaRadiology/design-system/issues/26)) ([c5c066d](https://github.com/AyakaRadiology/design-system/commit/c5c066d0ac3dd938652a7cd2cb30ba07019de0e7))
+
 ## [0.2.0](https://github.com/AyakaRadiology/design-system/compare/v0.1.2...v0.2.0) (2026-09-07)
 
 
