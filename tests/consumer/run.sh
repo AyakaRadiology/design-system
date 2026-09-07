@@ -146,6 +146,10 @@ cat >"$APP/src/styles/theme.css" <<'CSS'
     --numeric-empty-scale: 0.35;
 }
 
+.numeric-geometry-probe {
+    font-size: var(--x-hero-readout);
+}
+
 @theme inline {
     --color-x-needle-tracker: var(--x-needle-tracker);
 }
@@ -168,6 +172,12 @@ export function Status() {
             <Numeric value={900} unit="ms" reservedUnitChars={3} />
             <div className="hero-readout">
                 <Numeric value={null} unit="mm" precision={1} reservedChars={5} />
+            </div>
+            <div className="numeric-geometry-probe" data-numeric-probe="live">
+                <Numeric value={123} reservedChars={5} />
+            </div>
+            <div className="numeric-geometry-probe" data-numeric-probe="empty">
+                <Numeric value={null} reservedChars={5} emptyAlign="start" />
             </div>
             <Numeric value={null} unit="mm" precision={1} reservedChars={5} showUnitWhenEmpty />
             <BuildStamp name="Probe" describe="v0.1.2-3-gabc" buildTime="2026-09-07T00:00:00Z" />
@@ -360,6 +370,82 @@ try {
 }
 JS
 (cd "$APP" && node radio-browser-probe.mjs)
+
+echo "==> Numeric empty glyph geometry in Chromium"
+cat >"$APP/numeric-browser-probe.mjs" <<'JS'
+import assert from "node:assert/strict";
+import { chromium } from "playwright";
+import { preview } from "vite";
+
+const EMPTY_SCALE = 0.25;
+const MINIMUM_EMPTY_PX = 12;
+const READOUT_SIZES_PX = [16, 24, 112];
+const MAXIMUM_HEIGHT_ERROR_PX = 1;
+const MAXIMUM_CENTRE_ERROR_PX = 2;
+
+const server = await preview({
+    root: ".",
+    logLevel: "silent",
+    preview: { host: "127.0.0.1", port: 0 },
+});
+const address = server.httpServer.address();
+if (!address || typeof address === "string") throw new Error("Vite preview did not bind TCP");
+
+const browser = await chromium.launch({ headless: true });
+try {
+    const page = await browser.newPage();
+    await page.goto(`http://127.0.0.1:${address.port}`, { waitUntil: "networkidle" });
+    for (const readoutSize of READOUT_SIZES_PX) {
+        const boxes = await page.evaluate((fontSize) => {
+            const liveHost = document.querySelector('[data-numeric-probe="live"]');
+            const emptyHost = document.querySelector('[data-numeric-probe="empty"]');
+            const liveSlot = liveHost?.querySelector('[data-slot="value"]');
+            const glyph = emptyHost?.querySelector(".ds-numeric-empty");
+            if (!(liveHost instanceof HTMLElement) || !(emptyHost instanceof HTMLElement)) {
+                throw new Error("Numeric probe hosts are missing");
+            }
+            if (!(liveSlot instanceof HTMLElement) || !(glyph instanceof HTMLElement)) {
+                throw new Error("Numeric probe value or glyph is missing");
+            }
+            liveHost.style.fontSize = `${fontSize}px`;
+            emptyHost.style.fontSize = `${fontSize}px`;
+            const liveRange = document.createRange();
+            liveRange.selectNodeContents(liveSlot);
+            const digits = liveRange.getBoundingClientRect();
+            const empty = glyph.getBoundingClientRect();
+            const liveHostBox = liveHost.getBoundingClientRect();
+            const emptyHostBox = emptyHost.getBoundingClientRect();
+            return {
+                digits: {
+                    height: digits.height,
+                    centre: digits.top - liveHostBox.top + digits.height / 2,
+                },
+                glyph: {
+                    height: empty.height,
+                    centre: empty.top - emptyHostBox.top + empty.height / 2,
+                },
+            };
+        }, readoutSize);
+        const requestedSize = Math.max(readoutSize * EMPTY_SCALE, MINIMUM_EMPTY_PX);
+        const centreError = Math.abs(boxes.glyph.centre - boxes.digits.centre);
+        console.log(
+            `${readoutSize}px readout: digits ${boxes.digits.height}px high; glyph ${boxes.glyph.height}px high; centres differ by ${centreError}px`,
+        );
+        assert.ok(
+            boxes.glyph.height <= requestedSize + MAXIMUM_HEIGHT_ERROR_PX,
+            `${readoutSize}px readout: ${boxes.glyph.height}px glyph exceeds ${requestedSize}px requested size`,
+        );
+        assert.ok(
+            centreError <= MAXIMUM_CENTRE_ERROR_PX,
+            `${readoutSize}px readout: glyph centre differs from digits by ${centreError}px`,
+        );
+    }
+} finally {
+    await browser.close();
+    await server.close();
+}
+JS
+(cd "$APP" && node numeric-browser-probe.mjs)
 
 echo "==> the gate, run from the tarball by a stock node, on a compliant app"
 if ! (cd "$APP" && node node_modules/@ayaka/design-system/bin/design-lint.js --config design-lint.json); then

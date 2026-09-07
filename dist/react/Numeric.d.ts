@@ -19,6 +19,8 @@ export type NumericProps = NumericAttributes & ({
      * unit beside a small dash is the loudest thing on the surface.
      */
     showUnitWhenEmpty?: boolean;
+    /** Alignment of the empty glyph within the reserved value slot (default inherit). */
+    emptyAlign?: "inherit" | "start" | "center";
     children?: never;
 } | {
     /** Compatibility for preformatted figures; prefer value for new readouts. */
@@ -29,7 +31,8 @@ export type NumericProps = NumericAttributes & ({
     reservedChars?: never;
     reservedUnitChars?: never;
     showUnitWhenEmpty?: never;
+    emptyAlign?: never;
 });
 /** A fixed value slot and a separate, case-preserving unit slot. */
-export declare function Numeric({ value, unit, precision, reservedChars, reservedUnitChars, showUnitWhenEmpty, children, className, ...props }: NumericProps): import("react").JSX.Element;
+export declare function Numeric({ value, unit, precision, reservedChars, reservedUnitChars, showUnitWhenEmpty, emptyAlign, children, className, ...props }: NumericProps): import("react").JSX.Element;
 export {};

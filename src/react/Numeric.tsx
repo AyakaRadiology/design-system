@@ -5,6 +5,11 @@ const DEFAULT_PRECISION = 0;
 const MAX_PRECISION = 100;
 const DEFAULT_RESERVED_CHARS = 6;
 const EMPTY_GLYPH = "—";
+const EMPTY_ALIGN_CLASSES = {
+    inherit: "text-right",
+    start: "text-left",
+    center: "text-center",
+} as const;
 
 /* React's CSSProperties has no room for a custom property, so the one this
  * component sets is declared here rather than asserted away with `any`. The
@@ -45,6 +50,8 @@ export type NumericProps = NumericAttributes &
                * unit beside a small dash is the loudest thing on the surface.
                */
               showUnitWhenEmpty?: boolean;
+              /** Alignment of the empty glyph within the reserved value slot (default inherit). */
+              emptyAlign?: "inherit" | "start" | "center";
               children?: never;
           }
         | {
@@ -56,6 +63,7 @@ export type NumericProps = NumericAttributes &
               reservedChars?: never;
               reservedUnitChars?: never;
               showUnitWhenEmpty?: never;
+              emptyAlign?: never;
           }
     );
 
@@ -67,6 +75,7 @@ export function Numeric({
     reservedChars = DEFAULT_RESERVED_CHARS,
     reservedUnitChars,
     showUnitWhenEmpty = false,
+    emptyAlign = "inherit",
     children,
     className,
     ...props
@@ -97,7 +106,11 @@ export function Numeric({
         >
             <span
                 data-slot="value"
-                className="ds-numeric-slot inline-block shrink-0 whitespace-nowrap text-right"
+                className={cn(
+                    "ds-numeric-slot ds-numeric-value-slot shrink-0 whitespace-nowrap",
+                    empty ? "ds-numeric-empty-slot" : "inline-block",
+                    empty ? EMPTY_ALIGN_CLASSES[emptyAlign] : "text-right",
+                )}
                 style={{ "--ds-numeric-chars": reservedChars } as SlotStyle}
             >
                 {empty ? (
