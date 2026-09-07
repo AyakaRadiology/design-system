@@ -23,24 +23,14 @@ export interface RadioGroupProps {
     className?: string;
 }
 /**
- * Radix owns roving focus, Space selection and form participation.
+ * Radix owns the radio semantics, roving tab stop and form participation.
  *
- * Selection-follows-focus is ours, because Radix's own version does not fire
- * under React 19. Radix arms an "an arrow key is down" ref from a listener on
- * `document` and reads it when the item receives focus; React 19 delivers the
- * event to the handlers on its root container first, and the roving-focus
- * handler there defers the focus move to a macrotask. What survives is arrows
- * that move focus and a Space that selects — not the radio pattern a keyboard
- * user expects.
- *
- * So the intent is recorded here instead, from the item's own React keydown
- * handler (item handlers run before the group's, so it is recorded before
- * anything moves) and cleared one macrotask after the key is released, which
- * is necessarily after the deferred focus move it authorised. The commit is a
- * `click()` on the newly focused item — the same move Radix makes — so the
- * change event, the controlled/uncontrolled split and the hidden form input
- * all behave exactly as they do for a mouse click. Radix's own handler runs
- * after this one and finds the item already checked, where its `if (!checked)`
- * guard makes it a no-op rather than a second selection.
+ * Keyboard selection is handled synchronously here. Radix 1.4.7 coordinates
+ * arrow selection through a `document` listener, but React 19 handles the
+ * root-container event first; depending on timing, focus can move before Radix
+ * records that an arrow is held. Committing with the target item's click keeps
+ * controlled and uncontrolled state, callbacks and the hidden form input on
+ * Radix's normal path. Stopping the keydown prevents its document listener
+ * from observing the same arrow and moving or selecting a second time.
  */
 export declare function RadioGroup({ options, value, defaultValue, onValueChange, id, name, disabled, required, orientation, dir, loop, className, ...aria }: RadioGroupProps): import("react").JSX.Element;

@@ -203,13 +203,14 @@ The forwarded ARIA fields are `aria-label`, `aria-labelledby`,
 `aria-describedby`, and boolean `aria-invalid`. Provide an accessible group
 name directly or via `Field`. Labels contain text, not nested controls.
 
-Vertical is the default; Radix owns Tab entry, Space selection, arrow navigation,
-disabled-item skipping, looping (default true), RTL and native form values.
+Vertical is the default; Radix owns Tab entry, disabled-item skipping, looping
+(default true), RTL and native form values.
 See [Radix Radio Group](https://www.radix-ui.com/primitives/docs/components/radio-group).
-Selection follows focus — an arrow key moves the focus and takes the selection
-with it, as the radio pattern requires. The package supplies that itself,
-because Radix's own version reads a flag armed from a `document` listener that
-React 19 reaches only after the focus has already moved.
+The package supplies Model A keyboard behavior itself: every arrow moves focus
+and selection together, Space commits the focused option, and Enter does
+nothing. It commits through Radix's click path so controlled state, callbacks
+and form values stay consistent, while stopping the original keydown before
+Radix's timing-sensitive `document` listener can handle it again under React 19.
 
 ### Labels and case
 
