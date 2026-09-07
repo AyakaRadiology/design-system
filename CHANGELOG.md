@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/AyakaRadiology/design-system/compare/v0.1.2...v0.2.0) (2026-09-07)
+
+
+### Features
+
+* share exhibition readouts, dialog scrolling, and radio controls ([#24](https://github.com/AyakaRadiology/design-system/issues/24)) ([27eefd7](https://github.com/AyakaRadiology/design-system/commit/27eefd7084f816c09bd74758578a6d20bb045356))
+
 ## [0.1.2](https://github.com/AyakaRadiology/design-system/compare/v0.1.1...v0.1.2) (2026-09-06)
 
 
