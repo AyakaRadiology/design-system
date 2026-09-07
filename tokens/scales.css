@@ -98,6 +98,14 @@
         max-height: calc(100svh - var(--spacing) * 8);
     }
 
+    /* Numeric's two slots. The width is a count of monospace characters,
+     * passed in as a custom property so a changing value or a changing unit
+     * (ms → s → min) never moves the cells beside it, and so a consumer can
+     * widen a slot from CSS instead of forking the component. */
+    .ds-numeric-slot {
+        width: calc(var(--ds-numeric-chars) * 1ch);
+    }
+
     .ds-dialog-body {
         max-height: 100svh;
         scrollbar-width: thin;

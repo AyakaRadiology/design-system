@@ -128,16 +128,27 @@ must still fit the viewport; test actual geometry in consumer Playwright.
 ```
 
 `Numeric({ value: number | null, unit?: string, precision?: number,
-reservedChars?: number, ...spanAttributes })` reserves separate value and unit
+reservedChars?: number, reservedUnitChars?: number, hideUnitWhenEmpty?: boolean,
+...spanAttributes })` reserves separate value and unit
 slots. `precision` is an integer 0–100 (default 0); `reservedChars` is a positive
-integer (default 6), in monospace `ch`. The unit width is its string length in
-`ch` and never shrinks as the reading changes. Choose enough value characters
+integer (default 6), in monospace `ch`. The unit slot defaults to the unit
+string's length in `ch`; `reservedUnitChars` pins it, which is what a unit that
+changes with the reading (`ms` → `s` → `min`) needs so the cells beside it hold
+still. Choose enough value characters
 for the sign, decimal point and expected range; overflowing values remain
 visible rather than being clipped. `toFixed` formatting applies (including
 JavaScript's exponential notation at magnitudes ≥ 1e21).
 
-Null renders one muted `—`, announced as “No value”, while the unit stays
-visible and dimmed. Zero is a reading. NaN/infinity and invalid precision/width
+Both widths arrive as a `--ds-numeric-chars` count on the slot and become a
+width through the `.ds-numeric-slot` rule in `tokens/scales.css`, so a consumer
+can widen a slot from CSS — and an app importing no voice gets no reserved
+width, because it has imported none of the package's CSS.
+
+Null renders one muted `—`, announced as “No value”, at the readout's own font
+size — never a fixed small step, which is what makes it survive a hero-sized
+figure. The unit stays visible and dimmed beside it; `hideUnitWhenEmpty` drops
+the unit's text and keeps its slot, so nothing shifts when the reading arrives.
+Zero is a reading. NaN/infinity and invalid precision/width
 throw. Unit case is preserved under uppercase labels. The existing
 `<Numeric unit="ms">42</Numeric>` form stays source-compatible for preformatted
 content; it keeps its natural layout. `value` and children are mutually
@@ -167,11 +178,16 @@ only place essential information lives.
 ### Build metadata
 
 `BuildStamp({ name: string, describe: string, buildTime: string,
-...spanAttributes })` renders an opaque elevated-surface plate with AA-tested
-secondary text, suitable for a dark footer or bright image. Supply ISO 8601
-`buildTime` and the actual `git describe` string, including a dirty suffix.
-Time is displayed verbatim in a `<time dateTime>`; the package performs no
-fetching or locale conversion. The consumer owns placement and loading/error
+formatBuildTime?: (iso: string) => string, ...spanAttributes })` renders an
+opaque elevated-surface plate with AA-tested
+secondary text, suitable for a dark footer or bright image. Supply the actual
+`git describe` string, including a dirty suffix.
+Time is displayed verbatim; the package performs no
+fetching or locale conversion. An ISO 8601 `buildTime` is wrapped in a
+`<time dateTime>` carrying the ISO value, and `formatBuildTime` words it for
+display without disturbing that value. A `buildTime` that is already worded
+(`built 2026-01-01 00:00 UTC`) prints as-is, with no `<time>` element claiming
+a datetime it does not hold. The consumer owns placement and loading/error
 handling. No opacity is applied to the plate.
 
 ### Radio selection
@@ -189,6 +205,10 @@ name directly or via `Field`. Labels contain text, not nested controls.
 Vertical is the default; Radix owns Tab entry, Space selection, arrow navigation,
 disabled-item skipping, looping (default true), RTL and native form values.
 See [Radix Radio Group](https://www.radix-ui.com/primitives/docs/components/radio-group).
+Selection follows focus — an arrow key moves the focus and takes the selection
+with it, as the radio pattern requires. The package supplies that itself,
+because Radix's own version reads a flag armed from a `document` listener that
+React 19 reaches only after the focus has already moved.
 
 ### Labels and case
 

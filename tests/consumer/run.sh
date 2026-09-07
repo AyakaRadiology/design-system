@@ -127,6 +127,13 @@ cat >"$APP/src/styles/theme.css" <<'CSS'
 :root {
     --accent: oklch(0.8 0.12 195);
     --x-needle-tracker: var(--chart-1);
+    --x-hero-readout: 7rem;
+}
+
+/* The documented hero readout (docs/ui-rules.md): the size is a project token
+ * and a class, because an arbitrary value in a component is an L3 finding. */
+.hero-readout {
+    font-size: var(--x-hero-readout);
 }
 
 @theme inline {
@@ -145,7 +152,17 @@ export function Status() {
             </TooltipProvider>
             <Numeric unit="ms">42</Numeric>
             <Numeric value={null} unit="mm" precision={1} reservedChars={6} />
+            <Numeric value={900} unit="ms" reservedUnitChars={3} />
+            <div className="hero-readout">
+                <Numeric value={null} unit="mm" precision={1} reservedChars={5} hideUnitWhenEmpty />
+            </div>
             <BuildStamp name="Probe" describe="v0.1.2-3-gabc" buildTime="2026-09-07T00:00:00Z" />
+            <BuildStamp
+                name="Probe"
+                describe="v0.1.2-3-gabc"
+                buildTime="2026-09-07T00:00:00Z"
+                formatBuildTime={(iso) => `built ${iso.slice(0, 10)}`}
+            />
             <RadioGroup aria-label="Source" options={[{ value: "one", label: "One" }]} />
             <Dialog>
                 <DialogContent title="Help">
@@ -221,6 +238,8 @@ assert_css "status motion guard" 'animation: *none;'
 assert_css "unit case protection" '\.normal-case'
 assert_css "build stamp plate" 'background-color: *var\(--bg-elevated\)'
 assert_css "radio indicator" '\.size-2'
+assert_css "numeric slot class" '\.ds-numeric-slot'
+assert_css "numeric slot width" 'calc\(var\(--ds-numeric-chars\) \* 1ch\)'
 
 # The consumer's override has to WIN, not merely be present: the voice sets
 # --accent on hue 178 and theme.css re-sets it on 195, so the last declaration

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { parse } from "postcss";
+import { version } from "react";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import {
     BuildStamp,
@@ -28,6 +29,12 @@ function declarations(selector: string) {
         });
     });
     return result;
+}
+
+/* The reserved width travels as a count of monospace characters on a custom
+ * property; `.ds-numeric-slot` is what turns it into a width. */
+function slotChars(slot: HTMLElement | null | undefined) {
+    return slot?.style.getPropertyValue("--ds-numeric-chars");
 }
 
 describe("DialogBody", () => {
@@ -81,24 +88,43 @@ describe("Numeric value contract", () => {
         const unit = screen.getByText("mm");
         expect(container.firstChild).toHaveClass("font-mono", "tabular-nums");
         expect(value).toHaveTextContent("12.3");
-        expect(value?.style.width).toBe("5ch");
-        expect(value).toHaveClass("shrink-0");
-        expect(unit.style.width).toBe("2ch");
-        expect(unit).toHaveClass("shrink-0", "normal-case", "text-text-secondary");
+        expect(slotChars(value)).toBe("5");
+        expect(value).toHaveClass("ds-numeric-slot", "shrink-0");
+        expect(slotChars(unit)).toBe("2");
+        expect(unit).toHaveClass(
+            "ds-numeric-slot",
+            "shrink-0",
+            "normal-case",
+            "text-text-secondary",
+        );
         rerender(<Numeric value={0} unit="mm" precision={1} reservedChars={5} />);
         expect(value).toHaveTextContent("0.0");
         rerender(<Numeric value={null} unit="mm" precision={1} reservedChars={5} />);
-        expect(screen.getByText("—")).toHaveClass("text-xs", "text-text-tertiary");
+        expect(screen.getByText("—")).toHaveClass("text-text-tertiary");
         expect(screen.getByText("—")).toHaveAttribute("aria-hidden", "true");
         expect(screen.getByText("No value")).toHaveClass("sr-only");
         expect(unit).toHaveClass("text-text-tertiary", "normal-case");
-        expect(value?.style.width).toBe("5ch");
-        expect(unit.style.width).toBe("2ch");
+        expect(slotChars(value)).toBe("5");
+        expect(slotChars(unit)).toBe("2");
+    });
+
+    /* The count is only half the contract; the other half is the rule that
+     * turns it into a width, which ships in the package's own CSS and is the
+     * half a consumer's build can drop. */
+    it("sizes both slots from the shipped class, not from an inline width", () => {
+        const { container } = render(<Numeric value={1} unit="mm" reservedChars={4} />);
+        for (const slot of container.querySelectorAll<HTMLElement>("[data-slot]")) {
+            expect(slot).toHaveClass("ds-numeric-slot");
+            expect(slot.style.width).toBe("");
+        }
+        expect(declarations(".ds-numeric-slot")).toMatchObject({
+            width: "calc(var(--ds-numeric-chars) * 1ch)",
+        });
     });
 
     it("defaults to six reserved characters and zero decimals, without a phantom unit", () => {
         const { container } = render(<Numeric value={-12.4} />);
-        expect(screen.getByText("-12").style.width).toBe("6ch");
+        expect(slotChars(screen.getByText("-12"))).toBe("6");
         expect(container.querySelector('[data-slot="unit"]')).toBeNull();
     });
 
@@ -117,6 +143,63 @@ describe("Numeric value contract", () => {
         expect(() => render(<Numeric value={1} reservedChars={reservedChars} />)).toThrow(
             "reservedChars",
         );
+    });
+
+    it.each([0, -1, 1.5, Number.NaN])("rejects invalid unit width %s", (reservedUnitChars) => {
+        expect(() =>
+            render(<Numeric value={1} unit="ms" reservedUnitChars={reservedUnitChars} />),
+        ).toThrow("reservedUnitChars");
+    });
+
+    /* A latency readout counts in ms, then s, then min. Sized from the string,
+     * the unit slot is three widths, and everything to its right moves twice
+     * while the machine is doing nothing unusual. */
+    it("pins the unit slot so a changing unit does not move the cells beside it", () => {
+        const { rerender } = render(
+            <Numeric value={900} unit="ms" reservedChars={4} reservedUnitChars={3} />,
+        );
+        const pinned = slotChars(screen.getByText("ms"));
+        rerender(<Numeric value={1} unit="min" reservedChars={4} reservedUnitChars={3} />);
+        expect(slotChars(screen.getByText("min"))).toBe(pinned);
+        expect(pinned).toBe("3");
+    });
+
+    it("defaults the unit slot to the unit's own length", () => {
+        render(<Numeric value={1} unit="mm/s" />);
+        expect(slotChars(screen.getByText("mm/s"))).toBe("4");
+    });
+
+    /* #551: at a hero size the placeholder rendered at 12px beside a 112px
+     * unit. The class assertion is the one that would have caught it — jsdom
+     * loads no stylesheet, so a font-size utility is invisible to the computed
+     * value — and the computed assertion holds the inheritance it depends on. */
+    it("renders the empty glyph at the readout's own size, however large", () => {
+        const hero = "7rem";
+        render(
+            <div style={{ fontSize: hero }}>
+                <Numeric value={null} unit="mm" reservedChars={4} />
+            </div>,
+        );
+        const glyph = screen.getByText("—");
+        expect(glyph.className).not.toMatch(/\btext-(?:xs|sm|base|lg|xl|2xl)\b/);
+        expect(getComputedStyle(glyph).fontSize).toBe("112px");
+        expect(getComputedStyle(glyph).fontSize).toBe(
+            getComputedStyle(screen.getByText("mm")).fontSize,
+        );
+        expect(screen.getByText("mm")).toHaveClass("text-text-tertiary");
+    });
+
+    it("drops the unit's text but keeps its slot while the value is missing", () => {
+        const { container, rerender } = render(
+            <Numeric value={null} unit="mm" reservedChars={4} hideUnitWhenEmpty />,
+        );
+        const unit = container.querySelector<HTMLElement>('[data-slot="unit"]');
+        expect(unit).toBeInTheDocument();
+        expect(unit).toBeEmptyDOMElement();
+        expect(slotChars(unit)).toBe("2");
+        rerender(<Numeric value={12} unit="mm" reservedChars={4} hideUnitWhenEmpty />);
+        expect(screen.getByText("mm")).toBe(unit);
+        expect(slotChars(unit)).toBe("2");
     });
 });
 
@@ -211,6 +294,33 @@ describe("RadioGroup", () => {
         expect(screen.getByRole("radio", { name: "Two" })).toBeDisabled();
     });
 
+    /* React 19 delivers a keydown to the root container before it reaches
+     * `document`, and Radix arms its "an arrow key is down" flag from a
+     * `document` listener. Roving focus has therefore already moved by the
+     * time that flag is set, so the focused option was never checked: arrows
+     * moved focus and only Space selected. This asserts the WAI-ARIA radio
+     * behaviour with a single, released keypress — a held key would hide the
+     * regression, because the second keydown arms the flag for the first
+     * item's focus. */
+    it("selects the option the arrow key moved to, under React 19", async () => {
+        expect(version).toMatch(/^19\./);
+        const change = vi.fn();
+        render(
+            <RadioGroup
+                aria-label="Source"
+                options={options}
+                defaultValue="one"
+                onValueChange={change}
+            />,
+        );
+        await userEvent.tab();
+        await userEvent.keyboard("{ArrowDown}");
+        expect(screen.getByRole("radio", { name: "Three" })).toBeChecked();
+        expect(screen.getByRole("radio", { name: "Three" })).toHaveFocus();
+        expect(screen.getByRole("radio", { name: "One" })).not.toBeChecked();
+        expect(change).toHaveBeenLastCalledWith("three");
+    });
+
     it("Space selects an initially unchecked option and submits its value", async () => {
         const { container } = render(
             <form>
@@ -249,6 +359,32 @@ describe("RadioGroup", () => {
         expect(change).toHaveBeenLastCalledWith("one");
     });
 
+    /* The intent to select outlives the keypress by one macrotask, because
+     * the focus move it authorises is itself deferred. This is the other end
+     * of that: an arrow that moved nothing must not follow the user back into
+     * the group and check whatever they land on. */
+    it("does not carry a spent arrow key into a later focus", async () => {
+        const change = vi.fn();
+        render(
+            <>
+                <RadioGroup
+                    aria-label="Source"
+                    options={[{ value: "one", label: "One" }]}
+                    onValueChange={change}
+                />
+                <button type="button">Elsewhere</button>
+            </>,
+        );
+        await userEvent.tab();
+        await userEvent.keyboard("{ArrowDown}");
+        await userEvent.tab();
+        expect(screen.getByRole("button", { name: "Elsewhere" })).toHaveFocus();
+        await userEvent.tab({ shift: true });
+        expect(screen.getByRole("radio", { name: "One" })).toHaveFocus();
+        expect(screen.getByRole("radio", { name: "One" })).not.toBeChecked();
+        expect(change).not.toHaveBeenCalled();
+    });
+
     it("disables the whole group", async () => {
         const change = vi.fn();
         render(<RadioGroup options={options} disabled onValueChange={change} />);
@@ -277,6 +413,31 @@ describe("BuildStamp", () => {
         expect(stamp?.className).not.toMatch(/opacity-|bg-bg-elevated\/|absolute|fixed/);
         expect(screen.getByText("v0.1.2-3-gabc-dirty")).toBeInTheDocument();
         expect(screen.getByText("2026-09-07T12:34:56Z")).toHaveAttribute(
+            "datetime",
+            "2026-09-07T12:34:56Z",
+        );
+    });
+
+    it("keeps a consumer's existing wording, and does not call it a datetime", () => {
+        const { container } = render(
+            <BuildStamp name="Guide" describe="v0.1.2" buildTime="built 2026-01-01 00:00 UTC" />,
+        );
+        expect(screen.getByText("built 2026-01-01 00:00 UTC")).toBeInTheDocument();
+        expect(container.querySelector("time")).toBeNull();
+    });
+
+    it("applies a formatter to the display while the ISO value stays machine-readable", () => {
+        const format = vi.fn((iso: string) => `built ${iso.slice(0, 10)}`);
+        render(
+            <BuildStamp
+                name="Guide"
+                describe="v0.1.2"
+                buildTime="2026-09-07T12:34:56Z"
+                formatBuildTime={format}
+            />,
+        );
+        expect(format).toHaveBeenCalledWith("2026-09-07T12:34:56Z");
+        expect(screen.getByText("built 2026-09-07")).toHaveAttribute(
             "datetime",
             "2026-09-07T12:34:56Z",
         );

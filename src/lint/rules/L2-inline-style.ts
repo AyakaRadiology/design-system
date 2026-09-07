@@ -3,6 +3,26 @@ import { positionAt, walk } from "../tsx.js";
 import type { Rule, RuleFinding } from "../types.js";
 
 /**
+ * Look through a type assertion or a parenthesis to the value being styled.
+ *
+ * A custom property has no place in React's `CSSProperties`, so the only way
+ * to set one and keep the file type-checked is `{ "--x": n } as SomeStyle`.
+ * The keys are still spelled out in the file, so they are still checkable —
+ * and everything below still applies to them. What stays reported is the case
+ * this rule exists for: a value whose keys the file does not name at all.
+ */
+function styleObject(expression: ts.Expression): ts.Expression {
+    if (
+        ts.isAsExpression(expression) ||
+        ts.isSatisfiesExpression(expression) ||
+        ts.isParenthesizedExpression(expression)
+    ) {
+        return styleObject(expression.expression);
+    }
+    return expression;
+}
+
+/**
  * The only style keys a component may set inline, because they are geometry
  * rather than design: a value the layout computes at runtime has nowhere else
  * to live. Anything else — a colour, a font, a padding — belongs in a class.
@@ -33,7 +53,7 @@ export const L2: Rule = {
                 report(node, "style attribute with no readable value");
                 return;
             }
-            const value = initializer.expression;
+            const value = styleObject(initializer.expression);
             if (!ts.isObjectLiteralExpression(value)) {
                 report(
                     node,

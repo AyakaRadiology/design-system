@@ -62,11 +62,21 @@ describe("L1 — colour literal", () => {
 
 describe("L2 — inline style", () => {
     it("catches a non-geometry key, a variable style and a spread", () => {
-        expect(lines(check("L2", "L2-inline-style/fail.tsx"))).toEqual([4, 5, 6, 7]);
+        expect(lines(check("L2", "L2-inline-style/fail.tsx"))).toEqual([4, 5, 6, 7, 8, 9]);
     });
 
     it("passes custom properties and geometry", () => {
         expect(check("L2", "L2-inline-style/pass.tsx")).toEqual([]);
+    });
+
+    /* A custom property cannot be spelled without a type assertion, so the
+     * rule reads through one. It reads through it in both directions: the
+     * keys inside an assertion are still checked, and an assertion over a
+     * variable is still a value whose keys nobody can see. */
+    it("reads through a type assertion without losing the keys behind it", () => {
+        const findings = check("L2", "L2-inline-style/fail.tsx");
+        expect(findings[4]?.message).toContain("not an object literal");
+        expect(findings[5]?.message).toContain("color");
     });
 
     it("names the offending key", () => {
