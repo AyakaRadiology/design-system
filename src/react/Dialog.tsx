@@ -48,7 +48,7 @@ export function DialogContent({
             <DialogPrimitive.Content
                 {...(description === undefined ? { "aria-describedby": undefined } : {})}
                 className={cn(
-                    "ds-dialog-content fixed left-1/2 top-1/2 z-modal flex w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg border border-border bg-bg-elevated p-4 shadow-sm",
+                    "ds-dialog-content fixed left-1/2 top-1/2 z-modal flex w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg border border-border bg-dialog-surface p-4 shadow-sm",
                     className,
                 )}
             >

@@ -291,6 +291,7 @@ describe("Switch", () => {
         const onCheckedChange = vi.fn();
         render(<Switch aria-label="Follow" onCheckedChange={onCheckedChange} />);
         const toggle = screen.getByRole("switch", { name: "Follow" });
+        expect(toggle).toHaveAttribute("data-ds-control", "switch");
         expect(toggle).toHaveAttribute("data-state", "unchecked");
         await userEvent.click(toggle);
         expect(onCheckedChange).toHaveBeenCalledWith(true);

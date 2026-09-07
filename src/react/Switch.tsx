@@ -35,6 +35,7 @@ export interface SwitchProps {
 export function Switch({ className, ...props }: SwitchProps) {
     return (
         <SwitchPrimitive.Root
+            data-ds-control="switch"
             className={cn(
                 "inline-flex h-4 w-8 items-center rounded-full bg-bg-muted p-0.5 data-[state=checked]:bg-accent disabled:pointer-events-none disabled:opacity-50",
                 className,

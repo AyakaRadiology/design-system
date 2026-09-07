@@ -4,6 +4,7 @@ const DEFAULT_PRECISION = 0;
 const MAX_PRECISION = 100;
 const DEFAULT_RESERVED_CHARS = 6;
 const EMPTY_GLYPH = "—";
+const COMPACT_UNIT = /^[°%]/u;
 const EMPTY_ALIGN_CLASSES = {
     inherit: "text-right",
     start: "text-left",
@@ -14,10 +15,17 @@ function assertSlotWidth(prop, chars) {
         throw new RangeError(`Numeric ${prop} must be a positive integer`);
     }
 }
+function unitSeparator(unit, separator) {
+    if (separator === "none")
+        return null;
+    if (separator === "space")
+        return " ";
+    return typeof unit === "string" && COMPACT_UNIT.test(unit) ? null : " ";
+}
 /** A fixed value slot and a separate, case-preserving unit slot. */
-export function Numeric({ value, unit, precision = DEFAULT_PRECISION, reservedChars = DEFAULT_RESERVED_CHARS, reservedUnitChars, showUnitWhenEmpty = false, emptyAlign = "inherit", children, className, ...props }) {
+export function Numeric({ value, unit, precision = DEFAULT_PRECISION, reservedChars = DEFAULT_RESERVED_CHARS, reservedUnitChars, showUnitWhenEmpty = false, reserveUnitSlotWhenEmpty = false, emptyAlign = "inherit", unitSeparator: separator = "auto", children, className, ...props }) {
     if (value === undefined) {
-        return (_jsxs("span", { className: cn("font-mono tabular-nums", className), ...props, children: [children, unit !== undefined && unit !== null && (_jsxs("span", { className: "text-text-secondary normal-case", children: [" ", unit] }))] }));
+        return (_jsxs("span", { className: cn("font-mono tabular-nums", className), ...props, children: [children, unit !== undefined && unit !== null && (_jsxs("span", { className: "text-text-secondary normal-case", children: [unitSeparator(unit, separator), unit] }))] }));
     }
     if (!Number.isInteger(precision) || precision < 0 || precision > MAX_PRECISION) {
         throw new RangeError(`Numeric precision must be an integer from 0 to ${MAX_PRECISION}`);
@@ -29,7 +37,8 @@ export function Numeric({ value, unit, precision = DEFAULT_PRECISION, reservedCh
         throw new RangeError("Numeric value must be finite or null");
     }
     const empty = value === null;
-    return (_jsxs("span", { className: cn("inline-flex items-baseline gap-1 font-mono tabular-nums", className), ...props, children: [_jsx("span", { "data-slot": "value", className: cn("ds-numeric-slot ds-numeric-value-slot shrink-0 whitespace-nowrap", empty ? "ds-numeric-empty-slot" : "inline-block", empty ? EMPTY_ALIGN_CLASSES[emptyAlign] : "text-right"), style: { "--ds-numeric-chars": reservedChars }, children: empty ? (_jsxs(_Fragment, { children: [_jsx("span", { "aria-hidden": "true", className: "ds-numeric-empty text-text-tertiary", children: EMPTY_GLYPH }), _jsx("span", { className: "sr-only", children: "No value" })] })) : (value.toFixed(precision)) }), typeof unit === "string" && (!empty || showUnitWhenEmpty) && (_jsx("span", { "data-slot": "unit", className: cn("ds-numeric-slot inline-block shrink-0 whitespace-nowrap normal-case", empty ? "text-text-tertiary" : "text-text-secondary"), style: {
+    return (_jsxs("span", { className: cn("inline-flex items-baseline gap-1 font-mono tabular-nums", className), ...props, children: [_jsx("span", { "data-slot": "value", className: cn("ds-numeric-slot ds-numeric-value-slot shrink-0 whitespace-nowrap", empty ? "ds-numeric-empty-slot" : "inline-block", empty ? EMPTY_ALIGN_CLASSES[emptyAlign] : "text-right"), style: { "--ds-numeric-chars": reservedChars }, children: empty ? (_jsxs(_Fragment, { children: [_jsx("span", { "aria-hidden": "true", className: "ds-numeric-empty text-text-tertiary", children: EMPTY_GLYPH }), _jsx("span", { className: "sr-only", children: "No value" })] })) : (value.toFixed(precision)) }), typeof unit === "string" &&
+                (!empty || showUnitWhenEmpty || reserveUnitSlotWhenEmpty) && (_jsx("span", { "data-slot": "unit", "aria-hidden": empty && !showUnitWhenEmpty ? "true" : undefined, className: cn("ds-numeric-slot inline-block shrink-0 whitespace-nowrap normal-case", empty ? "text-text-tertiary" : "text-text-secondary"), style: {
                     "--ds-numeric-chars": reservedUnitChars ?? unit.length,
-                }, children: unit }))] }));
+                }, children: empty && !showUnitWhenEmpty ? null : unit }))] }));
 }

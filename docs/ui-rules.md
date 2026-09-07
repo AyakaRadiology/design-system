@@ -88,7 +88,16 @@ No `dark:` variants, no focus classes, no invented colors — tokens cover all t
 
 This governs product/tool UI structure. For aesthetic direction on expressive surfaces (landing pages, campaigns), the frontend-design skill applies on top — but tokens still hold.
 
-`RadioGroup` uses Model A (native radio): every arrow moves focus and selection together, Space commits the focused option, and Enter does nothing.
+### Control keys and app shortcuts
+
+`RadioGroup` uses Model A (native radio): every arrow moves focus and selection
+together, Space commits the focused option, and Enter does nothing. Package
+radios and switches use `<button role="radio">` and `<button role="switch">`,
+rather than native inputs, and carry `data-ds-control="radio"|"switch"`. An
+app-level keyboard handler — for example, a footswitch mapped to Space — must
+return without acting when focus is inside `[data-ds-control]` (or at minimum
+when the focused element has `role="radio"` or `role="switch"`). Checking only
+`INPUT`, `TEXTAREA`, and `contentEditable` steals the control's own Space key.
 
 ## Shared readouts and status
 
@@ -112,6 +121,17 @@ CSS rather than by forking the component, and an app that imports no voice
 unit string. Pin it wherever the unit itself changes — a latency readout that
 counts in `ms`, then `s`, then `min` moves every cell to its right twice,
 while the machine is doing nothing unusual: `reservedUnitChars={3}`.
+
+`reserveUnitSlotWhenEmpty` keeps that unit-width reservation when the value is
+null, but leaves its text blank. Use it for side-by-side hero readouts whose
+overall geometry must survive one sensor dropping; it defaults to false so a
+normal column keeps the quieter no-unit empty state. `showUnitWhenEmpty` still
+wins when both props are set and shows the muted unit.
+
+The compatibility children form keeps natural-width layout. Its
+`unitSeparator` is `auto` by default: degree and percent units attach directly
+(`42°`, `42%`), while alphabetic units keep a space (`42 mm`). Use `space` or
+`none` only when the preformatted unit needs to override that rule.
 
 The empty state has a size contract, and it is a quiet one. The placeholder
 renders at `--numeric-empty-scale` of the readout's own size (0.25), floored at
@@ -183,10 +203,19 @@ the ISO value as its `datetime`, and a string the consumer has already worded
 (`built 2026-01-01 00:00 UTC`) is printed as-is, without a `<time>` claiming a
 datetime it is not. `formatBuildTime={(iso) => …}` words an ISO build time for
 display while the machine-readable value stays the ISO string.
+Pass `onClick` when the stamp pins or reveals the full SHA: it then renders
+through the package `Button`, so it is focusable, activates with Enter or
+Space, and defaults to `type="button"`. The focused action stays in the stamp's
+own API rather than adding `asChild` composition behavior to every Button.
 
 `DialogBody` owns internal scrolling inside `DialogContent`. Title,
 description and actions stay outside the scroll region. The dialog reserves
 spacing-4 viewport gutters using `svh`; flex layout subtracts actual header
 and footer sizes. Every voice supplies the scrollbar colors and functional
-bottom fade through its tokens. The fade is a scroll cue, not a decorative
-gradient; do not remove it merely because a touch browser hides scrollbars.
+bottom fade through its tokens. `DialogContent` defines
+`--dialog-surface: var(--bg-elevated)` and uses that property for both its own
+background and the fade. Re-tone a dialog by overriding `--dialog-surface` on
+a class in the consumer's theme file; changing the single source keeps the
+fade's bottom pixel equal to the real surface. The fade is a scroll cue, not a
+decorative gradient; do not remove it merely because a touch browser hides
+scrollbars.

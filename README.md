@@ -119,6 +119,10 @@ voice-colored scrollbar and sticky bottom fade make scrolling discoverable
 on touch. No header-height calculation is needed at the call site. Existing
 short dialogs can continue using plain children. Oversized headers/actions
 must still fit the viewport; test actual geometry in consumer Playwright.
+`DialogContent` sets `--dialog-surface` to `--bg-elevated` and uses it as its
+background; `DialogBody` fades to the same property. A consumer that needs a
+different surface sets `--dialog-surface` on a named class in `theme.css`, then
+passes that class to `DialogContent`, so the content and fade cannot drift.
 
 ### Numeric values
 
@@ -129,6 +133,7 @@ must still fit the viewport; test actual geometry in consumer Playwright.
 
 `Numeric({ value: number | null, unit?: string, precision?: number,
 reservedChars?: number, reservedUnitChars?: number, showUnitWhenEmpty?: boolean,
+reserveUnitSlotWhenEmpty?: boolean,
 ...spanAttributes })` reserves separate value and unit
 slots. `precision` is an integer 0–100 (default 0); `reservedChars` is a positive
 integer (default 6), in monospace `ch`. The unit slot defaults to the unit
@@ -147,12 +152,18 @@ width, because it has imported none of the package's CSS.
 Null renders one muted `—`, announced as “No value”, at
 `--numeric-empty-scale` of the readout's own size (0.25, floored at the xs
 step), inside a value box that keeps its full width. The unit is hidden while
-the value is missing; `showUnitWhenEmpty` brings it back, muted. The scale is a
+the value is missing; `showUnitWhenEmpty` brings it back, muted.
+`reserveUnitSlotWhenEmpty` instead keeps a blank unit slot at its reserved
+width, preventing side-by-side hero readouts from moving when one becomes
+empty. It defaults to false; when both props are true, the muted unit is shown.
+The scale is a
 schema token, so an app tunes it per surface in its own `theme.css`.
 Zero is a reading. NaN/infinity and invalid precision/width
 throw. Unit case is preserved under uppercase labels. The existing
 `<Numeric unit="ms">42</Numeric>` form stays source-compatible for preformatted
-content; it keeps its natural layout. `value` and children are mutually
+content; it keeps its natural layout. Its `unitSeparator` defaults to `auto`,
+which emits `42°`, `42%`, and `42 mm`; `space` and `none` override the inferred
+separator. `value` and children are mutually
 exclusive. See [the shared UI rules](docs/ui-rules.md#shared-readouts-and-status).
 
 ### Status semantics and detail
@@ -179,7 +190,8 @@ only place essential information lives.
 ### Build metadata
 
 `BuildStamp({ name: string, describe: string, buildTime: string,
-formatBuildTime?: (iso: string) => string, ...spanAttributes })` renders an
+formatBuildTime?: (iso: string) => string, onClick?: MouseEventHandler,
+...attributes })` renders an
 opaque elevated-surface plate with AA-tested
 secondary text, suitable for a dark footer or bright image. Supply the actual
 `git describe` string, including a dirty suffix.
@@ -190,6 +202,11 @@ display without disturbing that value. A `buildTime` that is already worded
 (`built 2026-01-01 00:00 UTC`) prints as-is, with no `<time>` element claiming
 a datetime it does not hold. The consumer owns placement and loading/error
 handling. No opacity is applied to the plate.
+Without `onClick` it is a static span. With `onClick` it reuses the package
+`Button` as a focusable `type="button"` control, so Enter and Space activate
+the stamp without a consumer wrapping nested interactive elements. This
+focused variant avoids broadening `Button` with an `asChild` API solely for
+this use case.
 
 ### Radio selection
 
@@ -211,6 +228,10 @@ and selection together, Space commits the focused option, and Enter does
 nothing. It commits through Radix's click path so controlled state, callbacks
 and form values stay consistent, while stopping the original keydown before
 Radix's timing-sensitive `document` listener can handle it again under React 19.
+Radio and switch controls are buttons with their respective ARIA roles, not
+native inputs. Both carry `data-ds-control` (`radio` or `switch`); app-level
+Space/footswitch handlers must ignore a focused `[data-ds-control]`, because an
+`INPUT`/`TEXTAREA` exemption alone does not protect these controls.
 
 ### Labels and case
 

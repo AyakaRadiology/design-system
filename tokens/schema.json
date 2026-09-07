@@ -26,6 +26,12 @@
             "required": true,
             "doc": "Popovers, menus, dialogs, tooltips — one step above bg; the depth cue where a voice forbids shadows."
         },
+        "dialog-surface": {
+            "type": "color",
+            "role": "surface",
+            "required": false,
+            "doc": "Element-scoped DialogContent surface and DialogBody fade stop. DialogContent defaults it to --bg-elevated; a consumer may override it in the theme file when re-toning one dialog."
+        },
         "border": {
             "type": "color",
             "role": "border",

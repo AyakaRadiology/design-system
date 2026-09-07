@@ -102,6 +102,8 @@
     /* One spacing-4 gutter above and below. Flex shrink allocates the rest
      * after the actual header/footer heights, without guessed header math. */
     .ds-dialog-content {
+        --dialog-surface: var(--bg-elevated);
+
         max-height: calc(100svh - var(--spacing) * 8);
     }
 
@@ -139,7 +141,7 @@
     .ds-dialog-body {
         max-height: 100svh;
         scrollbar-width: thin;
-        scrollbar-color: var(--text-secondary) var(--bg-elevated);
+        scrollbar-color: var(--text-secondary) var(--dialog-surface);
         scrollbar-gutter: stable;
     }
 
@@ -152,7 +154,7 @@
         bottom: 0;
         height: calc(var(--spacing) * 2);
         margin-top: calc(var(--spacing) * -2);
-        background: linear-gradient(transparent, var(--bg-elevated));
+        background: linear-gradient(transparent, var(--dialog-surface) 75%);
         pointer-events: none;
     }
 }

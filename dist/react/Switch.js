@@ -10,5 +10,5 @@ import { cn } from "./cn.js";
  * changing the fourth.
  */
 export function Switch({ className, ...props }) {
-    return (_jsx(SwitchPrimitive.Root, { className: cn("inline-flex h-4 w-8 items-center rounded-full bg-bg-muted p-0.5 data-[state=checked]:bg-accent disabled:pointer-events-none disabled:opacity-50", className), ...props, children: _jsx(SwitchPrimitive.Thumb, { className: "size-3 rounded-full bg-bg transition-transform duration-(--motion-fast) ease-standard data-[state=checked]:translate-x-4 data-[state=checked]:bg-accent-fg" }) }));
+    return (_jsx(SwitchPrimitive.Root, { "data-ds-control": "switch", className: cn("inline-flex h-4 w-8 items-center rounded-full bg-bg-muted p-0.5 data-[state=checked]:bg-accent disabled:pointer-events-none disabled:opacity-50", className), ...props, children: _jsx(SwitchPrimitive.Thumb, { className: "size-3 rounded-full bg-bg transition-transform duration-(--motion-fast) ease-standard data-[state=checked]:translate-x-4 data-[state=checked]:bg-accent-fg" }) }));
 }
