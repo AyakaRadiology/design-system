@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/AyakaRadiology/design-system/compare/v0.3.0...v0.3.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* **numeric:** centre empty glyph and add emptyAlign ([#32](https://github.com/AyakaRadiology/design-system/issues/32)) ([95592cb](https://github.com/AyakaRadiology/design-system/commit/95592cb1b5b7602a2cf13547e5166b151bcc1281))
+* **radio:** deterministic keyboard selection (arrows select, Space commits) ([#30](https://github.com/AyakaRadiology/design-system/issues/30)) ([cd41e46](https://github.com/AyakaRadiology/design-system/commit/cd41e46654f45eba02ccc10171963888b06c790e))
+
 ## [0.3.0](https://github.com/AyakaRadiology/design-system/compare/v0.2.1...v0.3.0) (2026-09-07)
 
 
