@@ -131,7 +131,9 @@ wins when both props are set and shows the muted unit.
 The compatibility children form keeps natural-width layout. Its
 `unitSeparator` is `auto` by default: degree and percent units attach directly
 (`42°`, `42%`), while alphabetic units keep a space (`42 mm`). Use `space` or
-`none` only when the preformatted unit needs to override that rule.
+`none` only when the preformatted unit needs to override that rule. Auto can
+inspect only string units; a React node unit keeps a space unless explicitly
+set to `none`.
 
 The empty state has a size contract, and it is a quiet one. The placeholder
 renders at `--numeric-empty-scale` of the readout's own size (0.25), floored at

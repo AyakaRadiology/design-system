@@ -163,7 +163,8 @@ throw. Unit case is preserved under uppercase labels. The existing
 `<Numeric unit="ms">42</Numeric>` form stays source-compatible for preformatted
 content; it keeps its natural layout. Its `unitSeparator` defaults to `auto`,
 which emits `42°`, `42%`, and `42 mm`; `space` and `none` override the inferred
-separator. `value` and children are mutually
+separator. A React node unit cannot be inferred and defaults to a space, so set
+`none` explicitly when it wraps a compact symbol. `value` and children are mutually
 exclusive. See [the shared UI rules](docs/ui-rules.md#shared-readouts-and-status).
 
 ### Status semantics and detail
