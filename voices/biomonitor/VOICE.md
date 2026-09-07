@@ -30,6 +30,10 @@ surfaces or marketing.
 5. **Status hues are alarms, series hues are data** — never cross them, and the
    signature draws in the accent phosphor regardless of state: you read the
    *rhythm*, not the color (a color-coded signature is just a third status dot).
+   Status labels never blink or pulse in any state; use the shared mapping
+   in `docs/ui-rules.md` and `StatusPill`'s enforced static treatment. Dialog
+   scrollbars use secondary text against the elevated surface; the functional
+   bottom fade is the sole scroll-cue exception to the no-gradients rule.
 6. **Pick the signature from the subject's own world.** spine is a nervous
    system, so its signature is a live EKG in the header: steady rhythm when
    healthy, idle grey until data arrives, a flatline exactly when the staleness

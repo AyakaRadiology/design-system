@@ -1,7 +1,18 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "./cn.js";
+import { Tooltip } from "./Tooltip.js";
 
-export type Status = "success" | "warning" | "danger" | "info" | "neutral";
+/** Shared severity vocabulary. A lost stream is degraded; offline is an error. */
+export const STATUS_STATES = {
+    success: ["healthy", "live"],
+    warning: ["degraded", "stale", "lost"],
+    danger: ["error", "invalid", "offline"],
+    info: ["connecting"],
+    neutral: ["unknown", "loading"],
+} as const;
+
+export type Status = keyof typeof STATUS_STATES;
+export type StatusState<Tone extends Status = Status> = (typeof STATUS_STATES)[Tone][number];
 
 /**
  * A tint plus a label, never a bare dot: colour alone is not a status anyone
@@ -20,17 +31,22 @@ const STATUS_CLASSES: Record<Status, string> = {
 export interface StatusPillProps extends HTMLAttributes<HTMLSpanElement> {
     status: Status;
     children: ReactNode;
+    /** Supplementary text on hover/focus. Requires the app's TooltipProvider. */
+    detail?: ReactNode;
 }
 
-export function StatusPill({ status, className, ...props }: StatusPillProps) {
-    return (
+export function StatusPill({ status, detail, className, ...props }: StatusPillProps) {
+    const hasDetail = detail !== undefined && detail !== null;
+    const pill = (
         <span
             className={cn(
-                "inline-flex h-5 items-center rounded-full px-2 text-xs font-medium",
+                "ds-status-pill inline-flex h-5 items-center rounded-full px-2 text-xs font-medium",
                 STATUS_CLASSES[status],
                 className,
             )}
             {...props}
+            tabIndex={hasDetail ? 0 : props.tabIndex}
         />
     );
+    return hasDetail ? <Tooltip content={detail}>{pill}</Tooltip> : pill;
 }
