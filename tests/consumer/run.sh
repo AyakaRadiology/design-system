@@ -131,9 +131,12 @@ cat >"$APP/src/styles/theme.css" <<'CSS'
 }
 
 /* The documented hero readout (docs/ui-rules.md): the size is a project token
- * and a class, because an arbitrary value in a component is an L3 finding. */
+ * and a class, because an arbitrary value in a component is an L3 finding.
+ * The empty scale is tuned here too — a schema token, set in the theme file,
+ * which is the path design-lint allows and therefore the one worth proving. */
 .hero-readout {
     font-size: var(--x-hero-readout);
+    --numeric-empty-scale: 0.35;
 }
 
 @theme inline {
@@ -154,8 +157,9 @@ export function Status() {
             <Numeric value={null} unit="mm" precision={1} reservedChars={6} />
             <Numeric value={900} unit="ms" reservedUnitChars={3} />
             <div className="hero-readout">
-                <Numeric value={null} unit="mm" precision={1} reservedChars={5} hideUnitWhenEmpty />
+                <Numeric value={null} unit="mm" precision={1} reservedChars={5} />
             </div>
+            <Numeric value={null} unit="mm" precision={1} reservedChars={5} showUnitWhenEmpty />
             <BuildStamp name="Probe" describe="v0.1.2-3-gabc" buildTime="2026-09-07T00:00:00Z" />
             <BuildStamp
                 name="Probe"
@@ -240,6 +244,8 @@ assert_css "build stamp plate" 'background-color: *var\(--bg-elevated\)'
 assert_css "radio indicator" '\.size-2'
 assert_css "numeric slot class" '\.ds-numeric-slot'
 assert_css "numeric slot width" 'calc\(var\(--ds-numeric-chars\) \* 1ch\)'
+assert_css "quiet empty readout" 'max\(calc\(var\(--numeric-empty-scale\) \* 1em\), *var\(--text-xs\)\)'
+assert_css "the app's tuned empty scale" -- '--numeric-empty-scale: *0?\.35'
 
 # The consumer's override has to WIN, not merely be present: the voice sets
 # --accent on hue 178 and theme.css re-sets it on 195, so the last declaration

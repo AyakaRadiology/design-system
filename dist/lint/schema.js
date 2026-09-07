@@ -9,6 +9,7 @@ export const TOKEN_TYPES = [
     "duration",
     "easing",
     "shadow",
+    "ratio",
 ];
 export const TOKEN_ROLES = [
     "surface",
@@ -78,6 +79,7 @@ const TYPE_PATTERNS = {
     duration: /^[\d.]+m?s$/,
     easing: /^(cubic-bezier\(|linear$|linear\(|ease|steps\()/,
     shadow: /\S/,
+    ratio: /^(?:\d+|\d*\.\d+)$/,
 };
 function isTailwindNamespace(name, selector) {
     if (!selector.startsWith("@theme"))

@@ -14,10 +14,11 @@ export type NumericProps = NumericAttributes & ({
      */
     reservedUnitChars?: number;
     /**
-     * Drop the unit's text while `value` is null, keeping its
-     * reserved slot so nothing shifts when the reading arrives.
+     * Keep the unit visible, muted, while `value` is null. Off by
+     * default: an empty readout should read as quiet, and a bright
+     * unit beside a small dash is the loudest thing on the surface.
      */
-    hideUnitWhenEmpty?: boolean;
+    showUnitWhenEmpty?: boolean;
     children?: never;
 } | {
     /** Compatibility for preformatted figures; prefer value for new readouts. */
@@ -27,8 +28,8 @@ export type NumericProps = NumericAttributes & ({
     precision?: never;
     reservedChars?: never;
     reservedUnitChars?: never;
-    hideUnitWhenEmpty?: never;
+    showUnitWhenEmpty?: never;
 });
 /** A fixed value slot and a separate, case-preserving unit slot. */
-export declare function Numeric({ value, unit, precision, reservedChars, reservedUnitChars, hideUnitWhenEmpty, children, className, ...props }: NumericProps): import("react").JSX.Element;
+export declare function Numeric({ value, unit, precision, reservedChars, reservedUnitChars, showUnitWhenEmpty, children, className, ...props }: NumericProps): import("react").JSX.Element;
 export {};
