@@ -200,6 +200,50 @@ describe("Numeric value contract", () => {
         );
     });
 
+    it("gives the empty glyph its own box, centred on the value line box", () => {
+        const { container } = render(<Numeric value={null} />);
+        expect(container.querySelector('[data-slot="value"]')).toHaveClass(
+            "ds-numeric-value-slot",
+            "ds-numeric-empty-slot",
+        );
+        expect(declarations(".ds-numeric-value-slot")).toMatchObject({
+            "line-height": "1",
+        });
+        expect(declarations(".ds-numeric-empty-slot")).toMatchObject({
+            display: "inline-flex",
+            "align-items": "center",
+            height: "1em",
+        });
+        expect(declarations(".ds-numeric-empty")).toMatchObject({
+            display: "inline-block",
+            "line-height": "1",
+            "vertical-align": "middle",
+        });
+    });
+
+    it.each([
+        [undefined, "text-right"],
+        ["inherit", "text-right"],
+        ["start", "text-left"],
+        ["center", "text-center"],
+    ] as const)("aligns an empty slot with emptyAlign=%s", (emptyAlign, expectedClass) => {
+        const { container } = render(
+            <Numeric value={null} reservedChars={5} emptyAlign={emptyAlign} />,
+        );
+        const value = container.querySelector('[data-slot="value"]');
+        expect(value).toHaveClass("ds-numeric-empty-slot", expectedClass);
+        expect(declarations(".ds-numeric-empty-slot")).toMatchObject({
+            display: "inline-flex",
+            "align-items": "center",
+            height: "1em",
+        });
+    });
+
+    it("keeps live digits right-aligned when emptyAlign is set", () => {
+        render(<Numeric value={12} emptyAlign="start" />);
+        expect(screen.getByText("12")).toHaveClass("text-right");
+    });
+
     it("keeps the floor above the smallest legible step in a dense row", () => {
         /* A 14px row scaled by the ratio is 3.5px, which is why the rule is a
          * max() against the xs step rather than a bare multiplication. */

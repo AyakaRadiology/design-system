@@ -122,6 +122,12 @@ that has nothing to report, and it was the actual regression in needle-guide
 #551. `showUnitWhenEmpty` brings it back, muted, for a readout whose unit is
 part of the label.
 
+The glyph owns an `inline-block` box whose height is the requested empty size,
+centred vertically on the digits' line box. It inherits the value slot's
+right alignment by default. Use `emptyAlign="start"` to left-anchor an empty
+hero or `emptyAlign="center"` to centre it within the reservation; this affects
+only the empty state, never live digits.
+
 `--numeric-empty-scale` is a schema token, so a consumer tunes it — globally or
 per surface — in the app's `theme.css`, the one file design-lint allows to set
 one:

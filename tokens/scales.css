@@ -113,11 +113,27 @@
         width: calc(var(--ds-numeric-chars) * 1ch);
     }
 
+    /* The body line-height is deliberately an absolute dense-UI value. Give
+     * the value its own one-em line box so large readouts do not inherit that
+     * 18px box, then centre the smaller empty glyph within the same geometry. */
+    .ds-numeric-value-slot {
+        line-height: 1;
+    }
+
+    .ds-numeric-empty-slot {
+        display: inline-flex;
+        align-items: center;
+        height: 1em;
+    }
+
     /* `em`, so the ratio reads against the readout's own size rather than a
      * size this file would have to guess; `max`, so shrinking a 14px row's
      * reading cannot take the dash below the smallest legible step. */
     .ds-numeric-empty {
+        display: inline-block;
         font-size: max(calc(var(--numeric-empty-scale) * 1em), var(--text-xs));
+        line-height: 1;
+        vertical-align: middle;
     }
 
     .ds-dialog-body {
