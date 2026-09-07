@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/AyakaRadiology/design-system/compare/v0.3.1...v0.4.0) (2026-09-07)
+
+
+### Features
+
+* **primitives:** unit separator, dialog surface fade, interactive BuildStamp, control attribute, reserved empty unit slot ([#33](https://github.com/AyakaRadiology/design-system/issues/33)) ([6c995f7](https://github.com/AyakaRadiology/design-system/commit/6c995f7a3ec04ebae16d67772fc73818d7273ea2))
+
 ## [0.3.1](https://github.com/AyakaRadiology/design-system/compare/v0.3.0...v0.3.1) (2026-09-07)
 
 
