@@ -8,7 +8,7 @@ export default defineConfig({
          * ("The URL must be of scheme file"). The React component tests opt
          * back in with a `// @vitest-environment jsdom` docblock. */
         environment: "node",
-        include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+        include: ["src/**/*.test.ts", "src/**/*.test.tsx", "scripts/**/*.test.ts"],
         setupFiles: ["./vitest.setup.ts"],
         restoreMocks: true,
     },

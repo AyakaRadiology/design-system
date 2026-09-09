@@ -15,6 +15,12 @@ can be checked are checked:
 | voice | this package (`voices/*.css`) | what values they take |
 | extension | the consuming repo (`src/styles/theme.css`) | what only that product knows — `--x-` prefixed |
 
+## Figma
+
+The [offline Figma adapter and handoff guide](docs/figma.md) cover variable
+projection, roundtrip checks, and extracting designer edits into a PR. The guide
+also records the outstanding Figma file provisioning work.
+
 ## Install
 
 Distribution is by git tag, like `needle-protocol`: no registry account, and
