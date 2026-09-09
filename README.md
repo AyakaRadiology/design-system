@@ -21,6 +21,31 @@ The [offline Figma adapter and handoff guide](docs/figma.md) cover variable
 projection, roundtrip checks, and extracting designer edits into a PR. The guide
 also records the outstanding Figma file provisioning work.
 
+## Impeccable review context
+
+[PRODUCT.md](PRODUCT.md) records the needle operator context;
+[DESIGN.md](DESIGN.md) is generated from the house schema, biomonitor voice,
+shared scales, UI rules and lockfile-pinned Tailwind spacing/radii. Reviews
+must preserve these contracts. The base voice remains available unchanged.
+
+```sh
+bun run design:generate  # regenerate after changing a source
+bun run design:check     # fail on missing or stale DESIGN.md
+```
+
+The existing CI **Quality Check** runs `design:check` through `bun run check`.
+Generated output is never read back into tokens; edit its sources instead.
+No `.impeccable/design.json` is maintained: the generated Markdown and its
+frontmatter carry the context without a second token inventory.
+The shared detector config ignores only `overused-font=Inter` (Brand font).
+Run `npx impeccable detect --json .` for advisory findings; `design-lint`
+and the existing contrast/voice gates remain mandatory.
+
+Six months from now, a manually edited projection or forgotten regeneration
+would drift: CI's byte comparison rejects both. Missing/malformed token sources
+fail loudly. Product facts are a sourced snapshot, not a live cross-repo sync;
+consumer specifications remain authoritative for consumer changes.
+
 ## Install
 
 Distribution is by git tag, like `needle-protocol`: no registry account, and
