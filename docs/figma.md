@@ -1,12 +1,41 @@
 # Figma adapter and designer handoff
 
-**Provisioning status: blocked before file creation.** The intended file is
-`AyakaRadiology Design System` in the owner's Drafts. No file URL exists yet;
-no variables, components, or screen frames have been created in Figma by this
-change. The authenticated account returned two teams, and the create-file MCP
-contract requires a team selection. A selection request for **Harry Lab
-(Education, Full seat)** is pending; the other team has a Starter/View seat.
+**Provisioning status (2026-09-09): file created; canvas work blocked.**
+[AyakaRadiology Design System](https://www.figma.com/design/TnTduN5Mm8cbxPtY3eZy9o)
+is in **Harry Lab / Drafts**, not a project. The owner selected Harry Lab;
+`whoami` confirmed its Education (`student`) plan and Full seat, with plan key
+`team::1601096317261638665`. Reuse this file when resuming; team selection is
+resolved and no replacement file is needed.
+
+The session's approval gate rejected the first `use_figma` call, a read-only
+inspection, with `MCP tool call requires approval, but approval policy is never`.
+That prevented Plugin API inspection, variable import, native component
+creation and screen assembly. The session cannot request the required approval.
+This is an execution-policy blocker, not evidence of a Figma plan/quota limit.
 Do not treat this document as a completed designer onboarding file.
+
+| Object | Created this run / read-back evidence |
+|---|---|
+| Design file | 1; creation returned the URL above |
+| Pages | 1 default `Page 1` (`0:1`); confirmed by `get_metadata` |
+| Variable collections / variables | 0 imported; complete inventory unavailable because `use_figma` was rejected |
+| Native components / component sets | 0 / 0; page metadata is an empty canvas |
+| Frames / screen frames | 0 / 0; page metadata is an empty canvas |
+
+`get_metadata` returned `<canvas id="0:1" name="Page 1" x="0" y="0"
+width="0" height="0" />`. `get_variable_defs` for `0:1` returned
+“You currently have nothing selected. You need to select a layer first before
+using this tool.” It did **not** return a verified empty variable inventory.
+
+This continuation used **16 Figma MCP requests**: 1 resource listing, 7 skill/
+reference reads, 1 `whoami`, 1 `create_new_file`, 1 `get_libraries`,
+1 `search_design_system`, 1 rejected `use_figma`, 2 `get_metadata`, and
+1 unsuccessful `get_variable_defs`. This counts attempted requests, including
+failures and a repeated skill read, not billed/read-quota calls; it excludes
+PR #38's earlier run. Library discovery found no subscribed library and only
+Community kits available to add. The seven-component search batch was clamped
+to one query by the server: only `Glass` was searched (no matches). The other
+six searches remain outstanding.
 
 The repository adapter is implemented and usable offline. Its current plan has
 **116 variables**, in `base` (58, light/dark) and `biomonitor` (58, dark only).
@@ -74,12 +103,12 @@ refuse changed, deleted, duplicate or invalid entries.
 
 ## Provisioning the file
 
-Once the team selection is resolved, an engineer/agent should load the current
-Figma `figma-create-new-file`, `figma-use`, `figma-generate-library`, and
-`figma-generate-design` skills. Create one Design file in that team's Drafts,
-inspect it, discover libraries and batch-search the required primitives before
-building. Record the returned file URL here and the returned object IDs in a
-local `mktemp` ledger.
+Resume in a session where the execution policy permits `use_figma`. Load the
+current `figma-use`, `figma-generate-library`, and `figma-generate-design` skills
+and target file key `TnTduN5Mm8cbxPtY3eZy9o`. Inspect its current state first,
+because the empty-canvas snapshot above can become stale. Discover libraries
+and complete the required primitive searches, respecting the server's actual
+batch limit. Keep returned object IDs in a local `mktemp` ledger.
 
 Execute the generated `import.js` through `use_figma`. It creates the collections
 and modes from the actual adapter JSON and sets values, descriptions, scopes
@@ -118,8 +147,9 @@ available, then assemble/tidy native content and remove reference captures.
 Use the requested demonstration readings: target **40.0°**, needle **38.5°**,
 laser lateral **−12.40 mm**. These are demonstration values, not patient data.
 
-- **needle-guide:** full-window scene placeholder, PLAN box, LASER LATERAL card,
-  CALIBRATE, floating status cluster, and a separate projector design G frame.
+- **needle-guide:** full-window scene placeholder; PLAN box with ENTRY LAT,
+  ENTRY LONG, AZIMUTH and PLAN ANGLE; LASER LATERAL card; CALIBRATE; floating
+  SOURCE/CASE/LINK/sound cluster; and a separate projector design G frame.
 - **needle-simulator:** PLAN with AXIAL/SAGITTAL/CORONAL MPR panels, PHANTOM
   sidebar with SET TARGET / SET ENTRY / RESET and footer; OPERATION frame.
 
@@ -130,7 +160,10 @@ The inspected Guide `MainDisplay.tsx` currently uses an operational-quadrant
 layout, and no projector design G implementation was found in its `src`/`docs`.
 The requested one-screen/projector layout therefore needs reconciliation with
 its actual source before it can be described as a current-screen capture.
-No dev capture or visual verification has been performed in this change.
+No dev capture or visual verification has been performed in this continuation:
+the Plugin API gate blocked the native component work needed to assemble and
+tidy either screen. The source observations above come from PR #38's inspection;
+recheck the consumer source when resuming.
 
 ## What the designer edits, and how it returns
 
@@ -180,7 +213,11 @@ owner's Education plan: do not attempt it. Organization is the upgrade path for
 custom Code Connect; verify current eligibility before changing plans.
 
 **Six months from now, what broke?** The likely failure is a designer's file
-and the shipped voices diverging after a code release. Manual recollection is
+and the shipped voices diverging after a code release, or this saved URL being
+mistaken for a populated library. Before marking provisioning complete, execute
+the generated export and diff against the current plan, assert the collection/
+variable counts, and verify component and screen counts from live metadata.
+Manual recollection is
 not a gate: generate/import/export commands and diff exit status make the
 comparison repeatable. One-way sync is addressed by extracting live values and
 design context into a PR, followed by forward reconciliation. Drift is caught
