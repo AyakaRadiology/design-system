@@ -12,7 +12,7 @@
  * Imported by every voice; not meant to be imported on its own.
  */
 
-@theme {
+:root {
     /* "Inter Variable" and "JetBrains Mono Variable" are the family names
      * @fontsource-variable registers. They lead the stack so an app that
      * installs those packages gets the variable faces, and fall through to the
@@ -42,11 +42,7 @@
     --container-prose-page: 45rem; /* generates max-w-prose-page (reading-surface
                                       line length; distinct from built-in max-w-prose) */
 
-    /* The one easing curve. It sits in @theme rather than :root because the
-     * Tailwind namespace name and the schema token name are the same word:
-     * one declaration buys both the `ease-standard` utility and a
-     * `var(--ease-standard)` that plain CSS can read, since Tailwind emits
-     * every @theme entry into :root. */
+    /* The shared easing curve, also mapped to Tailwind by tailwind.css. */
     --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -68,17 +64,6 @@
      * dense row. A consumer that wants a different quiet sets this in its
      * theme.css, per surface if it likes. */
     --numeric-empty-scale: 0.25;
-}
-
-/* The z utilities (`z-raised`, `z-modal`, …). `inline` keeps the var()
- * reference, so the numbers above are the single source of truth: a
- * non-inline @theme here would restate all four, and two lists of stacking
- * numbers is how a "raised" element ends up above a modal. */
-@theme inline {
-    --z-index-raised: var(--z-raised);
-    --z-index-overlay: var(--z-overlay);
-    --z-index-modal: var(--z-modal);
-    --z-index-toast: var(--z-toast);
 }
 
 @layer base {

@@ -65,7 +65,8 @@ that it is the only one. Point `themeFile` in `design-lint.json` at it.
 ```css
 /* src/styles/theme.css — the ONLY file that may redefine schema tokens */
 @import "tailwindcss";
-@import "@ayaka/design-system/voices/biomonitor.css"; /* pulls in scales + the Tailwind mapping */
+@import "@ayaka/design-system/tailwind.css";
+@import "@ayaka/design-system/voices/biomonitor.css"; /* plain scales + material + palette */
 
 :root {
   /* overrides (values only; each line carries a reason) */
@@ -89,6 +90,35 @@ mapping generates — `bg-bg`, `bg-bg-subtle`, `bg-bg-elevated`, `text-text-seco
 `border-border`, `bg-accent text-accent-fg hover:bg-accent-hover`,
 `bg-danger-subtle text-danger`, `text-chart-1`. No `dark:` twins: the voice
 handles both modes once, which is why rule L4 rejects them.
+
+### Plain CSS and the Tailwind preset
+
+Voices and `tokens/*.css` are plain runtime CSS. They can be loaded from a
+stylesheet `<link>`, a Vite `?url` or `?inline` import, or a build without
+Tailwind. The base voice switches with the `.dark` class; extension properties
+(`--x-*`) still refer to the live palette.
+
+**Migrating from 0.4.x:** Tailwind apps must add
+`@import "@ayaka/design-system/tailwind.css";` after `@import "tailwindcss";`
+and before the voice import. The voice import paths and token names are
+unchanged. Plain CSS / `?url` consumers need no source changes. The opt-in
+`tailwind.css` is compiler input, not a browser stylesheet: it alone contains
+Tailwind directives for utility mappings, primitive source scanning and the
+class-based dark variant. Keep it in the app's Tailwind entry, never a URL link.
+
+`shipped runtime CSS contains no Tailwind directives or preset imports` packs
+the package and checks every CSS file except that explicit compiler entry,
+including the runtime import graph. The consumer smoke test minifies and loads
+both voices via `?url`, plus scales via `?inline`, with and without Tailwind.
+It verifies `.dark`, typography and live `--x-*` references in Chromium.
+
+Six months from now, a new voice could import the compiler preset again, or a
+scale could drift between runtime values and utility mappings. The tarball
+check rejects the former; inline variable mappings and browser smoke checks
+cover the latter. Runtime values remain the source of truth, with no manual
+copy or one-way generated palette to maintain. Missing styles or minifier
+warnings fail the probes instead of passing silently. The migration import is
+shown in the wiring example and exercised by the packed consumer build.
 
 ### Voices
 

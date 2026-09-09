@@ -11,7 +11,8 @@
  * rule L1 exists to reject. src/lint/schema.test.ts fails a colour token that
  * is missing one.
  *
- * Imported by every voice; not meant to be imported on its own.
+ * Opt in from the consumer's Tailwind entry, after importing tailwindcss.
+ * Voices and tokens are plain runtime CSS and never import this preset.
  */
 
 /* Tailwind's automatic source detection skips node_modules, so a consumer that
@@ -23,10 +24,35 @@
  *
  * tests/consumer/run.sh is what holds this: it asserts that classes only the
  * primitives use (.tabular-nums, .rounded-full) reach the built stylesheet of
- * an app that imports a voice. */
-@import "./tokens/glass.css";
-
+ * an app that imports a voice and this preset. */
 @source "./dist";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Runtime values live in tokens/scales.css. Inline mappings keep overrides
+ * live and avoid duplicating the scale in the compiler preset. */
+@theme inline {
+    --font-sans: var(--font-sans);
+    --font-mono: var(--font-mono);
+    --text-xs: var(--text-xs);
+    --text-xs--line-height: var(--text-xs--line-height);
+    --text-sm: var(--text-sm);
+    --text-sm--line-height: var(--text-sm--line-height);
+    --text-base: var(--text-base);
+    --text-base--line-height: var(--text-base--line-height);
+    --text-lg: var(--text-lg);
+    --text-lg--line-height: var(--text-lg--line-height);
+    --text-xl: var(--text-xl);
+    --text-xl--line-height: var(--text-xl--line-height);
+    --text-2xl: var(--text-2xl);
+    --text-2xl--line-height: var(--text-2xl--line-height);
+    --container-prose-page: var(--container-prose-page);
+    --ease-standard: var(--ease-standard);
+    --z-index-raised: var(--z-raised);
+    --z-index-overlay: var(--z-overlay);
+    --z-index-modal: var(--z-modal);
+    --z-index-toast: var(--z-toast);
+}
 
 @theme inline {
     --color-x-glass-fill: var(--x-glass-fill);
