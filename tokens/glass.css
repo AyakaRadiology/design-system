@@ -1,0 +1,63 @@
+/* The material lives here for React and semantic HTML alike. No persistent
+ * will-change; callers may promote a layer only during an actual animation. */
+@layer components {
+    :where(.ds-glass) {
+        position: relative;
+    }
+}
+
+.ds-glass {
+    contain: paint;
+    border: 1px solid transparent;
+    border-radius: var(--x-glass-radius);
+    background: var(--bg-elevated);
+    color: var(--text);
+    box-shadow: var(--x-glass-shadow);
+}
+
+/* Mask only the edge, so the gradient never becomes an opaque backing layer
+ * beneath the translucent fill. The pseudo-element cannot intercept input. */
+.ds-glass::before {
+    content: "";
+    position: absolute;
+    /* Paint containment clips at the padding edge: keep this ring inside it. */
+    inset: 0;
+    padding: 1px;
+    border-radius: calc(var(--x-glass-radius) - 1px);
+    pointer-events: none;
+    background: linear-gradient(135deg, var(--x-glass-highlight), var(--x-glass-border));
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .ds-glass {
+        background: var(--x-glass-fill);
+        -webkit-backdrop-filter: blur(var(--x-glass-blur)) saturate(var(--x-glass-saturate));
+        backdrop-filter: blur(var(--x-glass-blur)) saturate(var(--x-glass-saturate));
+    }
+
+    .ds-glass[data-glass="strong"] {
+        background: var(--x-glass-fill-strong);
+    }
+}
+
+/* An ancestor opt-out also covers strong surfaces; place the attribute on
+ * html to include portaled dialogs. Unsupported blur starts opaque above. */
+[data-glass="off"] .ds-glass,
+.ds-glass[data-glass="off"] {
+    background: var(--bg-elevated);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .ds-glass,
+    .ds-glass[data-glass="strong"] {
+        background: var(--bg-elevated);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}

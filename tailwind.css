@@ -24,9 +24,16 @@
  * tests/consumer/run.sh is what holds this: it asserts that classes only the
  * primitives use (.tabular-nums, .rounded-full) reach the built stylesheet of
  * an app that imports a voice. */
+@import "./tokens/glass.css";
+
 @source "./dist";
 
 @theme inline {
+    --color-x-glass-fill: var(--x-glass-fill);
+    --color-x-glass-fill-strong: var(--x-glass-fill-strong);
+    --color-x-glass-border: var(--x-glass-border);
+    --color-x-glass-highlight: var(--x-glass-highlight);
+
     --color-bg: var(--bg);
     --color-bg-subtle: var(--bg-subtle);
     --color-bg-muted: var(--bg-muted);

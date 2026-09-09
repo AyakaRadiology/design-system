@@ -11,6 +11,7 @@ export {
     DialogTrigger,
 } from "./Dialog.js";
 export { Field, type FieldProps } from "./Field.js";
+export { Glass, type GlassProps } from "./Glass.js";
 export { IconButton, type IconButtonProps } from "./IconButton.js";
 export { Input, type InputProps } from "./Input.js";
 export { Numeric, type NumericProps } from "./Numeric.js";

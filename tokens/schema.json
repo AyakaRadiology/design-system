@@ -337,6 +337,54 @@
             "role": "type",
             "required": true,
             "doc": "How quiet a missing reading is: the placeholder's size as a fraction of the readout's own, floored at the xs step."
+        },
+        "x-glass-fill": {
+            "type": "color",
+            "role": "surface",
+            "required": true,
+            "doc": "Translucent floating surface fill; AA body and secondary text over black and white backdrops. Schema-owned despite the historical x- prefix; not a consumer extension."
+        },
+        "x-glass-fill-strong": {
+            "type": "color",
+            "role": "surface",
+            "required": true,
+            "doc": "Denser floating surface fill for busy imagery; same AA contract. Schema-owned despite the historical x- prefix; not a consumer extension."
+        },
+        "x-glass-border": {
+            "type": "color",
+            "role": "border",
+            "required": true,
+            "doc": "Bottom-right shaded edge of the shared 1px glass gradient border. Schema-owned despite the historical x- prefix; not a consumer extension."
+        },
+        "x-glass-highlight": {
+            "type": "color",
+            "role": "border",
+            "required": true,
+            "doc": "Top-left light edge of the shared glass gradient border. Schema-owned despite the historical x- prefix; not a consumer extension."
+        },
+        "x-glass-shadow": {
+            "type": "shadow",
+            "role": "surface",
+            "required": true,
+            "doc": "Shared subtle inner shadow and soft outer elevation shadow. Schema-owned despite the historical x- prefix; not a consumer extension."
+        },
+        "x-glass-blur": {
+            "type": "length",
+            "role": "surface",
+            "required": true,
+            "doc": "Backdrop blur in px, at most 12px for the Surface ARM Windows GPU budget. Schema-owned despite the historical x- prefix; not a consumer extension."
+        },
+        "x-glass-saturate": {
+            "type": "ratio",
+            "role": "surface",
+            "required": true,
+            "doc": "Slight backdrop saturation multiplier. Schema-owned despite the historical x- prefix; not a consumer extension."
+        },
+        "x-glass-radius": {
+            "type": "length",
+            "role": "surface",
+            "required": true,
+            "doc": "Single corner radius shared by floating surfaces. Schema-owned despite the historical x- prefix; not a consumer extension."
         }
     }
 }

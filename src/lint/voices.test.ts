@@ -1,7 +1,20 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { contrastRatio, deltaE, type Oklch, tokenBlocks } from "./contrast.js";
+import type { Status } from "../react/StatusPill.js";
+import { STATUS_STATES, StatusPill } from "../react/StatusPill.js";
+import {
+    composite,
+    compositedContrast,
+    contrastRatio,
+    deltaE,
+    type Oklch,
+    oklchToSrgb,
+    type Rgb,
+    relativeLuminance,
+    tokenBlocks,
+} from "./contrast.js";
 
 /* Every voice, every mode it ships, held to the same floors — the point of
  * putting the palettes in one package is that none of them gets its own. A
@@ -45,7 +58,7 @@ if (voices.length === 0)
 
 for (const voice of voices) {
     const css = readFileSync(`${voicesDir}${voice}`, "utf8");
-    const blocks = tokenBlocks(css);
+    const blocks = tokenBlocks(css, true);
 
     for (const [mode, tokens] of blocks) {
         describe(`${voice} ${mode}`, () => {
@@ -56,6 +69,50 @@ for (const voice of voices) {
             };
             const ratio = (fg: string, bg: string) => contrastRatio(value(fg), value(bg));
             const distance = (a: string, b: string) => deltaE(value(a), value(b));
+
+            it("glass text clears AA over the darkest and lightest possible backdrops", () => {
+                const backdrops: Rgb[] = [
+                    [0, 0, 0],
+                    [1, 1, 1],
+                ];
+                for (const fill of ["x-glass-fill", "x-glass-fill-strong"])
+                    for (const text of ["text", "text-secondary"])
+                        for (const backdrop of backdrops)
+                            expect(
+                                compositedContrast(value(text), value(fill), backdrop),
+                                `${text}/${fill} over ${backdrop}`,
+                            ).toBeGreaterThanOrEqual(AA);
+            });
+
+            it("glass backdrop endpoints bound the worst case without crossing text luminance", () => {
+                for (const fill of ["x-glass-fill", "x-glass-fill-strong"]) {
+                    const darkest = relativeLuminance(composite(value(fill), [0, 0, 0]));
+                    const lightest = relativeLuminance(composite(value(fill), [1, 1, 1]));
+                    for (const name of ["text", "text-secondary"]) {
+                        const text = value(name);
+                        const luminance = relativeLuminance(oklchToSrgb(text.l, text.c, text.h));
+                        expect(luminance < darkest || luminance > lightest, `${name}/${fill}`).toBe(
+                            true,
+                        );
+                    }
+                }
+            });
+
+            it("StatusPill actual foreground and tint pairs clear AA", () => {
+                for (const status of Object.keys(STATUS_STATES) as Status[]) {
+                    const html = renderToStaticMarkup(StatusPill({ status, children: status }));
+                    const classes = /class="([^"]+)"/.exec(html)?.[1]?.split(" ");
+                    const fg = classes
+                        ?.find(
+                            (name) =>
+                                tokens.has(name.replace(/^text-/, "")) && name.startsWith("text-"),
+                        )
+                        ?.slice(5);
+                    const bg = classes?.find((name) => name.startsWith("bg-"))?.slice(3);
+                    if (!fg || !bg) throw new Error(`Cannot resolve StatusPill ${status} colors`);
+                    expect(ratio(fg, bg), `${status}: ${fg}/${bg}`).toBeGreaterThanOrEqual(AA);
+                }
+            });
 
             it("body text clears AA on every surface", () => {
                 for (const surface of SURFACES)
@@ -101,7 +158,7 @@ for (const voice of voices) {
                     );
             });
 
-            it("danger is the only status hue allowed as text, and it clears AA", () => {
+            it("danger clears AA as standalone text", () => {
                 expect(ratio("danger", "bg")).toBeGreaterThanOrEqual(AA);
             });
 

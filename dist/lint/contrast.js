@@ -90,6 +90,8 @@ const asOklch = (colour) => typeof colour === "string" ? parseOklch(colour) : co
 export function contrastRatio(fg, bg) {
     const foreground = asOklch(fg);
     const background = asOklch(bg);
+    if (foreground.alpha !== 1 || background.alpha !== 1)
+        throw new Error("contrastRatio requires opaque colors; use compositedContrast with a backdrop");
     const a = relativeLuminance(oklchToSrgb(foreground.l, foreground.c, foreground.h));
     const b = relativeLuminance(oklchToSrgb(background.l, background.c, background.h));
     const [hi, lo] = a >= b ? [a, b] : [b, a];
@@ -116,24 +118,17 @@ const TOKEN_PATTERN = /--([a-z0-9-]+):\s*(oklch\([^)]*\))/g;
 /**
  * Every `--name: oklch(…)` declaration in a CSS block, by token name.
  *
- * Opaque colours only. A token carrying an alpha component or built with
- * `color-mix()` (`--trace-glow`) has no fixed rendered colour, so there is no
- * ratio to assert about it; such tokens are simply not part of the contrast
- * contract.
+ * Opaque colours by default; includeAlpha opts into the compositing contract.
+ * Alpha colors require a backdrop and compositedContrast. Derived
+ * `color-mix()` colors such as --trace-glow are not parsed by this helper.
  */
-export function parseTokens(css) {
+export function parseTokens(css, includeAlpha = false) {
     const tokens = new Map();
     for (const [, name, value] of css.matchAll(TOKEN_PATTERN)) {
         if (!name || !value)
             continue;
-        let parsed;
-        try {
-            parsed = parseOklch(value);
-        }
-        catch {
-            continue;
-        }
-        if (parsed.alpha === 1)
+        const parsed = parseOklch(value);
+        if (includeAlpha || parsed.alpha === 1)
             tokens.set(name, parsed);
     }
     return tokens;
@@ -198,7 +193,7 @@ function topLevelBlocks(css) {
  * pass without comment: `@theme`'s type scale, the `@theme inline` mappings,
  * `@layer base`.
  */
-export function tokenBlocks(css) {
+export function tokenBlocks(css, includeAlpha = false) {
     // Comments first: a voice explains in prose why it is dark-only — including
     // the words this function refuses to see in code — and the braces in a
     // commented-out rule would confuse the brace matcher besides.
@@ -207,7 +202,7 @@ export function tokenBlocks(css) {
         throw new Error(`the voice CSS declares a "${SCHEME_QUERY}" block, but the floors only iterate ` +
             `"${LIGHT}" and "${DARK}" — a mode selected by the OS is a palette nothing checks`);
     const declaring = topLevelBlocks(code)
-        .map((block) => ({ prelude: block.prelude, tokens: parseTokens(block.body) }))
+        .map((block) => ({ prelude: block.prelude, tokens: parseTokens(block.body, includeAlpha) }))
         .filter((block) => block.tokens.size > 0);
     if (declaring.length === 0)
         throw new Error("no block in the voice CSS declares any oklch token");
@@ -224,4 +219,21 @@ export function tokenBlocks(css) {
         throw new Error(`the voice CSS declares no "${LIGHT}" block, so it has no default palette`);
     // `:root` first, so a failure names the mode the reader expects to see first.
     return new Map([...blocks].sort(([a], [b]) => (a === LIGHT ? -1 : b === LIGHT ? 1 : 0)));
+}
+/** Source-over compositing in gamma-encoded sRGB, as used by CSS surfaces. */
+export function composite(foreground, background) {
+    const [r, g, b] = oklchToSrgb(foreground.l, foreground.c, foreground.h);
+    const alpha = foreground.alpha;
+    return [
+        r * alpha + background[0] * (1 - alpha),
+        g * alpha + background[1] * (1 - alpha),
+        b * alpha + background[2] * (1 - alpha),
+    ];
+}
+/** Text over a translucent fill over an opaque backdrop (including text alpha). */
+export function compositedContrast(text, fill, backdrop) {
+    const surface = composite(fill, backdrop);
+    const a = relativeLuminance(composite(text, surface));
+    const b = relativeLuminance(surface);
+    return (Math.max(a, b) + CONTRAST_FLARE) / (Math.min(a, b) + CONTRAST_FLARE);
 }

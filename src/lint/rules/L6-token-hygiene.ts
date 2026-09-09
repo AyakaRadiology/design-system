@@ -50,21 +50,21 @@ export const L6: Rule = {
             if (isTailwindNamespace(name, selector)) continue;
             const at = { rule: "L6" as const, file, line, col };
 
+            if (context.schemaTokens.has(name)) {
+                if (!isTheme)
+                    findings.push({
+                        ...at,
+                        message: `schema token --${name} redefined in ${file} — only ${context.themeFile} may set a schema token`,
+                    });
+                continue;
+            }
+
             if (name.startsWith(context.extensionPrefix)) {
                 const bare = name.slice(context.extensionPrefix.length);
                 if (context.schemaTokens.has(bare))
                     findings.push({
                         ...at,
                         message: `--${name} duplicates the schema role "${bare}" — use var(--${bare}), or promote a genuinely new role to tokens/schema.json`,
-                    });
-                continue;
-            }
-
-            if (context.schemaTokens.has(name)) {
-                if (!isTheme)
-                    findings.push({
-                        ...at,
-                        message: `schema token --${name} redefined in ${file} — only ${context.themeFile} may set a schema token`,
                     });
                 continue;
             }

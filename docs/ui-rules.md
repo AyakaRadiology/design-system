@@ -221,3 +221,8 @@ a class in the consumer's theme file; changing the single source keeps the
 fade's bottom pixel equal to the real surface. The fade is a scroll cue, not a
 decorative gradient; do not remove it merely because a touch browser hides
 scrollbars.
+
+## Floating material
+
+Use [`Glass` / `.ds-glass`](glass.md) for floating surfaces. The package owns
+the fill, edge, radius, blur and shadows in every voice, including biomonitor.

@@ -3,6 +3,7 @@ export { Button, buttonVariants } from "./Button.js";
 export { cn } from "./cn.js";
 export { Dialog, DialogBody, DialogClose, DialogContent, DialogTrigger, } from "./Dialog.js";
 export { Field } from "./Field.js";
+export { Glass } from "./Glass.js";
 export { IconButton } from "./IconButton.js";
 export { Input } from "./Input.js";
 export { Numeric } from "./Numeric.js";

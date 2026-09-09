@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+    composite,
+    compositedContrast,
     contrastRatio,
     deltaE,
     oklchToSrgb,
@@ -67,6 +69,10 @@ describe("relativeLuminance", () => {
 });
 
 describe("contrastRatio", () => {
+    it("refuses to silently discard alpha in opaque-pair gates", () => {
+        expect(() => contrastRatio("oklch(1 0 0 / 0.5)", BLACK)).toThrow("requires opaque");
+        expect(() => contrastRatio(WHITE, "oklch(0 0 0 / 0.5)")).toThrow("requires opaque");
+    });
     it("is 21 for white on black", () => {
         expect(contrastRatio(WHITE, BLACK)).toBeCloseTo(21, 2);
     });
@@ -174,5 +180,25 @@ describe("tokenBlocks — the theme guard", () => {
     it("refuses to guess at malformed CSS", () => {
         expect(() => tokenBlocks(":root { --bg: oklch(0.2 0.015 225);")).toThrow(/unterminated/);
         expect(() => tokenBlocks(`${ROOT} }`)).toThrow(/unbalanced/);
+    });
+});
+
+describe("glass compositing", () => {
+    it("composites alpha in sRGB, not OKLCH or linear light", () => {
+        const halfWhite = parseOklch("oklch(1 0 0 / 0.5)");
+        for (const channel of composite(halfWhite, [0, 0, 0])) expect(channel).toBeCloseTo(0.5);
+        expect(compositedContrast(parseOklch("oklch(0 0 0)"), halfWhite, [0, 0, 0])).toBeCloseTo(
+            5.28,
+            2,
+        );
+        expect(compositedContrast(halfWhite, parseOklch("oklch(0 0 0)"), [1, 1, 1])).toBeCloseTo(
+            5.28,
+            2,
+        );
+    });
+    it("includes translucent tokens only when explicitly requested", () => {
+        const css = ":root { --x-glass-fill: oklch(1 0 0 / 0.92); }";
+        expect(tokenBlocks(css, true).get(":root")?.get("x-glass-fill")?.alpha).toBe(0.92);
+        expect(parseTokens(css).size).toBe(0);
     });
 });

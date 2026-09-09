@@ -205,3 +205,11 @@ describe("the rule registry", () => {
         }
     });
 });
+
+it("L6 treats promoted x-glass tokens as schema before considering extensions", () => {
+    const css = postcss.parse(":root { --x-glass-fill: oklch(1 0 0 / 0.5); }");
+    expect(RULES.L6.checkCss?.("src/panel.css", css, context())).toMatchObject([
+        { rule: "L6", message: expect.stringContaining("only src/styles/theme.css") },
+    ]);
+    expect(RULES.L6.checkCss?.("src/styles/theme.css", css, context())).toEqual([]);
+});

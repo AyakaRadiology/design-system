@@ -36,12 +36,11 @@ export declare function deltaE(a: string | Oklch, b: string | Oklch): number;
 /**
  * Every `--name: oklch(…)` declaration in a CSS block, by token name.
  *
- * Opaque colours only. A token carrying an alpha component or built with
- * `color-mix()` (`--trace-glow`) has no fixed rendered colour, so there is no
- * ratio to assert about it; such tokens are simply not part of the contrast
- * contract.
+ * Opaque colours by default; includeAlpha opts into the compositing contract.
+ * Alpha colors require a backdrop and compositedContrast. Derived
+ * `color-mix()` colors such as --trace-glow are not parsed by this helper.
  */
-export declare function parseTokens(css: string): Map<string, Oklch>;
+export declare function parseTokens(css: string, includeAlpha?: boolean): Map<string, Oklch>;
 /**
  * The token declarations of a voice, by mode.
  *
@@ -63,4 +62,8 @@ export declare function parseTokens(css: string): Map<string, Oklch>;
  * pass without comment: `@theme`'s type scale, the `@theme inline` mappings,
  * `@layer base`.
  */
-export declare function tokenBlocks(css: string): Map<string, Map<string, Oklch>>;
+export declare function tokenBlocks(css: string, includeAlpha?: boolean): Map<string, Map<string, Oklch>>;
+/** Source-over compositing in gamma-encoded sRGB, as used by CSS surfaces. */
+export declare function composite(foreground: Oklch, background: Rgb): Rgb;
+/** Text over a translucent fill over an opaque backdrop (including text alpha). */
+export declare function compositedContrast(text: Oklch, fill: Oklch, backdrop: Rgb): number;
