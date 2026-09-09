@@ -7,3 +7,8 @@ coverage/
 # dist/ is deliberately NOT ignored: it is the committed build artifact a
 # consumer gets straight from a git tag, and CI diffs it against a fresh
 # `tools/gen.sh` run.
+
+# Generated executable catalogue and browser diagnostics.
+storybook-static/
+build-storybook.log
+.vitest/
