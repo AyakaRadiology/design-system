@@ -49,10 +49,14 @@
         "typecheck": "tsc --noEmit",
         "lint": "biome check .",
         "test": "vitest run --passWithNoTests",
-        "check": "bun run gen && bun run typecheck && bun run lint && bun run validate-voices && bun run test && bun run design-lint && bun run consumer-smoke && tools/check-dist.sh",
+        "check": "bun run gen && bun run typecheck && bun run lint && bun run validate-voices && bun run test && bun run design-lint && bun run consumer-smoke && tools/check-dist.sh && bun run storybook:check",
         "validate-voices": "bun tools/validate-voices.ts",
         "design-lint": "node bin/design-lint.js --config design-lint.json",
-        "consumer-smoke": "tests/consumer/run.sh"
+        "consumer-smoke": "tests/consumer/run.sh",
+        "storybook": "storybook dev --host 127.0.0.1 --port 6006 --no-open --exact-port",
+        "storybook:build": "storybook build --disable-telemetry",
+        "storybook:test": "bun tools/storybook-smoke.ts",
+        "storybook:check": "bun run storybook:build && bun run storybook:test"
     },
     "peerDependencies": {
         "react": "^19",
@@ -72,6 +76,9 @@
     },
     "devDependencies": {
         "@biomejs/biome": "^2.5.12",
+        "@storybook/addon-docs": "10.6.0",
+        "@storybook/addon-mcp": "10.6.0",
+        "@storybook/react-vite": "10.6.0",
         "@tailwindcss/vite": "^4.3.3",
         "@testing-library/jest-dom": "^7.0.1",
         "@testing-library/react": "^16.3.3",
@@ -80,8 +87,10 @@
         "@types/react": "^19.2.18",
         "@types/react-dom": "^19.2.7",
         "@vitejs/plugin-react": "^6.1.1",
+        "@vitest/browser-playwright": "5.0.0",
         "jsdom": "^30.0.1",
         "playwright": "^1.63.0",
+        "storybook": "10.6.0",
         "vite": "^8.2.2",
         "vitest": "^5.0.0"
     }

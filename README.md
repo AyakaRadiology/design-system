@@ -299,6 +299,101 @@ A consumer's adoption is finished only when every rule is `error`.
 }
 ```
 
+## Storybook and agent access
+
+Start the executable component catalogue from this checkout:
+
+```sh
+bun install --frozen-lockfile
+bun run storybook
+```
+
+Open `http://127.0.0.1:6006`. The development server binds to loopback and fails
+if port 6006 is occupied, so the MCP attachment cannot silently point at a
+different server. Its Streamable HTTP MCP endpoint is
+`http://127.0.0.1:6006/mcp`.
+
+With that server running, attach either agent in one line:
+
+```sh
+codex mcp add design-system --url http://127.0.0.1:6006/mcp
+claude mcp add --transport http --scope project design-system http://127.0.0.1:6006/mcp
+```
+
+Equivalent Codex configuration (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.design-system]
+url = "http://127.0.0.1:6006/mcp"
+```
+
+Equivalent Claude Code project configuration (`.mcp.json`):
+
+```json
+{
+    "mcpServers": {
+        "design-system": {
+            "type": "http",
+            "url": "http://127.0.0.1:6006/mcp"
+        }
+    }
+}
+```
+
+Ask the agent to call `docs-list`, then `docs-show` with an ID from that list
+(e.g. Numeric). `docs-show-story` exposes individual states; `stories-preview`
+returns links to real stories. The component manifest is generated from the
+actual TypeScript APIs, with common native control props retained. These
+commands follow the [Storybook MCP documentation](https://storybook.js.org/docs/ai/mcp/overview),
+[Codex MCP documentation](https://developers.openai.com/codex/mcp), and
+[Claude Code MCP documentation](https://code.claude.com/docs/en/mcp).
+
+The toolbar switches **Base / light**, **Base / dark**, and **Biomonitor / dark**.
+It loads the package's voice CSS directly and applies the voice class and base
+`dark` class to `<html>`, so dialogs and tooltips inherit the same palette.
+Autodocs examples use separate iframes so their portals and transparency
+settings cannot affect neighboring examples. Biomonitor remains dark-only.
+The transparency toolbar sets `data-glass="off"`
+on `<html>`; the Glass system-preference story is also tested with Chromium's
+real `prefers-reduced-transparency` media emulation.
+
+Stories live in `stories/` and cover every component exported by `./react`,
+including Dialog/Tooltip composition helpers. `cn`, `buttonVariants`,
+`STATUS_STATES`, the colour helpers, and type-only exports are utilities/data,
+not renderable components. Examples use the needle apps' ANGLE vocabulary,
+Guide's 60° target / 42.5° live display fixtures, and Simulator's 90 mm CT
+console fixture. Build metadata is a fixed illustrative snapshot, not the
+current checkout's build. No hardware or backend is required.
+
+```sh
+bun run storybook:check  # static build, export/API/state coverage, Chromium smoke
+bun run storybook:build # static output in storybook-static/
+bun run storybook:test  # smoke against source stories; requires the built manifest
+```
+
+`bun run check` includes `storybook:check`, so the existing Ubuntu **Quality
+Check** CI job gates the static build and browser tests. The smoke suite
+renders every story in all three voices, executes story interaction checks,
+and fails on console errors or unhandled errors. It also checks Glass's opaque
+fallback. Export coverage and manifest checks fail for missing components,
+empty APIs, incomplete snippets, or missing `STATUS_STATES`; story counts per
+component are printed by the gate. Story markup and preview CSS are included
+in design-lint; existing contrast, lint, unit, and packed-consumer gates remain
+in place.
+
+Storybook packages are pinned together in `bun.lock`. Browser smoke uses the
+repository's Vitest 5 with portable stories and Playwright; Storybook's Vitest
+addon currently supports Vitest 3/4. Consequently MCP's addon-backed `test-run`
+tool is unavailable: run `bun run storybook:check` in the shell. The static
+build contains the catalogue and manifest, but serving those files does not
+start the development-only MCP endpoint.
+
+**CI artifact limitation:** the existing workflow has no upload step. This
+change does not edit workflows, so `storybook-static/` is built and tested by
+CI but is not uploaded as a downloadable Actions artifact. A workflow change
+would be required to add `actions/upload-artifact` for that directory after
+the Check step; the same Ubuntu job can perform it.
+
 ## Working on it
 
 ```sh

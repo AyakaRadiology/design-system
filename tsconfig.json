@@ -24,14 +24,20 @@
         "isolatedModules": true,
         "esModuleInterop": true,
         "resolveJsonModule": true,
-        "types": ["node"]
+        "types": ["node"],
+        "paths": { "@ayaka/design-system/react": ["./src/react/index.ts"] }
     },
     "include": [
         "src/**/*.ts",
         "src/**/*.tsx",
         "tools/**/*.ts",
         "vitest.config.ts",
-        "vitest.setup.ts"
+        "vitest.storybook.config.ts",
+        "vitest.setup.ts",
+        ".storybook/**/*.ts",
+        ".storybook/**/*.tsx",
+        "stories/**/*.ts",
+        "stories/**/*.tsx"
     ],
     // Fixtures are design-lint INPUT, not code. They are deliberately full of
     // the things the rules reject, and several of them would not survive
