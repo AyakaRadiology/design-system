@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { collectCustomProperties } from "./css.js";
 import {
     loadPackageSchema,
     SCALE_ROLES,
@@ -115,6 +116,19 @@ describe("validateScales", () => {
 });
 
 describe("validateTailwindMapping", () => {
+    it("maps every Tailwind scale namespace to its live runtime token", () => {
+        const mappings = collectCustomProperties(read("tailwind.css"));
+        for (const [name, spec] of Object.entries(schema.tokens)) {
+            if (!SCALE_ROLES.has(spec.role)) continue;
+            if (!/^(font-|text-|container-|ease-|z-)/u.test(name)) continue;
+            const utility = name.replace(/^z-/u, "z-index-");
+            expect(mappings.get(utility), name).toContainEqual({
+                selector: "@theme inline",
+                value: `var(--${name})`,
+            });
+        }
+    });
+
     /* A colour token with no `--color-*` line generates no utility, so a
      * component cannot reach it without writing the literal the whole gate
      * exists to reject. AGENTS.md tells a promoter to add the line; this is

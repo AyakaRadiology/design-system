@@ -12,13 +12,14 @@
  * honest against the contrast gate. src/lint/voices.test.ts enforces that
  * mechanically — it refuses to read a second token-declaring block.
  *
- * Usage, in the consumer's CSS entry point:
+ * Usage in a Tailwind entry (plain CSS needs only the voice import):
  *   @import "tailwindcss";
+ *   @import "@ayaka/design-system/tailwind.css";
  *   @import "@ayaka/design-system/voices/biomonitor.css";
  */
 
 @import "../tokens/scales.css";
-@import "../tailwind.css";
+@import "../tokens/glass.css";
 
 :root {
     /* Shared floating material; values are contrast-gated over black and white. */

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../tailwind.css";
 @import "../voices/biomonitor.css";
 @import "./layout.css";
 @source "../src/react";
