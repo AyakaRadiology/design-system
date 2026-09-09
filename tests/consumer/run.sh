@@ -129,6 +129,7 @@ mkdir -p "$APP/src/styles" "$APP/src/components"
 # Exactly the wiring the spec's §3.3 and the README tell a consumer to write.
 cat >"$APP/src/styles/theme.css" <<'CSS'
 @import "tailwindcss";
+@import "@ayaka/design-system/tailwind.css";
 @import "@ayaka/design-system/voices/biomonitor.css";
 
 :root {
@@ -313,6 +314,9 @@ echo "    the consumer's override wins: $LAST_ACCENT"
 # The colour subpath, resolved by a stock `node` THROUGH the exports map — the
 # only check that an entry point a consumer imports by name actually resolves.
 # Importing dist/color.js by path would pass with the map broken.
+echo "==> standalone voices build without Tailwind-only at-rules"
+node "$ROOT/tests/consumer/plain-css.mjs" "$APP"
+
 echo "==> the colour subpath resolves and computes"
 cat >"$APP/color-probe.mjs" <<'JS'
 import assert from "node:assert/strict";

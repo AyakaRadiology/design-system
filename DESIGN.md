@@ -134,21 +134,21 @@ Change sources, then regenerate. DESIGN.md is a projection, never an input to to
 
 | Token | Value | Role / purpose |
 | --- | --- | --- |
-| `--font-sans` | `"Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif` (@theme) | font: Prose: labels, copy, headings. |
-| `--font-mono` | `"JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace` (@theme) | font: Every reading a machine produced: numerals, counters, eyebrows. Pair it with tabular-nums. |
-| `--text-xs` | `0.75rem` (@theme) | type: Type step xs (12/16 — meta, column headers, hints). |
-| `--text-xs--line-height` | `1rem` (@theme) | type: Line height paired with text-xs. Tailwind reads the `--name--line-height` suffix as the pair. |
-| `--text-sm` | `0.875rem` (@theme) | type: Type step sm (14/18 — body base for tool UI). |
-| `--text-sm--line-height` | `1.125rem` (@theme) | type: Line height paired with text-sm. Tailwind reads the `--name--line-height` suffix as the pair. |
-| `--text-base` | `1rem` (@theme) | type: Type step base (16/22 — body base for reading surfaces). |
-| `--text-base--line-height` | `1.375rem` (@theme) | type: Line height paired with text-base. Tailwind reads the `--name--line-height` suffix as the pair. |
-| `--text-lg` | `1.25rem` (@theme) | type: Type step lg (20/28 — section headings). |
-| `--text-lg--line-height` | `1.75rem` (@theme) | type: Line height paired with text-lg. Tailwind reads the `--name--line-height` suffix as the pair. |
-| `--text-xl` | `1.5rem` (@theme) | type: Type step xl (24/32 — page titles). |
-| `--text-xl--line-height` | `2rem` (@theme) | type: Line height paired with text-xl. Tailwind reads the `--name--line-height` suffix as the pair. |
-| `--text-2xl` | `1.75rem` (@theme) | type: Type step 2xl (28/36 — rare display use). |
-| `--text-2xl--line-height` | `2.25rem` (@theme) | type: Line height paired with text-2xl. Tailwind reads the `--name--line-height` suffix as the pair. |
-| `--container-prose-page` | `45rem` (@theme) | type: Reading-surface line length; generates max-w-prose-page. Distinct from Tailwind's built-in max-w-prose. |
+| `--font-sans` | `"Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif` (:root) | font: Prose: labels, copy, headings. |
+| `--font-mono` | `"JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace` (:root) | font: Every reading a machine produced: numerals, counters, eyebrows. Pair it with tabular-nums. |
+| `--text-xs` | `0.75rem` (:root) | type: Type step xs (12/16 — meta, column headers, hints). |
+| `--text-xs--line-height` | `1rem` (:root) | type: Line height paired with text-xs. Tailwind reads the `--name--line-height` suffix as the pair. |
+| `--text-sm` | `0.875rem` (:root) | type: Type step sm (14/18 — body base for tool UI). |
+| `--text-sm--line-height` | `1.125rem` (:root) | type: Line height paired with text-sm. Tailwind reads the `--name--line-height` suffix as the pair. |
+| `--text-base` | `1rem` (:root) | type: Type step base (16/22 — body base for reading surfaces). |
+| `--text-base--line-height` | `1.375rem` (:root) | type: Line height paired with text-base. Tailwind reads the `--name--line-height` suffix as the pair. |
+| `--text-lg` | `1.25rem` (:root) | type: Type step lg (20/28 — section headings). |
+| `--text-lg--line-height` | `1.75rem` (:root) | type: Line height paired with text-lg. Tailwind reads the `--name--line-height` suffix as the pair. |
+| `--text-xl` | `1.5rem` (:root) | type: Type step xl (24/32 — page titles). |
+| `--text-xl--line-height` | `2rem` (:root) | type: Line height paired with text-xl. Tailwind reads the `--name--line-height` suffix as the pair. |
+| `--text-2xl` | `1.75rem` (:root) | type: Type step 2xl (28/36 — rare display use). |
+| `--text-2xl--line-height` | `2.25rem` (:root) | type: Line height paired with text-2xl. Tailwind reads the `--name--line-height` suffix as the pair. |
+| `--container-prose-page` | `45rem` (:root) | type: Reading-surface line length; generates max-w-prose-page. Distinct from Tailwind's built-in max-w-prose. |
 | `--numeric-empty-scale` | `0.25` (:root) | type: How quiet a missing reading is: the placeholder's size as a fraction of the readout's own, floored at the xs step. |
 
 ## Layout
@@ -179,7 +179,7 @@ Change sources, then regenerate. DESIGN.md is a projection, never an input to to
 | `--z-toast` | `1100` (:root) | z: Toasts and tooltips — the layer that must clear a modal. |
 | `--motion-fast` | `120ms` (:root) | motion: State changes the eye should not have to wait for: hover, press, a switch knob. |
 | `--motion-base` | `200ms` (:root) | motion: Entrances and exits: a dialog, a popover, a toast. |
-| `--ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` (@theme) | motion: The one easing curve. Fast out of the gate, settled at the end. |
+| `--ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` (:root) | motion: The one easing curve. Fast out of the gate, settled at the end. |
 
 ### Floating Glass
 

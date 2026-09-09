@@ -13,15 +13,14 @@
  * Dark mode is class-based: put `dark` on <html>. Components never write a
  * `dark:` twin; the two blocks below are where dark mode is handled, once.
  *
- * Usage, in the consumer's CSS entry point:
+ * Usage in a Tailwind entry (plain CSS needs only the voice import):
  *   @import "tailwindcss";
+ *   @import "@ayaka/design-system/tailwind.css";
  *   @import "@ayaka/design-system/voices/base.css";
  */
 
 @import "../tokens/scales.css";
-@import "../tailwind.css";
-
-@custom-variant dark (&:where(.dark, .dark *));
+@import "../tokens/glass.css";
 
 :root {
     /* Shared floating material; values are contrast-gated over black and white. */
