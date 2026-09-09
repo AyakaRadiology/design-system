@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.5.0](https://github.com/AyakaRadiology/design-system/compare/v0.4.0...v0.5.0) (2026-09-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* Tailwind consumers must explicitly import @ayaka/design-system/tailwind.css after tailwindcss and before their voice. Plain CSS and voice URL consumers keep their existing imports.
+
+### Features
+
+* add deterministic Figma variable adapter ([#38](https://github.com/AyakaRadiology/design-system/issues/38)) ([d861d0b](https://github.com/AyakaRadiology/design-system/commit/d861d0b3d0fed03e3dedc192f013c66a5c853ab0))
+* add shared glass surfaces and contrast gates ([#35](https://github.com/AyakaRadiology/design-system/issues/35)) ([e55907e](https://github.com/AyakaRadiology/design-system/commit/e55907ef8f2ae9f52ca018e73f88e1f5d2037c39))
+
+
+### Bug Fixes
+
+* handle Figma Float32 storage and record native canvas ([#42](https://github.com/AyakaRadiology/design-system/issues/42)) ([2c29f96](https://github.com/AyakaRadiology/design-system/commit/2c29f96563cdf6e12517a38edc1fdc699f8c4263))
+* keep Tailwind directives out of runtime voice CSS ([#41](https://github.com/AyakaRadiology/design-system/issues/41)) ([178cce4](https://github.com/AyakaRadiology/design-system/commit/178cce4fde693507f5c9e8ade4f0d6cca96be03b))
+
 ## [0.4.0](https://github.com/AyakaRadiology/design-system/compare/v0.3.1...v0.4.0) (2026-09-07)
 
 
