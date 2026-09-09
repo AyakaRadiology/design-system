@@ -1,5 +1,10 @@
 {
-    "include": ["src/react/**/*.{ts,tsx}", "src/lint/rules/__fixtures__/*/pass.{tsx,css}"],
+    "include": [
+        "src/react/**/*.{ts,tsx}",
+        "src/lint/rules/__fixtures__/*/pass.{tsx,css}",
+        "stories/**/*.{ts,tsx,css}",
+        ".storybook/**/*.{ts,tsx,css}"
+    ],
     "exclude": ["**/*.test.*"],
     "themeFile": "src/styles/theme.css",
     "rules": {
