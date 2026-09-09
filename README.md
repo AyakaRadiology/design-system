@@ -309,3 +309,10 @@ bun run check
 `bun run check` is what CI runs. Read `AGENTS.md` before adding a token, a
 voice or a primitive — it carries the assignment procedure and the release
 rules.
+
+### Glass floating surfaces
+
+`Glass` from `@ayaka/design-system/react` and `.ds-glass` on semantic HTML
+share one material, imported automatically by every voice. See
+[the contract, token values and consumer migration map](docs/glass.md) and
+[the interactive demo](docs/glass-demo.html) (serve the repository with `bunx vite`).

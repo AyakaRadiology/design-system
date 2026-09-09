@@ -2,8 +2,7 @@
 
 Patient-telemetry aesthetics for dashboards and monitors the owner glances at.
 First worn by spine (PRs #11–12); `../biomonitor.css` carries the gate-verified
-values (every AA pair ≥ 6.6, chart-vs-status ΔE ≥ 10.5, dataviz validator ALL
-PASS on the dark surface).
+values (AA pairs ≥ 4.5, including glass and actual StatusPill pairs; chart-vs-status ΔE ≥ 10).
 
 ## When to reach for it
 
@@ -16,7 +15,9 @@ surfaces or marketing.
 
 1. **Dark only, blue-cast, layered.** No light mode, no toggle. Surfaces step
    ~0.04–0.05 L apart (page → card → well); the steps ARE the depth — no
-   `shadow-*` anywhere. Never pure black: hue 225 at low chroma everywhere.
+   `shadow-*` on ordinary surfaces. Floating panels may use the shared
+   `Glass` material described in `docs/glass.md`; its edge gradient and subtle
+   elevation shadow are the sole material exception. Never pure black: hue 225 at low chroma everywhere.
 2. **Warm-white text on cold surfaces** (hue ~100 vs ~225) — the temperature
    contrast is half the look.
 3. **Numerals are mono, and that's a constant, not a habit.** One shared
@@ -26,7 +27,8 @@ surfaces or marketing.
    Container-level mono over short label phrases is fine — it reads as an
    instrument caption, not a bug.
 4. **One glow, on the signature element only** (`--trace-glow`, accent-derived).
-   Everything else is flat and bordered. A second glow demotes the first.
+   Ordinary surfaces are flat and bordered; floating Glass uses neutral elevation,
+   never a second accent glow. A second glow demotes the first.
 5. **Status hues are alarms, series hues are data** — never cross them, and the
    signature draws in the accent phosphor regardless of state: you read the
    *rhythm*, not the color (a color-coded signature is just a third status dot).
@@ -47,6 +49,5 @@ surfaces or marketing.
 
 ## What this voice is not
 
-Not a hacker terminal (pure black + single acid accent), not glassmorphism, not
-gradients. The base ui skill's scale/density rules all still hold — this voice
+Not a hacker terminal (pure black + single acid accent), no decorative glassmorphism or gradients beyond the shared floating Glass material. The base ui skill's scale/density rules all still hold — this voice
 only re-values the tokens and adds the rules above.

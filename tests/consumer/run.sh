@@ -160,7 +160,7 @@ cat >"$APP/src/styles/theme.css" <<'CSS'
 CSS
 
 cat >"$APP/src/components/Status.tsx" <<'TSX'
-import { BuildStamp, Button, Dialog, DialogBody, DialogContent, DialogTrigger, Numeric, Panel, RadioGroup, StatusPill, Switch, TooltipProvider } from "@ayaka/design-system/react";
+import { Glass, BuildStamp, Button, Dialog, DialogBody, DialogContent, DialogTrigger, Numeric, Panel, RadioGroup, StatusPill, Switch, TooltipProvider } from "@ayaka/design-system/react";
 import { useState } from "react";
 
 export function Status() {
@@ -168,6 +168,7 @@ export function Status() {
 
     return (
         <Panel title="Tracker" actions={<Button size="sm">Reset</Button>}>
+            <Glass data-testid="glass" className="p-4">Floating material</Glass>
             <TooltipProvider>
                 <StatusPill status="success" detail="Receiving samples">connected</StatusPill>
             </TooltipProvider>
@@ -547,3 +548,100 @@ fi
 echo "    $(grep -c 'L1 error' "$WORK/lint.out") L1 finding(s), exit 1 as expected"
 
 echo "==> a consumer can install this package, build with it, and be gated by it"
+
+
+echo "==> verifying packed Glass material and transparency fallbacks in Chromium"
+cat >"$APP/glass-browser-probe.mjs" <<'JS'
+import assert from "node:assert/strict";
+import { chromium } from "playwright";
+import { preview } from "vite";
+const server = await preview({ root: ".", logLevel: "silent", preview: { host: "127.0.0.1", port: 0 } });
+const address = server.httpServer.address();
+if (!address || typeof address === "string") throw new Error("Vite preview did not bind TCP");
+const browser = await chromium.launch({ headless: true });
+try {
+    const page = await browser.newPage();
+    await page.goto(`http://127.0.0.1:${address.port}`, { waitUntil: "networkidle" });
+    const glass = page.getByTestId("glass");
+    const material = () => glass.evaluate((element) => {
+        const style = getComputedStyle(element);
+        const probe = document.createElement("div");
+        probe.style.background = "var(--bg-elevated)";
+        element.append(probe);
+        const opaque = getComputedStyle(probe).backgroundColor;
+        probe.remove();
+        return { background: style.backgroundColor, opaque, blur: style.backdropFilter,
+            radius: style.borderRadius, contain: style.contain, willChange: style.willChange,
+            edge: getComputedStyle(element, "::before").maskComposite };
+    });
+    const normal = await material();
+    assert.match(normal.blur, /blur\(10px\) saturate\(1.08\)/);
+    assert.equal(normal.radius, "8px");
+    assert.equal(normal.contain, "paint");
+    assert.equal(normal.willChange, "auto");
+    assert.ok(normal.edge.split(", ").every((operation) => operation === "exclude"));
+    // Computed mask properties alone cannot prove the edge survived contain: paint.
+    // Compare rendered pixels with and without the pseudo-element on the same surface.
+    const withEdge = (await glass.screenshot()).toString("base64");
+    const hideEdge = await page.addStyleTag({ content: ".ds-glass::before { visibility: hidden; }" });
+    const withoutEdge = (await glass.screenshot()).toString("base64");
+    await hideEdge.evaluate((element) => element.remove());
+    const edgePixels = await page.evaluate(async ([withEdge, withoutEdge]) => {
+        const pixels = async (source) => {
+            const image = new Image();
+            image.src = `data:image/png;base64,${source}`;
+            await image.decode();
+            const canvas = document.createElement("canvas");
+            canvas.width = image.width;
+            canvas.height = image.height;
+            const context = canvas.getContext("2d");
+            if (!context) throw new Error("No canvas context for glass edge probe");
+            context.drawImage(image, 0, 0);
+            return context.getImageData(0, 0, image.width, image.height);
+        };
+        const edge = await pixels(withEdge);
+        const plain = await pixels(withoutEdge);
+        const difference = (x, y) => {
+            const i = (y * edge.width + x) * 4;
+            return edge.data[i] + edge.data[i + 1] + edge.data[i + 2]
+                - plain.data[i] - plain.data[i + 1] - plain.data[i + 2];
+        };
+        const CORNER_CLEARANCE = 16;
+        const EDGE_INSET = 1;
+        return {
+            highlight: difference(CORNER_CLEARANCE, EDGE_INSET),
+            shade: difference(edge.width - CORNER_CLEARANCE, edge.height - EDGE_INSET - 1),
+            interior: difference(CORNER_CLEARANCE, CORNER_CLEARANCE),
+        };
+    }, [withEdge, withoutEdge]);
+    assert.ok(edgePixels.highlight > 0, "top-left edge must visibly lighten the surface");
+    assert.ok(edgePixels.shade < 0, "bottom-right edge must visibly shade the surface");
+    assert.equal(edgePixels.interior, 0, "gradient must not cover the fill or text");
+    await glass.evaluate((element) => element.classList.add("fixed"));
+    assert.equal(await glass.evaluate((element) => getComputedStyle(element).position), "fixed");
+    await glass.evaluate((element) => element.classList.remove("fixed"));
+    await glass.evaluate((element) => element.dataset.glass = "strong");
+    assert.notEqual((await material()).background, normal.background);
+    await page.evaluate(() => document.documentElement.dataset.glass = "off");
+    let off = await material();
+    assert.equal(off.blur, "none");
+    assert.equal(off.background, off.opaque);
+    await page.evaluate(() => delete document.documentElement.dataset.glass);
+    const session = await page.context().newCDPSession(page);
+    await session.send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-transparency", value: "reduce" }] });
+    assert.equal(await page.evaluate(() => matchMedia("(prefers-reduced-transparency: reduce)").matches), true);
+    off = await material();
+    assert.equal(off.blur, "none");
+    assert.equal(off.background, off.opaque);
+    await session.send("Emulation.setEmulatedMedia", { features: [] });
+    await glass.evaluate((element) => element.dataset.glass = "off");
+    off = await material();
+    assert.equal(off.blur, "none");
+    assert.equal(off.background, off.opaque);
+    console.log("Glass: packed CSS, 10px blur, edge, containment, strong fill, ancestor/local off and reduced transparency PASS");
+} finally {
+    await browser.close();
+    await new Promise((resolve, reject) => server.httpServer.close((error) => error ? reject(error) : resolve()));
+}
+JS
+(cd "$APP" && node glass-browser-probe.mjs)

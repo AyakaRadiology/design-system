@@ -118,6 +118,10 @@ const asOklch = (colour: string | Oklch): Oklch =>
 export function contrastRatio(fg: string | Oklch, bg: string | Oklch): number {
     const foreground = asOklch(fg);
     const background = asOklch(bg);
+    if (foreground.alpha !== 1 || background.alpha !== 1)
+        throw new Error(
+            "contrastRatio requires opaque colors; use compositedContrast with a backdrop",
+        );
     const a = relativeLuminance(oklchToSrgb(foreground.l, foreground.c, foreground.h));
     const b = relativeLuminance(oklchToSrgb(background.l, background.c, background.h));
     const [hi, lo] = a >= b ? [a, b] : [b, a];
@@ -147,22 +151,16 @@ const TOKEN_PATTERN = /--([a-z0-9-]+):\s*(oklch\([^)]*\))/g;
 /**
  * Every `--name: oklch(…)` declaration in a CSS block, by token name.
  *
- * Opaque colours only. A token carrying an alpha component or built with
- * `color-mix()` (`--trace-glow`) has no fixed rendered colour, so there is no
- * ratio to assert about it; such tokens are simply not part of the contrast
- * contract.
+ * Opaque colours by default; includeAlpha opts into the compositing contract.
+ * Alpha colors require a backdrop and compositedContrast. Derived
+ * `color-mix()` colors such as --trace-glow are not parsed by this helper.
  */
-export function parseTokens(css: string): Map<string, Oklch> {
+export function parseTokens(css: string, includeAlpha = false): Map<string, Oklch> {
     const tokens = new Map<string, Oklch>();
     for (const [, name, value] of css.matchAll(TOKEN_PATTERN)) {
         if (!name || !value) continue;
-        let parsed: Oklch;
-        try {
-            parsed = parseOklch(value);
-        } catch {
-            continue;
-        }
-        if (parsed.alpha === 1) tokens.set(name, parsed);
+        const parsed = parseOklch(value);
+        if (includeAlpha || parsed.alpha === 1) tokens.set(name, parsed);
     }
     return tokens;
 }
@@ -233,7 +231,7 @@ function topLevelBlocks(css: string): Block[] {
  * pass without comment: `@theme`'s type scale, the `@theme inline` mappings,
  * `@layer base`.
  */
-export function tokenBlocks(css: string): Map<string, Map<string, Oklch>> {
+export function tokenBlocks(css: string, includeAlpha = false): Map<string, Map<string, Oklch>> {
     // Comments first: a voice explains in prose why it is dark-only — including
     // the words this function refuses to see in code — and the braces in a
     // commented-out rule would confuse the brace matcher besides.
@@ -246,7 +244,7 @@ export function tokenBlocks(css: string): Map<string, Map<string, Oklch>> {
         );
 
     const declaring = topLevelBlocks(code)
-        .map((block) => ({ prelude: block.prelude, tokens: parseTokens(block.body) }))
+        .map((block) => ({ prelude: block.prelude, tokens: parseTokens(block.body, includeAlpha) }))
         .filter((block) => block.tokens.size > 0);
 
     if (declaring.length === 0)
@@ -271,4 +269,23 @@ export function tokenBlocks(css: string): Map<string, Map<string, Oklch>> {
 
     // `:root` first, so a failure names the mode the reader expects to see first.
     return new Map([...blocks].sort(([a], [b]) => (a === LIGHT ? -1 : b === LIGHT ? 1 : 0)));
+}
+
+/** Source-over compositing in gamma-encoded sRGB, as used by CSS surfaces. */
+export function composite(foreground: Oklch, background: Rgb): Rgb {
+    const [r, g, b] = oklchToSrgb(foreground.l, foreground.c, foreground.h);
+    const alpha = foreground.alpha;
+    return [
+        r * alpha + background[0] * (1 - alpha),
+        g * alpha + background[1] * (1 - alpha),
+        b * alpha + background[2] * (1 - alpha),
+    ];
+}
+
+/** Text over a translucent fill over an opaque backdrop (including text alpha). */
+export function compositedContrast(text: Oklch, fill: Oklch, backdrop: Rgb): number {
+    const surface = composite(fill, backdrop);
+    const a = relativeLuminance(composite(text, surface));
+    const b = relativeLuminance(surface);
+    return (Math.max(a, b) + CONTRAST_FLARE) / (Math.min(a, b) + CONTRAST_FLARE);
 }

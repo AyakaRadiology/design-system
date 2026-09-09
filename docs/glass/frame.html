@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Glass voice sample</title>
+    <link id="voice" rel="stylesheet" href="../../voices/base.css">
+    <script type="module">
+        const query = new URLSearchParams(location.search);
+        if (query.get("voice") === "biomonitor") document.querySelector("#voice").href = "../../voices/biomonitor.css";
+        if (query.get("mode") === "dark") document.documentElement.classList.add("dark");
+        if (query.has("off")) document.documentElement.dataset.glass = "off";
+        const toggle = document.querySelector("button");
+        toggle.setAttribute("aria-pressed", String(query.has("off")));
+        toggle.addEventListener("click", () => {
+            const off = document.documentElement.dataset.glass !== "off";
+            document.documentElement.dataset.glass = off ? "off" : "on";
+            toggle.setAttribute("aria-pressed", String(off));
+        });
+    </script>
+    <style>
+        body { margin: 0; padding: 24px; min-height: 392px; background: url("busy.svg") center / cover; font: 14px/1.5 system-ui; }
+        .ds-glass { padding: 16px; margin-bottom: 16px; }
+        h2 { margin: 0 0 8px; font-size: 16px; }
+        p { margin: 8px 0; }
+        .secondary { color: var(--text-secondary); }
+        .numeric { font: 32px/1.2 monospace; font-variant-numeric: tabular-nums; }
+        button { font: inherit; cursor: pointer; }
+        button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    </style>
+</head>
+<body>
+    <section class="ds-glass" aria-label="Normal material"><h2>FLOATING INPUTS</h2><p class="numeric">42.0 mm</p><p class="secondary">Secondary labels stay readable over the brightest and darkest image regions.</p></section>
+    <section class="ds-glass" data-glass="strong" aria-label="Strong material"><h2>STRONG MATERIAL</h2><p>One edge, one radius, one shadow.</p><p class="secondary">10px blur · 1.08 saturation</p></section>
+    <button type="button" class="ds-glass" aria-pressed="false">Reduce transparency</button>
+</body>
+</html>

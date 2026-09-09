@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Glass material review</title>
+    <style>
+        body { margin: 24px; font: 16px/1.5 system-ui; color: #20242a; background: #edf0f3; }
+        main { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+        iframe { width: 100%; height: 440px; border: 0; border-radius: 8px; }
+        @media (max-width: 1000px) { main { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 680px) { main { grid-template-columns: 1fr; } }
+        h2 { font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>One floating material</h1>
+    <p>Each frame imports the real package voice and CSS over a local busy image. Normal and strong fills share their geometry.</p>
+    <p>Toggle transparency inside any frame. The last three frames start reduced; an OS reduced-transparency preference also disables blur.</p>
+    <main>
+        <section><h2>Base / light</h2><iframe title="Base light" src="glass/frame.html"></iframe></section>
+        <section><h2>Base / dark</h2><iframe title="Base dark" src="glass/frame.html?mode=dark"></iframe></section>
+        <section><h2>Biomonitor</h2><iframe title="Biomonitor" src="glass/frame.html?voice=biomonitor"></iframe></section>
+        <section><h2>Base light / reduced</h2><iframe title="Base light reduced" src="glass/frame.html?off"></iframe></section>
+        <section><h2>Base dark / reduced</h2><iframe title="Base dark reduced" src="glass/frame.html?mode=dark&amp;off"></iframe></section>
+        <section><h2>Biomonitor / reduced</h2><iframe title="Biomonitor reduced" src="glass/frame.html?voice=biomonitor&amp;off"></iframe></section>
+    </main>
+</body>
+</html>
