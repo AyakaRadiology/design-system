@@ -80,6 +80,17 @@ role. One PR does all of it, or the schema and the voices drift:
 - Never merge the release PR (`chore(main): release X.Y.Z`) — cutting a release
   is the owner's decision. Never create or push a tag by hand.
 
+## Design review context
+
+Impeccable reviews read `PRODUCT.md` and the generated `DESIGN.md` at the root.
+The house schema, UI rules and selected voice constrain reviews; detector
+suggestions do not authorize changing the brand or consumer terminology.
+Edit token/rule sources, then run `bun run design:generate`. Never hand-edit
+`DESIGN.md`: `bun run design:check` regenerates in memory and compares bytes,
+and runs first in the existing **Quality Check** CI job via `bun run check`.
+The deliberate Inter exception lives in `.impeccable/config.json`; it is a
+value-level brand decision, not a disabled rule or file-wide exclusion.
+
 ## Local verification
 
 ```
