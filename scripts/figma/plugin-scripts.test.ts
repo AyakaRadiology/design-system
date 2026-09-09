@@ -33,7 +33,8 @@ class Variable {
         public id: string,
     ) {}
     setValueForMode(mode: string, value: VariableValue) {
-        this.valuesByMode[mode] = value;
+        // Match Figma's actual storage, including FLOAT values such as 1.08.
+        this.valuesByMode[mode] = typeof value === "number" ? Math.fround(value) : value;
     }
     setVariableCodeSyntax(platform: string, value: string) {
         this.codeSyntax[platform] = value;
@@ -92,5 +93,13 @@ describe("emitted Plugin API scripts (contract harness, not a Figma runtime test
         await expect(run(importVariablesScript(plan))).rejects.toThrow("Value drift");
         expect(first.description).toBe("designer annotation");
         expect(last.valuesByMode["mode-0"]).toBe(999);
+    });
+    it("refuses a numeric edit even when it is smaller than the color tolerance", async () => {
+        const { run, variables } = harness();
+        await run(importVariablesScript(plan));
+        const saturation = variables.find((variable) => variable.name === "x-glass-saturate");
+        if (!saturation) throw new Error("Missing saturation");
+        saturation.setValueForMode("mode-0", 1.0800002);
+        await expect(run(importVariablesScript(plan))).rejects.toThrow("Value drift");
     });
 });

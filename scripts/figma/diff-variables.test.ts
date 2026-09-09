@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { diffVariables, type LiveVariables } from "./diff-variables.js";
+import { diffVariables, equalStoredFloat, type LiveVariables } from "./diff-variables.js";
 import { loadTokenSource, tokensToVariables } from "./tokens-to-variables.js";
 
 const plan = tokensToVariables(loadTokenSource());
@@ -8,6 +8,23 @@ const snapshot = (): LiveVariables => structuredClone(plan);
 describe("Figma diff extraction", () => {
     it("is empty for a matching snapshot", () =>
         expect(diffVariables(plan, snapshot())).toEqual([]));
+    it("accepts exact Float32 storage but reports even adjacent representable edits", () => {
+        const live = snapshot();
+        const variable = live.collections[0]?.variables.find(
+            (item) => item.name === "x-glass-saturate",
+        );
+        if (!variable) throw new Error("Missing saturation");
+        // Observed from the first real Plugin API import/export on 2026-09-09.
+        variable.valuesByMode.light = 1.0800000429153442;
+        expect(diffVariables(plan, live)).toEqual([]);
+        const nextFloat = new DataView(new ArrayBuffer(4));
+        nextFloat.setFloat32(0, 1.08);
+        nextFloat.setUint32(0, nextFloat.getUint32(0) + 1);
+        variable.valuesByMode.light = nextFloat.getFloat32(0);
+        expect(diffVariables(plan, live)).toHaveLength(1);
+        expect(equalStoredFloat(1.08, 1.08 + Number.EPSILON)).toBe(false);
+        expect(equalStoredFloat(10, 10.0000001)).toBe(false);
+    });
     it("reports edited numeric values without manually copying tokens", () => {
         const live = snapshot();
         const variable = live.collections[0]?.variables.find(

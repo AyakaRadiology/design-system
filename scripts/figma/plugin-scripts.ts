@@ -2,7 +2,7 @@
  * loading its skill. The adapter and test runner never call MCP themselves. */
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { COLOR_STORAGE_TOLERANCE } from "./diff-variables.js";
+import { COLOR_STORAGE_TOLERANCE, equalStoredFloat } from "./diff-variables.js";
 import {
     type FigmaPlan,
     loadTokenSource,
@@ -14,10 +14,11 @@ export function importVariablesScript(plan: FigmaPlan): string {
     variablesToTokens(plan);
     return `const plan = ${JSON.stringify(plan.collections)};
 const tolerance = ${COLOR_STORAGE_TOLERANCE};
+const equalStoredFloat = ${equalStoredFloat.toString()};
 const collections = await figma.variables.getLocalVariableCollectionsAsync();
 const variables = await figma.variables.getLocalVariablesAsync();
 const same = (actual, expected) => {
-    if (typeof expected === "number") return actual === expected;
+    if (typeof expected === "number") return typeof actual === "number" && equalStoredFloat(expected, actual);
     return actual && ["r", "g", "b", "a"].every(key =>
         typeof actual[key] === "number" && Math.abs(actual[key] - expected[key]) <= tolerance);
 };

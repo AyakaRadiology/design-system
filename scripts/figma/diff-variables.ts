@@ -6,6 +6,12 @@ import { type FigmaPlan, type VariableValue, variablesToTokens } from "./tokens-
 
 // Figma stores single-precision color channels. This absorbs storage noise only.
 export const COLOR_STORAGE_TOLERANCE = 0.000001;
+
+/** Figma persists FLOAT values as Float32 too. Accept only the authored number
+ * or its exact storage representation, never a general numeric epsilon. */
+export function equalStoredFloat(expected: number, actual: number): boolean {
+    return actual === expected || actual === Math.fround(expected);
+}
 export interface LiveVariables {
     collections: {
         name: string;
@@ -86,6 +92,7 @@ function flatten(snapshot: LiveVariables): Map<string, unknown> {
 }
 
 function equal(a: unknown, b: unknown): boolean {
+    if (typeof a === "number" && typeof b === "number") return equalStoredFloat(a, b);
     if (
         typeof a === "object" &&
         a !== null &&

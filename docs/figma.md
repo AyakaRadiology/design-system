@@ -1,46 +1,36 @@
 # Figma adapter and designer handoff
 
-**Provisioning status (2026-09-09): file created; canvas work blocked.**
+**Provisioning status (2026-09-09): variables, native library and four screens verified.**
 [AyakaRadiology Design System](https://www.figma.com/design/TnTduN5Mm8cbxPtY3eZy9o)
-is in **Harry Lab / Drafts**, not a project. The owner selected Harry Lab;
-`whoami` confirmed its Education (`student`) plan and Full seat, with plan key
-`team::1601096317261638665`. Reuse this file when resuming; team selection is
-resolved and no replacement file is needed.
+is in the owner's selected **Harry Lab / Drafts** (Education plan). This run
+reused the existing file and executed the adapter's generated Plugin API scripts.
 
-The session's approval gate rejected the first `use_figma` call, a read-only
-inspection, with `MCP tool call requires approval, but approval policy is never`.
-That prevented Plugin API inspection, variable import, native component
-creation and screen assembly. The session cannot request the required approval.
-This is an execution-policy blocker, not evidence of a Figma plan/quota limit.
-Do not treat this document as a completed designer onboarding file.
-
-| Object | Created this run / read-back evidence |
+| Object | Verified live inventory |
 |---|---|
-| Design file | 1; creation returned the URL above |
-| Pages | 1 default `Page 1` (`0:1`); confirmed by `get_metadata` |
-| Variable collections / variables | 0 imported; complete inventory unavailable because `use_figma` was rejected |
-| Native components / component sets | 0 / 0; page metadata is an empty canvas |
-| Frames / screen frames | 0 / 0; page metadata is an empty canvas |
+| Pages | 3: Components (`0:1`), needle-guide (`8:258`), needle-simulator (`8:259`) |
+| Variable collections / variables | **2 / 116**: `base` 58 (light/dark), `biomonitor` 58 (dark only) |
+| Native component definitions / component sets | **95 / 14**, including variants and supporting icons/scene components |
+| Component instances | **102** |
+| FRAME nodes / screen frames | **233 / 4**; FRAME count includes nested frames and instance descendants |
+| Flattened image fills | **0**; final screens contain editable native objects |
 
-`get_metadata` returned `<canvas id="0:1" name="Page 1" x="0" y="0"
-width="0" height="0" />`. `get_variable_defs` for `0:1` returned
-“You currently have nothing selected. You need to select a layer first before
-using this tool.” It did **not** return a verified empty variable inventory.
+`get_metadata` read back all three pages; `get_variable_defs` returned the
+referenced subset of 24 variables. The complete inventory came from Plugin API
+collection/variable enumeration and the generated export, rather than treating
+that referenced subset as the whole library. The final plan/live diff was `[]`
+(exit 0). A second guarded import created no variables, confirming idempotence
+against real Figma storage. Names, descriptions, scopes and WEB syntax are
+preserved. Biomonitor remains dark-only, as required by its source voice.
 
-This continuation used **16 Figma MCP requests**: 1 resource listing, 7 skill/
-reference reads, 1 `whoami`, 1 `create_new_file`, 1 `get_libraries`,
-1 `search_design_system`, 1 rejected `use_figma`, 2 `get_metadata`, and
-1 unsuccessful `get_variable_defs`. This counts attempted requests, including
-failures and a repeated skill read, not billed/read-quota calls; it excludes
-PR #38's earlier run. Library discovery found no subscribed library and only
-Community kits available to add. The seven-component search batch was clamped
-to one query by the server: only `Glass` was searched (no matches). The other
-six searches remain outstanding.
+Final per-page counts (component definitions / sets / FRAME nodes / instances):
+Components **88 / 13 / 105 / 38**, Guide **2 / 0 / 61 / 28**, Simulator
+**5 / 1 / 67 / 36**. The native audit found every component using auto-layout,
+no image fills, and no text outside its immediate container except the
+deliberately clipped, vertically scrolling DialogBody content.
 
-The repository adapter is implemented and usable offline. Its current plan has
-**116 variables**, in `base` (58, light/dark) and `biomonitor` (58, dark only).
-The Figma scripts have contract tests, but have **not** been executed against a
-Figma file. These counts describe the generated plan, not created objects.
+This continuation used **59 Figma MCP requests**, counting attempted requests,
+skill/resource reads, capture requests and failures. This is not a billed/read-
+quota count and excludes the earlier PR #38/#39 sessions. No file was created.
 
 ## Generate and validate
 
@@ -103,12 +93,11 @@ refuse changed, deleted, duplicate or invalid entries.
 
 ## Provisioning the file
 
-Resume in a session where the execution policy permits `use_figma`. Load the
+For subsequent synchronization, load the
 current `figma-use`, `figma-generate-library`, and `figma-generate-design` skills
 and target file key `TnTduN5Mm8cbxPtY3eZy9o`. Inspect its current state first,
-because the empty-canvas snapshot above can become stale. Discover libraries
-and complete the required primitive searches, respecting the server's actual
-batch limit. Keep returned object IDs in a local `mktemp` ledger.
+because the inventory above is a dated snapshot. Reuse the existing native
+library. Keep returned object IDs in a local `mktemp` ledger.
 
 Execute the generated `import.js` through `use_figma`. It creates the collections
 and modes from the actual adapter JSON and sets values, descriptions, scopes
@@ -118,56 +107,66 @@ modes, duplicate names or unexpected variables. It never deletes an existing
 variable. An interrupted, partially created variable may require explicit
 repair after inspecting the returned IDs; it is not silently treated as valid.
 
-### Component mapping still to provision
+### Provisioned components
 
-The following is the source-to-Figma mapping for the outstanding canvas work;
-it does not claim that these components exist yet. Create native auto-layout
-components and instances with text properties and variable bindings.
+The library uses native auto-layout components, instances, editable text and
+variable bindings. Variant counts below count individual component definitions.
 
 | React source (`src/react/`) | Figma component | Required states / details |
 |---|---|---|
-| `Glass.tsx` | Glass | `data-glass=on/strong/off`; variable fill, edge, radius, blur; opaque fallback |
-| `Numeric.tsx` | Numeric | Value, empty, empty with muted unit, reserved empty unit slot; editable value/unit; em dash, fixed value reservation |
-| `StatusPill.tsx` | StatusPill | Every exported `STATUS_STATES`: healthy/live; degraded/stale/lost; error/invalid/offline; connecting; unknown/loading; never blinking |
-| `Dialog.tsx` | Dialog / DialogBody | Header and actions outside a scrolling body; matching surface/fade |
-| `RadioGroup.tsx` | RadioGroup | Horizontal/vertical, checked/unchecked, disabled; visible labels |
-| `IconButton.tsx` | IconButton | Existing button variants, focus/disabled states, editable icon instance and accessible-name documentation |
-| `BuildStamp.tsx` | BuildStamp | Static/interactive, editable supplied metadata, opaque elevated plate |
+| `Glass.tsx` | Glass (`5:13`) | 3: on/strong/off; variable fill, gradient edge, radius and blur; opaque fallback |
+| `Numeric.tsx` | Numeric (`5:49`) | 8: body/hero × value/empty/empty unit/empty reserved; editable value/unit, em dash, fixed reservation |
+| `StatusPill.tsx` | StatusPill (`5:75`) | All 11 `STATUS_STATES`: healthy/live/degraded/stale/lost/error/invalid/offline/connecting/unknown/loading; native editable labels |
+| `Dialog.tsx` | Dialog (`8:221`) / DialogBody (`8:193`) | 2 each: fit/scroll; header/actions outside the clipped scrolling body; variable-bound fade endpoint |
+| `RadioGroup.tsx` | RadioGroup (`8:186`) | 8: horizontal/vertical × first/second selected × enabled/disabled; nested RadioOption components |
+| `IconButton.tsx` | IconButton (`5:166`) | 16: secondary/primary/ghost/danger × default/hover/focus/disabled; native icon swap |
+| `BuildStamp.tsx` | BuildStamp (`5:178`) | 2: static/interactive; editable supplied metadata, opaque elevated plate |
 
-Use the actual React/CSS implementation for property combinations and geometry.
-Do not flatten components into captured images. Font stacks, multi-part shadows
-and CSS saturation require native text/effect implementation or an explicitly
-reported Figma limitation; the COLOR/FLOAT plan does not encode these effects.
+Supporting library components are Button (16), RadioOption (6), and two native
+vector icons. Three Numeric consumer presets—GuideAngle, Laser and Plan—have
+four states each. Their master geometry carries the source-sized value/unit
+reservation because resizing nested frames in an instance was not retained by
+Figma. This avoids detached numbers and keeps the source unit/empty-state model.
 
-### Consumer screens still to provision
+Glass has native inner/drop shadows and a variable-bound gradient border.
+CSS backdrop saturation is **not encoded as a native effect**; its ratio remains
+available as `x-glass-saturate`. Font stacks and multi-part shadows remain
+`nonVariables` in the adapter, so native font/effect choices need reconciliation
+when those source entries change. These are editable design states, not a
+replacement for browser accessibility, keyboard, focus or backend behavior.
 
-Create one page per app, using instances of the components above. Capture a
-running dev build with `generate_figma_design` for visual reference when
-available, then assemble/tidy native content and remove reference captures.
-Use the requested demonstration readings: target **40.0°**, needle **38.5°**,
-laser lateral **−12.40 mm**. These are demonstration values, not patient data.
+### Provisioned consumer screens
 
-- **needle-guide:** full-window scene placeholder; PLAN box with ENTRY LAT,
+Each app has its own page; all four screen frames are 1440 × 900. Guide uses the
+requested demonstration readings: target **40.0°**, needle **38.5°**, laser
+lateral **−12.40 mm**. These are demonstration values, not patient data.
+
+- **[needle-guide](https://www.figma.com/design/TnTduN5Mm8cbxPtY3eZy9o?node-id=14-109):** full-window scene placeholder; PLAN box with ENTRY LAT,
   ENTRY LONG, AZIMUTH and PLAN ANGLE; LASER LATERAL card; CALIBRATE; floating
-  SOURCE/CASE/LINK/sound cluster; and a separate projector design G frame.
-- **needle-simulator:** PLAN with AXIAL/SAGITTAL/CORONAL MPR panels, PHANTOM
-  sidebar with SET TARGET / SET ENTRY / RESET and footer; OPERATION frame.
+  SOURCE/CASE/LINK/sound cluster. CASE reads SIMULATION; laser helper is SET ZERO.
+- **[Projector / Design G](https://www.figma.com/design/TnTduN5Mm8cbxPtY3eZy9o?node-id=14-231):** native target/needle rays at 40.0°/38.5°, entry point, arc and editable readouts.
+- **[Simulator / PLAN](https://www.figma.com/design/TnTduN5Mm8cbxPtY3eZy9o?node-id=16-158):** source-matched 2×2 layout with AXIAL/CORONAL/SAGITTAL panels and PHANTOM controls; SET TARGET / SET ENTRY / RESET and footer.
+- **[Simulator / OPERATION](https://www.figma.com/design/TnTduN5Mm8cbxPtY3eZy9o?node-id=16-257):** five axial slots and footer in the pre-capture state.
 
 The readable consumer checkouts provide additional source truth: Guide uses the
 shared Inter/JetBrains Mono stack, while Simulator overrides it with Barlow Semi
 Condensed/Fragment Mono. Preserve those app-specific fonts when composing.
-The inspected Guide `MainDisplay.tsx` currently uses an operational-quadrant
-layout, and no projector design G implementation was found in its `src`/`docs`.
-The requested one-screen/projector layout therefore needs reconciliation with
-its actual source before it can be described as a current-screen capture.
-No dev capture or visual verification has been performed in this continuation:
-the Plugin API gate blocked the native component work needed to assemble and
-tidy either screen. The source observations above come from PR #38's inspection;
-recheck the consumer source when resuming.
+The Guide dev build was captured successfully with `generate_figma_design`
+through a temporary local proxy after resolving the app's hash-router conflict.
+It provided a visual reference; raw captures were removed after native assembly.
+The requested one-screen layout and projector Design G are deliberate owner-
+requested compositions: the inspected Guide source uses an operational-quadrant
+layout and no Design G implementation was found. They are not exact current-app
+captures. All four final screens were screenshot-reviewed.
+
+Simulator panels explicitly show unavailable/pre-capture states: no DICOM was
+loaded, so populated CT imagery could not be produced. SET TARGET and SET ENTRY
+remain visibly disabled in that state. Demo footer/build metadata and mock scene
+geometry are canvas examples, not new product-copy or design-system rules.
 
 ## What the designer edits, and how it returns
 
-Once provisioned, the designer works inside this one file: duplicate the
+The designer works inside this one file: duplicate the
 consumer frames into clearly named working copies, retain instances, and edit
 text, layout, variants and variable values there. Keep token names and
 collection/mode identities stable. Canonical component changes and renamed or
@@ -188,8 +187,12 @@ bun scripts/figma/diff-variables.ts "$work/plan.json" "$work/live.json" > "$work
 Exit 0 means no differences; exit 1 with a JSON array means reviewable changes.
 Malformed or unresolved data throws an error instead of producing a clean diff.
 Added/deleted variables and modes appear with null before/after values. Color
-comparison tolerates only 0.000001 channel storage noise; numeric edits are
-compared exactly. Preserve the original baseline alongside the live export.
+comparison tolerates only 0.000001 channel storage noise. Numeric comparison
+accepts the authored value or its exact Float32 storage representation, with no
+general numeric epsilon: Figma returned `1.0800000429153442` for `1.08` in the
+live import/export. Tests still reject small representable edits in both diff
+and import preflight, including an adjacent Float32 value in the diff test.
+Preserve the original baseline alongside the live export.
 
 Use the extracted diff and design context to produce a source PR, retaining
 unchanged authored OKLCH and applying reviewed changes in the voice/component
@@ -213,14 +216,14 @@ owner's Education plan: do not attempt it. Organization is the upgrade path for
 custom Code Connect; verify current eligibility before changing plans.
 
 **Six months from now, what broke?** The likely failure is a designer's file
-and the shipped voices diverging after a code release, or this saved URL being
-mistaken for a populated library. Before marking provisioning complete, execute
-the generated export and diff against the current plan, assert the collection/
-variable counts, and verify component and screen counts from live metadata.
-Manual recollection is
-not a gate: generate/import/export commands and diff exit status make the
-comparison repeatable. One-way sync is addressed by extracting live values and
-design context into a PR, followed by forward reconciliation. Drift is caught
+and the shipped voices/components diverging after a code release, especially
+native Numeric presets and effects that the variables plan does not generate.
+For every requested sync, execute the generated export and diff against that
+revision's plan, then inspect changed component geometry/effects and live
+metadata. Manual recollection is not the variable gate: generated scripts and
+the diff exit status make comparison repeatable. One-way sync is addressed by
+extracting live values and design context into a PR, followed by forward
+reconciliation. Drift is caught
 by schema validation, exact roundtrip tests, and live diff comparison. Silent
 failures are prevented by rejecting unsupported CSS, unresolved aliases,
 missing modes and conflicting imports. There is no scheduled live-Figma drift
