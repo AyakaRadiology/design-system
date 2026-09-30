@@ -25,6 +25,22 @@ describe("globToRegExp", () => {
         expect(matches("src/**/*.{ts,tsx,css}", "src/react/Button.tsx")).toBe(true);
         expect(matches("src/**/*.{ts,tsx,css}", "src/styles/theme.css")).toBe(true);
         expect(matches("src/**/*.{ts,tsx,css}", "src/logo.svg")).toBe(false);
+        expect(matches("src/{legacy,{new,shared}}/Button.tsx", "src/shared/Button.tsx")).toBe(true);
+    });
+
+    it.each([
+        "src/{legacy}/Button.tsx",
+        "src/{legacy/Button.tsx",
+        "src/{legacy,shared/Button.tsx",
+        "src/legacy}/Button.tsx",
+        "src/{{legacy}}/Button.tsx",
+    ])("matches literal braces in %s without throwing", (path) => {
+        expect(matches(path, path)).toBe(true);
+    });
+
+    it("preserves literal braces around nested alternation", () => {
+        expect(matches("src/{{legacy,shared}}/Button.tsx", "src/{legacy}/Button.tsx")).toBe(true);
+        expect(matches("src/{{legacy,shared}}/Button.tsx", "src/legacy/Button.tsx")).toBe(false);
     });
 
     it("treats a comma outside braces as a literal", () => {
@@ -39,6 +55,13 @@ describe("globToRegExp", () => {
 });
 
 describe("matchesAny", () => {
+    it.each([
+        ["src/legacy/Button.tsx", false],
+        ["src/{legacy}/Button.tsx", true],
+    ])("matches an exact brace path against %s: %s", (path, expected) => {
+        expect(matchesAny(path, ["src/{legacy}/Button.tsx"])).toBe(expected);
+    });
+
     it("is true when any pattern matches and false for an empty list", () => {
         expect(matchesAny("src/x.test.ts", ["**/__fixtures__/**", "**/*.test.*"])).toBe(true);
         expect(matchesAny("src/x.ts", ["**/*.test.*"])).toBe(false);
