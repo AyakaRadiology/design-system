@@ -74,6 +74,22 @@ describe("globToRegExp", () => {
 });
 
 describe("matchesAny", () => {
+    it.each(["\n", "\r", "\u2028", "\u2029"])(
+        "matches directory line terminator %j",
+        (terminator) => {
+            const path = `src/a${terminator}b/Button.tsx`;
+            for (const pattern of [
+                "src/*/Button.tsx",
+                "src/**/Button.tsx",
+                "src/**",
+                "**/Button.tsx",
+                "src/{**,legacy}/Button.tsx",
+            ]) {
+                expect(matchesAny(path, [pattern])).toBe(true);
+            }
+        },
+    );
+
     it.each([
         ["src/legacy/Button.tsx", false],
         ["src/{legacy}/Button.tsx", true],
