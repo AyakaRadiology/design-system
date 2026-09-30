@@ -40,7 +40,8 @@ function stringArray(value: unknown, field: string): string[] {
 }
 
 function parseRules(value: unknown): Record<RuleId, Severity> {
-    if (typeof value !== "object" || value === null) fail(`"rules" must be an object`);
+    if (typeof value !== "object" || value === null || Array.isArray(value))
+        fail(`"rules" must be an object`);
     const raw = value as Record<string, unknown>;
     for (const key of Object.keys(raw))
         if (!RULE_IDS.includes(key as RuleId))

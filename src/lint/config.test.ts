@@ -51,6 +51,27 @@ describe("loadConfig", () => {
         });
     });
 
+    it.each([{ rules: [] }, { rules: ["error"] }])(
+        "refuses an array rule map (%j)",
+        ({ rules }) => {
+            const parse = () => load({ ...VALID, rules });
+            expect(parse).toThrow(ConfigError);
+            expect(parse).toThrow('"rules" must be an object');
+        },
+    );
+
+    it("accepts an empty rule map with every rule off", () => {
+        expect(load({ ...VALID, rules: {} }).rules).toEqual({
+            L1: "off",
+            L2: "off",
+            L3: "off",
+            L4: "off",
+            L5: "off",
+            L6: "off",
+            L7: "off",
+        });
+    });
+
     it("defaults an absent allowlist to empty", () => {
         expect(load({ ...VALID, allow: undefined }).allow).toEqual([]);
     });

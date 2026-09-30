@@ -13,7 +13,7 @@ function stringArray(value, field) {
     return value;
 }
 function parseRules(value) {
-    if (typeof value !== "object" || value === null)
+    if (typeof value !== "object" || value === null || Array.isArray(value))
         fail(`"rules" must be an object`);
     const raw = value;
     for (const key of Object.keys(raw))
