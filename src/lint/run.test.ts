@@ -178,6 +178,24 @@ describe("run", () => {
         expect(findings.map((finding) => finding.rule).sort()).toEqual(["L1", "L6"]);
     });
 
+    it("recognises the theme file with a leading ./", () => {
+        const result = run(
+            loadConfig(
+                project(
+                    { "src/styles/theme.css": THEME },
+                    {
+                        ...BASE,
+                        include: ["src/styles/theme.css"],
+                        themeFile: "./src/styles/theme.css",
+                    },
+                ),
+            ),
+        );
+        expect(result.findings).toEqual([]);
+        expect(result.exitCode).toBe(0);
+        expect(result.filesChecked).toBe(1);
+    });
+
     it("reports how many files it read", () => {
         const configPath = project(
             { "src/styles/theme.css": THEME },
