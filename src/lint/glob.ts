@@ -13,9 +13,8 @@
 const SPECIAL = /[.+^$()|{}[\]\\]/g;
 
 export function globToRegExp(pattern: string): RegExp {
-    let out = "";
     // Only balanced braces with a comma at their own depth are alternation.
-    const alternation = new Set<number>();
+    const alternation = new Map<number, { end: number; boundaries: number[] }>();
     const braces: { start: number; commas: number[] }[] = [];
     for (let i = 0; i < pattern.length; i++) {
         if (pattern[i] === "{") {
@@ -25,39 +24,55 @@ export function globToRegExp(pattern: string): RegExp {
         } else if (pattern[i] === "}") {
             const brace = braces.pop();
             if (brace && brace.commas.length > 0) {
-                for (const index of [brace.start, ...brace.commas, i]) alternation.add(index);
+                alternation.set(brace.start, { end: i, boundaries: [...brace.commas, i] });
             }
         }
     }
-    for (let i = 0; i < pattern.length; i++) {
-        const char = pattern[i];
-        if (char === "*") {
-            if (pattern[i + 1] === "*") {
-                // `**/` also matches zero directories, so `**/*.test.*` catches
-                // a file at the root as well as one nested five deep.
-                if (pattern[i + 2] === "/") {
-                    out += "(?:.*/)?";
-                    i += 2;
-                } else {
-                    out += ".*";
-                    i += 1;
+    const compile = (start: number, end: number, separator = ""): string => {
+        let out = "";
+        for (let i = start; i < end; i++) {
+            const char = pattern[i];
+            const group = alternation.get(i);
+            if (group) {
+                const close = group.end;
+                // Put a following slash inside each branch so a terminal **
+                // can consume zero directories, including in nested braces.
+                const slash = pattern[close + 1] === "/" && close + 1 < end;
+                const suffix = slash ? "/" : close + 1 === end ? separator : "";
+                const branches: string[] = [];
+                let branchStart = i + 1;
+                for (const boundary of group.boundaries) {
+                    branches.push(compile(branchStart, boundary, suffix));
+                    branchStart = boundary + 1;
                 }
-            } else {
-                out += "[^/]*";
+                out += `(?:${branches.join("|")})`;
+                i = close + (slash ? 1 : 0);
+                if (close + 1 === end) separator = "";
+            } else if (char === "*") {
+                if (pattern[i + 1] === "*" && i + 1 < end) {
+                    if (pattern[i + 2] === "/" && i + 2 < end) {
+                        out += "(?:.*/)?";
+                        i += 2;
+                    } else if (i + 2 === end && separator === "/") {
+                        out += "(?:.*/)?";
+                        separator = "";
+                        i++;
+                    } else {
+                        out += ".*";
+                        i++;
+                    }
+                } else {
+                    out += "[^/]*";
+                }
+            } else if (char === "?") {
+                out += "[^/]";
+            } else if (char !== undefined) {
+                out += char.replace(SPECIAL, "\\$&");
             }
-        } else if (char === "?") {
-            out += "[^/]";
-        } else if (char === "{" && alternation.has(i)) {
-            out += "(?:";
-        } else if (char === "}" && alternation.has(i)) {
-            out += ")";
-        } else if (char === "," && alternation.has(i)) {
-            out += "|";
-        } else if (char !== undefined) {
-            out += char.replace(SPECIAL, "\\$&");
         }
-    }
-    return new RegExp(`^${out}$`);
+        return out + separator;
+    };
+    return new RegExp(`^${compile(0, pattern.length)}$`);
 }
 
 /** Does `path` (relative, `/`-separated) match any of these globs? */

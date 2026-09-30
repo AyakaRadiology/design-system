@@ -29,6 +29,19 @@ describe("globToRegExp", () => {
     });
 
     it.each([
+        ["src/{**,legacy}/Button.tsx", "src/Button.tsx"],
+        ["src/{**,legacy}/Button.tsx", "src/a/b/Button.tsx"],
+        ["src/{**,legacy}/Button.tsx", "src/legacy/Button.tsx"],
+        ["{**,a}/x", "x"],
+        ["{a,**}/x", "x"],
+        ["src/{legacy,{shared,**}}/Button.tsx", "src/Button.tsx"],
+        ["src/{legacy,{**,shared}}/Button.tsx", "src/a/b/Button.tsx"],
+        ["{a{b,c}/,d}/x", "ab//x"],
+    ])("matches zero or more directories in %s against %s", (pattern, path) => {
+        expect(matches(pattern, path)).toBe(true);
+    });
+
+    it.each([
         "src/{legacy}/Button.tsx",
         "src/{legacy/Button.tsx",
         "src/{legacy,shared/Button.tsx",
@@ -36,6 +49,12 @@ describe("globToRegExp", () => {
         "src/{{legacy}}/Button.tsx",
     ])("matches literal braces in %s without throwing", (path) => {
         expect(matches(path, path)).toBe(true);
+    });
+
+    it("keeps separators in plain brace alternatives", () => {
+        expect(matches("src/{**,legacy}/Button.tsx", "src/legacyButton.tsx")).toBe(false);
+        expect(matches("{a,b}/x", "ax")).toBe(false);
+        expect(matches("{a{b,c}/,d}/x", "ab/x")).toBe(false);
     });
 
     it("preserves literal braces around nested alternation", () => {
