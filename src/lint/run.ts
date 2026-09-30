@@ -22,7 +22,7 @@ const toPosix = (path: string) => path.split("\\").join("/");
 function ruleContext(config: Config): RuleContext {
     const schema = loadPackageSchema();
     return {
-        themeFile: toPosix(config.themeFile),
+        themeFile: toPosix(relative(config.root, resolve(config.root, config.themeFile))),
         schemaTokens: new Set(Object.keys(schema.tokens)),
         extensionPrefix: schema.extensionPrefix,
     };
