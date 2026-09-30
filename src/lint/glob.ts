@@ -72,7 +72,7 @@ export function globToRegExp(pattern: string): RegExp {
         }
         return out + separator;
     };
-    return new RegExp(`^${compile(0, pattern.length)}$`);
+    return new RegExp(`^${compile(0, pattern.length)}$`, "s");
 }
 
 /** Does `path` (relative, `/`-separated) match any of these globs? */
