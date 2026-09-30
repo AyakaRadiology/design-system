@@ -57,6 +57,8 @@ export declare function parseTokens(css: string, includeAlpha?: boolean): Map<st
  *     modes this returns and nothing else;
  *   - the same mode declared twice, which would leave one of the two
  *     unexamined.
+ *   - a colour-declaring nested rule, whose palette applies separately from
+ *     its enclosing mode and must not overwrite that mode's declarations.
  *
  * Blocks that declare no colour tokens are none of this gate's business and
  * pass without comment: `@theme`'s type scale, the `@theme inline` mappings,

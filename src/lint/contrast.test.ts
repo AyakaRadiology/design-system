@@ -173,6 +173,27 @@ describe("tokenBlocks — the theme guard", () => {
         expect(() => tokenBlocks(`${ROOT} :root { --bg: oklch(0.5 0.01 225); }`)).toThrow(/twice/);
     });
 
+    it.each([":root", ".dark"])(
+        "rejects nested text overriding %s's unreadable palette",
+        (mode) => {
+            const css = `${mode === ".dark" ? ROOT : ""}
+            ${mode} { --bg: oklch(1 0 0); --text: oklch(1 0 0);
+                & [data-theme=inner] { --text: oklch(0.22 0.01 265); } }`;
+            expect(() => tokenBlocks(css, true)).toThrow(/nested rule/);
+        },
+    );
+
+    it("rejects deeply nested translucent palettes even without includeAlpha", () => {
+        const css = `${ROOT.slice(0, -1)}
+            @media (min-width: 20rem) { & .inner { --text: oklch(0.22 0.01 265 / 0.5); } } }`;
+        expect(() => tokenBlocks(css)).toThrow(/nested rule/);
+    });
+
+    it("allows non-colour nesting without losing enclosing declarations", () => {
+        const css = `:root { & .inner { padding: 1rem; } --bg: ${WHITE}; --text: ${BLACK}; }`;
+        expect(tokenBlocks(css, true).get(":root")).toEqual(parseTokens(css, true));
+    });
+
     it("says so when there are no tokens to read at all", () => {
         expect(() => tokenBlocks(MAPPINGS)).toThrow(/no block/);
     });
