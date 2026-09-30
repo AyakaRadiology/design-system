@@ -188,6 +188,8 @@ function topLevelBlocks(css) {
  *     modes this returns and nothing else;
  *   - the same mode declared twice, which would leave one of the two
  *     unexamined.
+ *   - a colour-declaring nested rule, whose palette applies separately from
+ *     its enclosing mode and must not overwrite that mode's declarations.
  *
  * Blocks that declare no colour tokens are none of this gate's business and
  * pass without comment: `@theme`'s type scale, the `@theme inline` mappings,
@@ -202,7 +204,14 @@ export function tokenBlocks(css, includeAlpha = false) {
         throw new Error(`the voice CSS declares a "${SCHEME_QUERY}" block, but the floors only iterate ` +
             `"${LIGHT}" and "${DARK}" — a mode selected by the OS is a palette nothing checks`);
     const declaring = topLevelBlocks(code)
-        .map((block) => ({ prelude: block.prelude, tokens: parseTokens(block.body, includeAlpha) }))
+        .map((block) => {
+        for (const nested of topLevelBlocks(block.body)) {
+            if (parseTokens(nested.body, true).size > 0)
+                throw new Error(`the voice CSS declares oklch tokens in a nested rule inside "${block.prelude}" ` +
+                    "— its palette goes unchecked and cannot define the enclosing mode");
+        }
+        return { prelude: block.prelude, tokens: parseTokens(block.body, includeAlpha) };
+    })
         .filter((block) => block.tokens.size > 0);
     if (declaring.length === 0)
         throw new Error("no block in the voice CSS declares any oklch token");
