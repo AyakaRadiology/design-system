@@ -8,7 +8,8 @@ import ts from "typescript";
  * colour.
  */
 export function parseTsx(file, text) {
-    return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const scriptKind = /\.(?:ts|mts|cts)$/i.test(file) ? ts.ScriptKind.TS : ts.ScriptKind.TSX;
+    return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind);
 }
 /** 1-based line and column of an absolute offset. */
 export function positionAt(source, offset) {
