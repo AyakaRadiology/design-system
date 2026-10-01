@@ -1,4 +1,4 @@
-import { globSync, readFileSync } from "node:fs";
+import { globSync, readFileSync, statSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import postcss from "postcss";
 import { matchesAny } from "./glob.js";
@@ -19,7 +19,8 @@ function ruleContext(config) {
 export function selectFiles(config) {
     const found = globSync(config.include, { cwd: config.root })
         .map((path) => toPosix(relative(config.root, resolve(config.root, path))))
-        .filter((path) => !matchesAny(path, config.exclude));
+        .filter((path) => !matchesAny(path, config.exclude))
+        .filter((path) => statSync(resolve(config.root, path)).isFile());
     return [...new Set(found)].sort();
 }
 /**
