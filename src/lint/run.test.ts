@@ -43,6 +43,13 @@ const THEME =
     ":root {\n  --accent: oklch(0.8 0.12 195);\n  --x-needle-tracker: var(--chart-1);\n}\n";
 
 describe("selectFiles", () => {
+    it("selects only regular files when src/** also matches directories", () => {
+        const config = loadConfig(
+            project({ "src/Button.tsx": CLEAN }, { ...BASE, include: ["src/**"] }),
+        );
+        expect(selectFiles(config)).toEqual(["src/Button.tsx"]);
+    });
+
     it("returns the included files, relative to the config, in a stable order", () => {
         const config = loadConfig(
             project(
@@ -79,6 +86,19 @@ describe("selectFiles", () => {
 });
 
 describe("run", () => {
+    it.each([
+        [CLEAN, 0],
+        [OFFENDING, 1],
+    ] as const)("lints src/** without reading directories (%s)", (source, exitCode) => {
+        const config = loadConfig(
+            project({ "src/Button.tsx": source }, { ...BASE, include: ["src/**"] }),
+        );
+        const result = run(config);
+        expect(result.filesChecked).toBe(1);
+        expect(result.exitCode).toBe(exitCode);
+        expect(result.findings.every((finding) => finding.file === "src/Button.tsx")).toBe(true);
+    });
+
     it("passes a clean project", () => {
         const result = run(
             loadConfig(project({ "src/a.tsx": CLEAN, "src/styles/theme.css": THEME }, BASE)),
