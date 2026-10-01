@@ -1,3 +1,4 @@
+import { decodeHTMLStrict } from "entities";
 import ts from "typescript";
 import type { RuleContext, RuleFinding, RuleId } from "./types.js";
 
@@ -31,6 +32,21 @@ export function walk(node: ts.Node, visit: (node: ts.Node) => void): void {
     node.forEachChild((child) => walk(child, visit));
 }
 
+/** Map decoded UTF-16 units back to the source, including expanded entities. */
+function decodeJsxAttribute(text: string): { text: string; offsets: number[] } {
+    let decoded = "";
+    const offsets: number[] = [];
+    for (const match of text.matchAll(/&(?:#\d+|#[xX][\da-fA-F]+|\w+);|[^&]+|&/g)) {
+        const raw = match[0];
+        const value = raw.startsWith("&") ? decodeHTMLStrict(raw) : raw;
+        for (let i = 0; i < value.length; i++) {
+            offsets.push(match.index + (value === raw ? i : 0));
+        }
+        decoded += value;
+    }
+    return { text: decoded, offsets };
+}
+
 /**
  * Every string the source spells out: a quoted literal, a bare template, and
  * each fixed chunk of a template with substitutions.
@@ -43,11 +59,16 @@ export function walk(node: ts.Node, visit: (node: ts.Node) => void): void {
  */
 export function forEachStringLiteral(
     source: ts.SourceFile,
-    visit: (text: string, start: number) => void,
+    visit: (text: string, start: number, offsets?: readonly number[]) => void,
 ): void {
     walk(source, (node) => {
         if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
-            visit(node.text, node.getStart() + 1);
+            if (ts.isStringLiteral(node) && ts.isJsxAttribute(node.parent)) {
+                const { text, offsets } = decodeJsxAttribute(node.text);
+                visit(text, node.getStart() + 1, offsets);
+            } else {
+                visit(node.text, node.getStart() + 1);
+            }
         } else if (
             ts.isTemplateHead(node) ||
             ts.isTemplateMiddle(node) ||
@@ -67,11 +88,12 @@ export function findInStringLiterals(
     message: (match: string) => string,
 ): RuleFinding[] {
     const findings: RuleFinding[] = [];
-    forEachStringLiteral(source, (text, start) => {
+    forEachStringLiteral(source, (text, start, offsets) => {
         // A fresh RegExp per string: a shared /g/ instance carries lastIndex
         // between calls and would skip roughly half the matches.
         for (const match of text.matchAll(new RegExp(pattern.source, `${pattern.flags}g`))) {
-            const offset = match.index ?? 0;
+            const index = match.index ?? 0;
+            const offset = offsets?.[index] ?? index;
             findings.push({
                 rule,
                 file,
