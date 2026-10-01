@@ -10,7 +10,8 @@ import type { RuleContext, RuleFinding, RuleId } from "./types.js";
  * colour.
  */
 export function parseTsx(file: string, text: string): ts.SourceFile {
-    return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const scriptKind = /\.(?:ts|mts|cts)$/i.test(file) ? ts.ScriptKind.TS : ts.ScriptKind.TSX;
+    return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind);
 }
 
 export interface Position {
