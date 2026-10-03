@@ -43,9 +43,7 @@ function height(value: number, max: number): number {
 const SLOT_CLASSES = "flex h-full min-w-px flex-1 items-end";
 
 function Bar({ percent, fill, label }: { percent: number; fill: string; label?: string }) {
-    const bar = (
-        <div className={cn("w-full rounded-sm", fill)} style={{ height: `${percent}%` }} />
-    );
+    const bar = <div className={cn("w-full rounded-sm", fill)} style={{ height: `${percent}%` }} />;
     return label === undefined ? (
         <div className={SLOT_CLASSES}>{bar}</div>
     ) : (

@@ -26,7 +26,7 @@ function height(value, max) {
 }
 const SLOT_CLASSES = "flex h-full min-w-px flex-1 items-end";
 function Bar({ percent, fill, label }) {
-    const bar = (_jsx("div", { className: cn("w-full rounded-sm", fill), style: { height: `${percent}%` } }));
+    const bar = _jsx("div", { className: cn("w-full rounded-sm", fill), style: { height: `${percent}%` } });
     return label === undefined ? (_jsx("div", { className: SLOT_CLASSES, children: bar })) : (_jsx("div", { role: "img", "aria-label": label, className: SLOT_CLASSES, children: bar }));
 }
 /** A fixed-height strip of bars for the last N samples, with no axes. */
