@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/AyakaRadiology/design-system/compare/v0.5.1...v0.6.0) (2026-10-03)
+
+
+### Features
+
+* add Sparkline and MiniBars chart primitives ([#69](https://github.com/AyakaRadiology/design-system/issues/69)) ([3109f06](https://github.com/AyakaRadiology/design-system/commit/3109f06fd2f77018672367932a2f00d8087da8f9))
+
+
+### Bug Fixes
+
+* [agent-found] src/react/Sparkline.tsx:26 Displaying an hour of frame-time samples recorded at 60 Hz ( ([#73](https://github.com/AyakaRadiology/design-system/issues/73)) ([b1c5f6f](https://github.com/AyakaRadiology/design-system/commit/b1c5f6f9601a487684245045a9e6e054cde70cb6)), closes [#72](https://github.com/AyakaRadiology/design-system/issues/72)
+
 ## [0.5.1](https://github.com/AyakaRadiology/design-system/compare/v0.5.0...v0.5.1) (2026-10-03)
 
 
