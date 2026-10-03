@@ -154,6 +154,31 @@ describe("Toolbar", () => {
 });
 
 describe("Panel", () => {
+    it.each(["T", undefined])("renders a subdued description with title %s", (title) => {
+        const { container } = render(
+            <Panel title={title} description="one-line">
+                body
+            </Panel>,
+        );
+        const description = screen.getByText("one-line");
+        expect(description).toHaveClass("text-sm", "text-text-secondary");
+        expect(container.querySelector(".border-b")).toContainElement(description);
+        if (title !== undefined) {
+            expect(description.previousElementSibling).toBe(screen.getByText(title));
+        }
+        expect(container.firstElementChild).not.toHaveAttribute("description");
+    });
+
+    it.each([
+        ["grid grid-cols-2", "p-4 grid grid-cols-2"],
+        ["p-2", "p-2"],
+    ])("merges body classes %s without leaking them to the outer div", (classes, expected) => {
+        const { container } = render(<Panel contentClassName={classes}>x</Panel>);
+        expect(screen.getByText("x")).toHaveClass(expected, { exact: true });
+        expect(container.firstElementChild).not.toHaveAttribute("contentClassName");
+        expect(container.firstElementChild).not.toHaveClass(...classes.split(" "));
+    });
+
     it("renders a header when there is a title", () => {
         render(<Panel title="Tracker">body</Panel>);
         expect(screen.getByText("Tracker")).toHaveClass("text-sm", "font-semibold");
@@ -171,6 +196,9 @@ describe("Panel", () => {
     it("renders no header when there is neither a title nor actions", () => {
         const { container } = render(<Panel>body</Panel>);
         expect(container.querySelector(".border-b")).toBeNull();
-        expect(screen.getByText("body")).toBeInTheDocument();
+        expect(screen.getByText("body")).toHaveClass("p-4", { exact: true });
+        expect(container.firstElementChild).toHaveClass("rounded-lg border border-border bg-bg", {
+            exact: true,
+        });
     });
 });

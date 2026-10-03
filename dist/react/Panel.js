@@ -7,7 +7,7 @@ import { cn } from "./cn.js";
  * header would still draw its bottom border, which reads as a divider above
  * nothing.
  */
-export function Panel({ title, actions, children, className, ...props }) {
-    const hasHeader = title !== undefined || actions !== undefined;
-    return (_jsxs("div", { className: cn("rounded-lg border border-border bg-bg", className), ...props, children: [hasHeader && (_jsxs("div", { className: "flex items-center justify-between border-b border-border px-4 py-2", children: [_jsx("div", { className: "text-sm font-semibold", children: title }), actions] })), _jsx("div", { className: "p-4", children: children })] }));
+export function Panel({ title, description, actions, contentClassName, children, className, ...props }) {
+    const hasHeader = title !== undefined || description !== undefined || actions !== undefined;
+    return (_jsxs("div", { className: cn("rounded-lg border border-border bg-bg", className), ...props, children: [hasHeader && (_jsxs("div", { className: "flex items-center justify-between border-b border-border px-4 py-2", children: [_jsxs("div", { children: [_jsx("div", { className: "text-sm font-semibold", children: title }), description !== undefined && (_jsx("div", { className: "text-sm text-text-secondary", children: description }))] }), actions] })), _jsx("div", { className: cn("p-4", contentClassName), children: children })] }));
 }
