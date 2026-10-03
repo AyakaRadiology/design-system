@@ -1,5 +1,6 @@
 export { BuildStamp, type BuildStampProps } from "./BuildStamp.js";
 export { Button, type ButtonProps, buttonVariants } from "./Button.js";
+export { CHART_SLOTS, type ChartSlot } from "./chart.js";
 export { type ClassValue, cn } from "./cn.js";
 export {
     Dialog,
@@ -14,10 +15,12 @@ export { Field, type FieldProps } from "./Field.js";
 export { Glass, type GlassProps } from "./Glass.js";
 export { IconButton, type IconButtonProps } from "./IconButton.js";
 export { Input, type InputProps } from "./Input.js";
+export { MiniBars, type MiniBarsProps } from "./MiniBars.js";
 export { Numeric, type NumericProps } from "./Numeric.js";
 export { Panel, type PanelProps } from "./Panel.js";
 export { RadioGroup, type RadioGroupOption, type RadioGroupProps } from "./RadioGroup.js";
 export { Select, type SelectOption, type SelectProps } from "./Select.js";
+export { Sparkline, type SparklineProps } from "./Sparkline.js";
 export {
     STATUS_STATES,
     type Status,

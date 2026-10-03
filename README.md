@@ -143,7 +143,7 @@ import { Button, Panel, StatusPill } from "@ayaka/design-system/react";
 
 `Button`, `IconButton`, `Numeric`, `StatusPill`, `Toolbar`, `Panel`, `Field`,
 `Input`, `Select`, `Switch`, `RadioGroup`, `Dialog`, `DialogBody`, `Tooltip`,
-`BuildStamp`. The props **are** the
+`BuildStamp`, `Sparkline`, `MiniBars`. The props **are** the
 contract and they are deliberately small: a prop that carries a domain type
 (`NeedleData`, `Volume`) belongs in the product repo, not here.
 
