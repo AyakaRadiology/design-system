@@ -6,8 +6,15 @@ const HEIGHT = 24;
 /** Keeps a stroke centred on the first/last/min/max point inside the viewBox. */
 const PAD = 1;
 function extent(values) {
-    const finite = values.filter(Number.isFinite);
-    return finite.length === 0 ? null : [Math.min(...finite), Math.max(...finite)];
+    let low = Infinity;
+    let high = -Infinity;
+    for (const value of values) {
+        if (!Number.isFinite(value))
+            continue;
+        low = Math.min(low, value);
+        high = Math.max(high, value);
+    }
+    return low === Infinity ? null : [low, high];
 }
 function path(values, [low, high]) {
     const span = high - low;
