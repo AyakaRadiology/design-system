@@ -5,9 +5,18 @@ const WIDTH = 100;
 const HEIGHT = 24;
 /** Keeps a stroke centred on the first/last/min/max point inside the viewBox. */
 const PAD = 1;
-function extent(values) {
-    const finite = values.filter(Number.isFinite);
-    return finite.length === 0 ? null : [Math.min(...finite), Math.max(...finite)];
+function extent(points, comparison = []) {
+    let low = Number.POSITIVE_INFINITY;
+    let high = Number.NEGATIVE_INFINITY;
+    for (const values of [points, comparison]) {
+        for (const value of values) {
+            if (!Number.isFinite(value))
+                continue;
+            low = Math.min(low, value);
+            high = Math.max(high, value);
+        }
+    }
+    return low === Number.POSITIVE_INFINITY ? null : [low, high];
 }
 function path(values, [low, high]) {
     const span = high - low;
@@ -35,6 +44,6 @@ function path(values, [low, high]) {
  * series-vs-status separation every voice is held to.
  */
 export function Sparkline({ points, domain, comparison, label, className, ...props }) {
-    const range = domain ?? extent([...points, ...(comparison ?? [])]) ?? [0, 0];
+    const range = domain ?? extent(points, comparison) ?? [0, 0];
     return (_jsxs("svg", { viewBox: `0 0 ${WIDTH} ${HEIGHT}`, preserveAspectRatio: "none", fill: "none", "data-ds-chart": "sparkline", className: cn("h-6 w-full overflow-visible", className), role: label ? "img" : undefined, "aria-label": label, "aria-hidden": label ? undefined : true, ...props, children: [comparison ? (_jsx("path", { d: path(comparison, range), stroke: "currentColor", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round", vectorEffect: "non-scaling-stroke", className: "text-chart-2", "data-ds-series": "comparison" })) : null, _jsx("path", { d: path(points, range), stroke: "currentColor", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round", vectorEffect: "non-scaling-stroke", className: "text-chart-1", "data-ds-series": "primary" })] }));
 }
