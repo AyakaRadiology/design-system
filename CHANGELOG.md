@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.1](https://github.com/AyakaRadiology/design-system/compare/v0.5.0...v0.5.1) (2026-10-03)
+
+
+### Bug Fixes
+
+* [agent-found] dist/lint/config.js:16 A malformed configuration containing "rules": [] silently di ([#51](https://github.com/AyakaRadiology/design-system/issues/51)) ([b4f9ee0](https://github.com/AyakaRadiology/design-system/commit/b4f9ee02f025bd664023bcec375f3f67e4556a1a)), closes [#45](https://github.com/AyakaRadiology/design-system/issues/45)
+* [agent-found] dist/lint/config.js:90 Using "./src/styles/theme.css" instead of "src/styles/theme. ([#52](https://github.com/AyakaRadiology/design-system/issues/52)) ([dd0f678](https://github.com/AyakaRadiology/design-system/commit/dd0f678bb3733af064f51bdd9fb7f191eccd9a0e)), closes [#46](https://github.com/AyakaRadiology/design-system/issues/46)
+* [agent-found] dist/lint/contrast.js:205 Nested color declarations overwrite the enclosing palette in ([#53](https://github.com/AyakaRadiology/design-system/issues/53)) ([d751f99](https://github.com/AyakaRadiology/design-system/commit/d751f993db6d353bc45b3ff2f6fd312ee2c6ef02)), closes [#47](https://github.com/AyakaRadiology/design-system/issues/47)
+* [agent-found] dist/lint/glob.js:24 Combining supported brace alternation with globstar misses f ([#58](https://github.com/AyakaRadiology/design-system/issues/58)) ([5b1d3f8](https://github.com/AyakaRadiology/design-system/commit/5b1d3f8511ede2d99a1b5dc6c4e299c387931f60)), closes [#55](https://github.com/AyakaRadiology/design-system/issues/55)
+* [agent-found] dist/lint/glob.js:25 Exclusion and allowlist globs fail for files beneath directo ([#59](https://github.com/AyakaRadiology/design-system/issues/59)) ([e70744d](https://github.com/AyakaRadiology/design-system/commit/e70744d115cbfe2b84db740f5957f2d1de201b2c)), closes [#56](https://github.com/AyakaRadiology/design-system/issues/56)
+* [agent-found] dist/lint/glob.js:40 An exact exclusion or allowlist path containing literal brac ([#57](https://github.com/AyakaRadiology/design-system/issues/57)) ([5eb1ae2](https://github.com/AyakaRadiology/design-system/commit/5eb1ae288430269fb1031e5e36cf8682ac484134)), closes [#54](https://github.com/AyakaRadiology/design-system/issues/54)
+* [agent-found] src/lint/run.ts:33 Use include: ["src/**"] in a project containing src/Button.t ([#63](https://github.com/AyakaRadiology/design-system/issues/63)) ([725fc37](https://github.com/AyakaRadiology/design-system/commit/725fc3747dbe2204323fa57547479a476bf2142d)), closes [#60](https://github.com/AyakaRadiology/design-system/issues/60)
+* [agent-found] src/lint/tsx.ts:13 Lint a valid a.ts containing `const identity = &lt;T&gt;(value: T) ([#64](https://github.com/AyakaRadiology/design-system/issues/64)) ([8f106fa](https://github.com/AyakaRadiology/design-system/commit/8f106faa46ed8bb89334214894a7cac7e2e633e6)), closes [#61](https://github.com/AyakaRadiology/design-system/issues/61)
+* [agent-found] src/lint/tsx.ts:49 Lint `const view = <svg fill="&[#35](https://github.com/AyakaRadiology/design-system/issues/35);ff0000" />;` with L1 enab ([#65](https://github.com/AyakaRadiology/design-system/issues/65)) ([592d74f](https://github.com/AyakaRadiology/design-system/commit/592d74f8fc895a1fc68537b42749bc0e565fb5c7))
+* [security] high: brace-expansion GHSA-qhr7-859c-m2p7 brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exha… ([#49](https://github.com/AyakaRadiology/design-system/issues/49)) ([dd9caed](https://github.com/AyakaRadiology/design-system/commit/dd9caed7a6a376a2f2555cb99ddfe26d20dc0d81)), closes [#44](https://github.com/AyakaRadiology/design-system/issues/44)
+* feat: Panel gains description and contentClassName props ([#68](https://github.com/AyakaRadiology/design-system/issues/68)) ([dddf77d](https://github.com/AyakaRadiology/design-system/commit/dddf77de7e2a634365bccf29b973665472ccaba8)), closes [#23](https://github.com/AyakaRadiology/design-system/issues/23)
+
 ## [0.5.0](https://github.com/AyakaRadiology/design-system/compare/v0.4.0...v0.5.0) (2026-09-09)
 
 
