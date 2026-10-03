@@ -22,8 +22,14 @@ export interface SparklineProps extends Omit<SVGAttributes<SVGSVGElement>, "poin
 }
 
 function extent(values: readonly number[]): [number, number] | null {
-    const finite = values.filter(Number.isFinite);
-    return finite.length === 0 ? null : [Math.min(...finite), Math.max(...finite)];
+    let low = Infinity;
+    let high = -Infinity;
+    for (const value of values) {
+        if (!Number.isFinite(value)) continue;
+        low = Math.min(low, value);
+        high = Math.max(high, value);
+    }
+    return low === Infinity ? null : [low, high];
 }
 
 function path(values: readonly number[], [low, high]: readonly [number, number]): string {

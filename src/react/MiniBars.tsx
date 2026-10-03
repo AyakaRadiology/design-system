@@ -62,7 +62,12 @@ export function MiniBars({
     className,
     ...props
 }: MiniBarsProps) {
-    const ceiling = max ?? Math.max(0, ...values.filter(Number.isFinite));
+    const ceiling =
+        max ??
+        values.reduce(
+            (largest, value) => (Number.isFinite(value) ? Math.max(largest, value) : largest),
+            0,
+        );
     const named = labels !== undefined;
     // A window of samples has no ids; the position in it is the identity.
     const bars = values.map((value, position) => ({
