@@ -25,12 +25,16 @@ permissions:
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+    # Only superseded PR pushes are cancelled; a main push or v* tag run is
+    # the record for that commit and must always finish.
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
     check:
         name: Quality Check
         runs-on: ubuntu-latest
+        # Measured: runs take ~65 s (p95 well under 2 min); 10 min is a hang guard.
+        timeout-minutes: 10
         steps:
             # Deliberately no path filter anywhere in this workflow. "Quality
             # Check" is the merge gate, and a filtered-out pull request never
@@ -55,6 +59,22 @@ jobs:
 
             - name: Install dependencies
               run: bun install --frozen-lockfile
+
+            # `bun run check` installs Chromium into node_modules/.cache/ms-playwright
+            # (tests/consumer/run.sh, tools/storybook-smoke.ts). Cache that exact
+            # directory, keyed on the locked Playwright version. Restored AFTER
+            # bun install, which leaves node_modules/.cache alone. Both scripts
+            # still run `playwright install` every time: a no-op on a full hit,
+            # and it repairs a partial cache.
+            - name: Resolve locked Playwright version
+              id: playwright
+              run: echo "version=$(grep -oP '"playwright@\K[0-9][^"]*' bun.lock | head -n1)" >> "$GITHUB_OUTPUT"
+
+            - name: Cache Playwright browsers
+              uses: actions/cache@v6
+              with:
+                  path: node_modules/.cache/ms-playwright
+                  key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
 
             - name: Check
               run: bun run check

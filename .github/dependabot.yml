@@ -1,0 +1,33 @@
+version: 2
+
+# Mirrors needle-protocol's config: weekly grouped update PRs; majors are left
+# out of the groups so each arrives as its own PR with its own CI run.
+# `bun` is a beta ecosystem in Dependabot; the opt-in flag is required for
+# bun.lock updates to be picked up at all.
+enable-beta-ecosystems: true
+
+updates:
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+      prefix-development: chore(deps-dev)
+    groups:
+      ts-deps:
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      gh-actions:
+        patterns: ['*']
+        update-types: ['minor', 'patch']
