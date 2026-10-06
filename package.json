@@ -60,6 +60,9 @@
         "storybook:test": "bun tools/storybook-smoke.ts",
         "storybook:check": "bun run storybook:build && bun run storybook:test"
     },
+    "overrides": {
+        "source-map-js": "1.2.2"
+    },
     "peerDependencies": {
         "react": "^19",
         "react-dom": "^19",
