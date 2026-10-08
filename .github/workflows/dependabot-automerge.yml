@@ -1,0 +1,34 @@
+# Mechanical auto-merge for Dependabot PRs. The whole implementation is
+# shared across every repo in both owners and lives in one place:
+# https://github.com/Lin214ia/workflows/blob/main/.github/workflows/dependabot-automerge.yml
+# Only `runs-on` belongs to this repo. Change behaviour there, not here.
+#
+# Direction (Harry, 2026-09-27 chat): patch/minor Dependabot PRs merge
+# themselves once CI is green; majors are left for an agent to review weekly.
+#
+# `pull_request_target`, but this workflow (and the one it calls) never checks
+# out or runs any PR code -- only trusted Dependabot metadata and `gh`.
+#
+# runs-on: GitHub-hosted ubuntu-latest, like this repository's CI -- it is
+# public, so hosted minutes are free.
+name: Dependabot auto-merge
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot-automerge:
+    if: github.actor == 'dependabot[bot]'
+    uses: Lin214ia/workflows/.github/workflows/dependabot-automerge.yml@99dfe7b57cff656c0ff42c69cbf5d4e06a2dd293 # v1.1.0
+    with:
+      runs-on: '"ubuntu-latest"'
+    secrets:
+      # Merge identity: the App token that arms auto-merge so the merge fires push workflows
+      # (post-merge CI, release-please). A Dependabot-triggered run only sees DEPENDABOT secrets.
+      app-id: ${{ secrets.RELEASE_BOT_APP_ID }}
+      app-private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
