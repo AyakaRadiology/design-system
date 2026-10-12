@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/AyakaRadiology/design-system/compare/v0.6.0...v0.6.1) (2026-10-08)
+
+
+### Bug Fixes
+
+* [security] high: source-map-js 1 advisories (GHSA-68fv-2mgg-jv7q) source-map-js allows event-loop denial of service through i… ([#79](https://github.com/AyakaRadiology/design-system/issues/79)) ([53db7fc](https://github.com/AyakaRadiology/design-system/commit/53db7fc101a379b3ccc4124366134463904f64c4)), closes [#78](https://github.com/AyakaRadiology/design-system/issues/78)
+
 ## [0.6.0](https://github.com/AyakaRadiology/design-system/compare/v0.5.1...v0.6.0) (2026-10-03)
 
 
