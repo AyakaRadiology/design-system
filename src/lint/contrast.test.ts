@@ -106,6 +106,33 @@ describe("deltaE", () => {
 });
 
 describe("parseTokens", () => {
+    it.each([" broken", " oklch(0 0 0)", " !important broken", " !important !important"])(
+        "rejects trailing syntax %s after an oklch colour",
+        (suffix) => {
+            expect(() => parseTokens(`:root { --text: oklch(0.94 0.008 100)${suffix}; }`)).toThrow(
+                /not an oklch/,
+            );
+        },
+    );
+
+    it.each([
+        "; }",
+        " }",
+        "",
+        "  \n; }",
+        " /* comment; } */; }",
+        " /* comment */",
+        " !important; }",
+        " ! /* comment */ IMPORTANT }",
+    ])("reads a complete colour with declaration ending %j", (ending) => {
+        expect(parseTokens(`:root { --text: oklch(0.94 0.008 100)${ending}`).get("text")).toEqual({
+            l: 0.94,
+            c: 0.008,
+            h: 100,
+            alpha: 1,
+        });
+    });
+
     it("reads every opaque oklch declaration", () => {
         const tokens = parseTokens("--bg: oklch(0.2 0.015 225); --text: oklch(0.94 0.008 100);");
         expect(tokens.get("bg")).toEqual({ l: 0.2, c: 0.015, h: 225, alpha: 1 });

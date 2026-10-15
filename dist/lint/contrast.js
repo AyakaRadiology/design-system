@@ -114,7 +114,8 @@ export function deltaE(a, b) {
 }
 /* Digits are part of a token name — the categorical chart slots are
  * `--chart-1`..`--chart-5`. */
-const TOKEN_PATTERN = /--([a-z0-9-]+):\s*(oklch\([^)]*\))/g;
+// Capture the whole declaration value so parseOklch rejects trailing garbage.
+const TOKEN_PATTERN = /--([a-z0-9-]+):\s*(oklch\([^;}]*)(?=[;}]|$)/g;
 /**
  * Every `--name: oklch(…)` declaration in a CSS block, by token name.
  *
@@ -124,10 +125,10 @@ const TOKEN_PATTERN = /--([a-z0-9-]+):\s*(oklch\([^)]*\))/g;
  */
 export function parseTokens(css, includeAlpha = false) {
     const tokens = new Map();
-    for (const [, name, value] of css.matchAll(TOKEN_PATTERN)) {
+    for (const [, name, value] of css.replace(COMMENT_PATTERN, "").matchAll(TOKEN_PATTERN)) {
         if (!name || !value)
             continue;
-        const parsed = parseOklch(value);
+        const parsed = parseOklch(value.replace(/\s*!\s*important\s*$/i, ""));
         if (includeAlpha || parsed.alpha === 1)
             tokens.set(name, parsed);
     }
