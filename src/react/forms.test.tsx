@@ -9,6 +9,42 @@ import { Select } from "./Select.js";
 import { Switch } from "./Switch.js";
 
 describe("Field", () => {
+    it.each([
+        { name: "empty", nodes: [] },
+        { name: "empty values", nodes: [null, false, ""] },
+        { name: "nested empty", nodes: [[], [null, [false, ""]]] },
+    ])("omits $name arrays from error and hint wiring", ({ nodes }) => {
+        const { container, rerender } = render(
+            <Field label="Port" error={nodes}>
+                <input />
+            </Field>,
+        );
+        const input = screen.getByRole("textbox");
+        expect(input).not.toHaveAttribute("aria-invalid");
+        expect(input).not.toHaveAttribute("aria-describedby");
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        expect(container.querySelector("p")).toBeNull();
+
+        rerender(
+            <Field label="Port" hint={nodes}>
+                <input />
+            </Field>,
+        );
+        expect(input).not.toHaveAttribute("aria-describedby");
+        expect(container.querySelector("p")).toBeNull();
+    });
+
+    it.each(["required", 0])("preserves visible nested array content: %s", (message) => {
+        render(
+            <Field label="Port" hint={[null, [message]]} error={[[], [false, message]]}>
+                <input />
+            </Field>,
+        );
+        expect(screen.getByRole("textbox")).toHaveAttribute("aria-invalid", "true");
+        expect(screen.getByRole("textbox")).toHaveAccessibleDescription(`${message} ${message}`);
+        expect(screen.getByRole("alert")).toHaveTextContent(String(message));
+    });
+
     it("points the label at the control it wraps", () => {
         render(
             <Field label="Port">

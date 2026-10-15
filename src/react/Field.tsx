@@ -41,6 +41,7 @@ interface WiredProps {
  * control with an empty red paragraph under it, on a field with nothing wrong.
  */
 function rendersNothing(node: ReactNode): boolean {
+    if (Array.isArray(node)) return node.every(rendersNothing);
     return node === null || node === undefined || typeof node === "boolean" || node === "";
 }
 
