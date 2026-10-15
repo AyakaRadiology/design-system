@@ -36,6 +36,27 @@ describe("parseTsx", () => {
 });
 
 describe("JSX attribute entities", () => {
+    it.each(["&#1114112;", "&#x110000;", `&#${"9".repeat(400)};`, `&#x${"f".repeat(400)};`])(
+        "preserves invalid numeric references and continues linting: %s",
+        (entity) => {
+            const text = `const view = <div title="${entity}" color="#ff0000" />;`;
+            const source = parseTsx("a.tsx", text);
+            const literals: string[] = [];
+            expect(() =>
+                forEachStringLiteral(source, (value) => literals.push(value)),
+            ).not.toThrow();
+            expect(literals).toEqual([entity, "#ff0000"]);
+            expect(L1.checkTsx?.("a.tsx", source, context)).toContainEqual(
+                expect.objectContaining({
+                    rule: "L1",
+                    line: 1,
+                    col: text.indexOf("#ff0000") + 1,
+                    message: expect.stringContaining("#ff0000"),
+                }),
+            );
+        },
+    );
+
     it.each(["&#35;", "&#x23;"])("finds a colour encoded with %s", (entity) => {
         const text = `const view = <svg fill="${entity}ff0000" />;`;
         expect(L1.checkTsx?.("a.tsx", parseTsx("a.tsx", text), context)).toEqual([

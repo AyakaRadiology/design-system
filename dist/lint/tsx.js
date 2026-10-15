@@ -64,7 +64,9 @@ function decodeJsxAttribute(text) {
             : hex
                 ? Number.parseInt(hex, 16)
                 : JSX_NAMED_ENTITIES.get(name ?? "");
-        const value = codePoint === undefined ? raw : String.fromCodePoint(codePoint);
+        const value = codePoint !== undefined && codePoint >= 0 && codePoint <= 0x10ffff
+            ? String.fromCodePoint(codePoint)
+            : raw;
         for (let i = 0; i < value.length; i++) {
             offsets.push(match.index + (value === raw ? i : 0));
         }
