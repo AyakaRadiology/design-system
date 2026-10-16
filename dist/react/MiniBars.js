@@ -31,8 +31,9 @@ function Bar({ percent, fill, label }) {
 }
 /** A fixed-height strip of bars for the last N samples, with no axes. */
 export function MiniBars({ values, max, series = "chart-1", labels, className, ...props }) {
-    const ceiling = max ??
-        values.reduce((largest, value) => (Number.isFinite(value) ? Math.max(largest, value) : largest), 0);
+    const ceiling = max !== undefined && Number.isFinite(max)
+        ? max
+        : values.reduce((largest, value) => (Number.isFinite(value) ? Math.max(largest, value) : largest), 0);
     const named = labels !== undefined;
     // A window of samples has no ids; the position in it is the identity.
     const bars = values.map((value, position) => ({
