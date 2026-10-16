@@ -37,7 +37,10 @@ export function Field({ label, hint, error, htmlFor, children, className }) {
     const hasError = !rendersNothing(error);
     const hintId = hasHint ? `${controlId}-hint` : undefined;
     const errorId = hasError ? `${controlId}-error` : undefined;
-    const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
+    const existingDescription = isValidElement(child)
+        ? child.props["aria-describedby"]
+        : undefined;
+    const describedBy = [existingDescription, hintId, errorId].filter(Boolean).join(" ") || undefined;
     const control = isValidElement(child)
         ? cloneElement(child, {
             id: controlId,
