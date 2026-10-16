@@ -82,7 +82,7 @@ export function parseOklch(value) {
         l: Number(l),
         c: Number(c),
         h: Number(h),
-        alpha: alpha === undefined ? 1 : Number(alpha) / (percent === "%" ? 100 : 1),
+        alpha: alpha === undefined ? 1 : clamp01(Number(alpha) / (percent === "%" ? 100 : 1)),
     };
 }
 const asOklch = (colour) => typeof colour === "string" ? parseOklch(colour) : colour;
