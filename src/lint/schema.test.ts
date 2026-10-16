@@ -150,6 +150,23 @@ describe("validateTailwindMapping", () => {
         expect(validateTailwindMapping(read("tailwind.css"), schema)).toEqual([]);
     });
 
+    it.each([
+        ":root { --color-bg: var(--bg); }",
+        "@theme { --color-bg: var(--bg); }",
+        "@theme inline { --color-bg: var(--other); }",
+        "@theme inline { --color-bg: #fff; }",
+    ])("rejects an unusable colour mapping: %s", (css) => {
+        const bgSchema = {
+            ...schema,
+            tokens: Object.fromEntries(
+                Object.entries(schema.tokens).filter(([name]) => name === "bg"),
+            ),
+        };
+        expect(validateTailwindMapping(css, bgSchema)).toEqual([
+            { code: "missing", token: "bg", where: "@theme inline" },
+        ]);
+    });
+
     it("reports a colour token with no utility mapping", () => {
         expect(
             validateTailwindMapping("@theme inline {\n  --color-bg: var(--bg);\n}", schema).length,

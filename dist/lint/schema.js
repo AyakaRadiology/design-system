@@ -207,7 +207,7 @@ export function validateScales(css, schema) {
     return violations;
 }
 /**
- * Every colour token must have a `--color-<name>` line in `tailwind.css`.
+ * Every colour token must map to its runtime variable in `@theme inline`.
  *
  * A colour with no mapping generates no utility, so the only way to reach it
  * from a component is the literal that rule L1 exists to reject — the token
@@ -220,7 +220,9 @@ export function validateTailwindMapping(css, schema) {
     for (const [name, spec] of Object.entries(schema.tokens)) {
         if (spec.type !== "color")
             continue;
-        if (!declared.has(`color-${name}`))
+        if (!declared
+            .get(`color-${name}`)
+            ?.some(({ selector, value }) => selector === THEME_INLINE && value === `var(--${name})`))
             violations.push({ code: "missing", token: name, where: THEME_INLINE });
     }
     return violations;

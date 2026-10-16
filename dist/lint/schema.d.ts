@@ -66,7 +66,7 @@ export declare function validateVoice(css: string, schema: Schema): Violation[];
  */
 export declare function validateScales(css: string, schema: Schema): Violation[];
 /**
- * Every colour token must have a `--color-<name>` line in `tailwind.css`.
+ * Every colour token must map to its runtime variable in `@theme inline`.
  *
  * A colour with no mapping generates no utility, so the only way to reach it
  * from a component is the literal that rule L1 exists to reject — the token
