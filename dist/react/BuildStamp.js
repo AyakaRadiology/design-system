@@ -21,10 +21,12 @@ const PLATE_CLASSES = "inline-flex flex-wrap items-baseline gap-x-2 rounded-md b
 export function BuildStamp(props) {
     if (isInteractive(props)) {
         const { name, describe, buildTime, formatBuildTime, className, "aria-label": ariaLabel, ...buttonProps } = props;
-        const shownBuildTime = formatBuildTime ? formatBuildTime(buildTime) : buildTime;
+        const shownBuildTime = formatBuildTime && isMachineReadable(buildTime)
+            ? formatBuildTime(buildTime)
+            : buildTime;
         return (_jsx(Button, { size: "sm", "aria-label": ariaLabel ?? `${name} ${describe} ${shownBuildTime}`, className: cn(PLATE_CLASSES, "h-auto font-normal hover:bg-bg-subtle", className), ...buttonProps, children: _jsx(BuildStampParts, { name: name, describe: describe, buildTime: buildTime, shownBuildTime: shownBuildTime }) }));
     }
     const { name, describe, buildTime, formatBuildTime, className, ...spanProps } = props;
-    const shownBuildTime = formatBuildTime ? formatBuildTime(buildTime) : buildTime;
+    const shownBuildTime = formatBuildTime && isMachineReadable(buildTime) ? formatBuildTime(buildTime) : buildTime;
     return (_jsx("span", { className: cn(PLATE_CLASSES, className), ...spanProps, children: _jsx(BuildStampParts, { name: name, describe: describe, buildTime: buildTime, shownBuildTime: shownBuildTime }) }));
 }

@@ -613,6 +613,56 @@ describe("BuildStamp", () => {
         );
     });
 
+    for (const interactive of [false, true]) {
+        it(`preserves preworded build time with an ISO formatter (${interactive ? "interactive" : "static"})`, () => {
+            const buildTime = "built 2026-01-01 00:00 UTC";
+            const format = vi.fn((iso: string) => new Date(iso).toISOString());
+            const { container } = render(
+                <BuildStamp
+                    name="app"
+                    describe="v1"
+                    buildTime={buildTime}
+                    formatBuildTime={format}
+                    {...(interactive ? { onClick: vi.fn() } : {})}
+                />,
+            );
+            expect(format).not.toHaveBeenCalled();
+            expect(screen.getByText(buildTime).tagName).toBe("SPAN");
+            expect(container.querySelector("time")).toBeNull();
+            if (interactive) {
+                expect(screen.getByRole("button")).toHaveAttribute(
+                    "aria-label",
+                    `app v1 ${buildTime}`,
+                );
+            }
+        });
+
+        it(`formats ISO build time (${interactive ? "interactive" : "static"})`, () => {
+            const buildTime = "2026-01-01T00:00:00Z";
+            const shownBuildTime = "2026-01-01T00:00:00.000Z";
+            const format = vi.fn((iso: string) => new Date(iso).toISOString());
+            render(
+                <BuildStamp
+                    name="app"
+                    describe="v1"
+                    buildTime={buildTime}
+                    formatBuildTime={format}
+                    {...(interactive ? { onClick: vi.fn() } : {})}
+                />,
+            );
+            expect(format).toHaveBeenCalledExactlyOnceWith(buildTime);
+            const time = screen.getByText(shownBuildTime);
+            expect(time.tagName).toBe("TIME");
+            expect(time).toHaveAttribute("datetime", buildTime);
+            if (interactive) {
+                expect(screen.getByRole("button")).toHaveAttribute(
+                    "aria-label",
+                    `app v1 ${shownBuildTime}`,
+                );
+            }
+        });
+    }
+
     it("renders onClick as a keyboard-activatable Button-styled control", async () => {
         const click = vi.fn();
         render(
