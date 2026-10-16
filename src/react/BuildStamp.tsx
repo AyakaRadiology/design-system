@@ -83,7 +83,10 @@ export function BuildStamp(props: BuildStampProps) {
             "aria-label": ariaLabel,
             ...buttonProps
         } = props;
-        const shownBuildTime = formatBuildTime ? formatBuildTime(buildTime) : buildTime;
+        const shownBuildTime =
+            formatBuildTime && isMachineReadable(buildTime)
+                ? formatBuildTime(buildTime)
+                : buildTime;
         return (
             <Button
                 size="sm"
@@ -102,7 +105,8 @@ export function BuildStamp(props: BuildStampProps) {
     }
 
     const { name, describe, buildTime, formatBuildTime, className, ...spanProps } = props;
-    const shownBuildTime = formatBuildTime ? formatBuildTime(buildTime) : buildTime;
+    const shownBuildTime =
+        formatBuildTime && isMachineReadable(buildTime) ? formatBuildTime(buildTime) : buildTime;
     return (
         <span className={cn(PLATE_CLASSES, className)} {...spanProps}>
             <BuildStampParts
