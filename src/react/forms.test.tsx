@@ -10,6 +10,32 @@ import { Switch } from "./Switch.js";
 
 describe("Field", () => {
     it.each([
+        { hint: undefined, error: undefined },
+        { hint: "Digits only", error: undefined },
+        { hint: undefined, error: "Invalid port" },
+        { hint: "Digits only", error: "Invalid port" },
+    ])("preserves existing descriptions with hint=$hint and error=$error", ({ hint, error }) => {
+        render(
+            <>
+                <p id="format-help">Use a port number</p>
+                <Field label="Port" hint={hint} error={error}>
+                    <input aria-describedby="format-help" />
+                </Field>
+            </>,
+        );
+        const input = screen.getByRole("textbox", { name: "Port" });
+        const expectedIds = [
+            "format-help",
+            ...(hint ? [`${input.id}-hint`] : []),
+            ...(error ? [`${input.id}-error`] : []),
+        ];
+        expect(input).toHaveAttribute("aria-describedby", expectedIds.join(" "));
+        expect(input).toHaveAccessibleDescription(
+            ["Use a port number", hint, error].filter(Boolean).join(" "),
+        );
+    });
+
+    it.each([
         { name: "empty", nodes: [] },
         { name: "empty values", nodes: [null, false, ""] },
         { name: "nested empty", nodes: [[], [null, [false, ""]]] },
