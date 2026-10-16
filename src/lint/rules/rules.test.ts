@@ -34,6 +34,22 @@ function check(rule: RuleId, fixture: string, as = fixture, themeFile?: string):
 const lines = (findings: RuleFinding[]) => findings.map((finding) => finding.line);
 
 describe("L1 — colour literal", () => {
+    it.each([
+        ["#abcde", 0],
+        ["#abcdef0", 0],
+        ["#12345", 0],
+        ["#1234567", 0],
+        ["#abc", 1],
+        ["#abcd", 1],
+        ["#aabbcc", 1],
+        ["#aabbccdd", 1],
+    ])("checks CSS hex colour lengths in %s", (value, count) => {
+        const source = parseTsx("consumer.tsx", `document.querySelector("${value}")`);
+        expect(RULES.L1.checkTsx?.("consumer.tsx", source, context())).toHaveLength(count);
+        const css = postcss.parse(`.probe { color: ${value}; }`);
+        expect(RULES.L1.checkCss?.("consumer.css", css, context())).toHaveLength(count);
+    });
+
     it("catches a hex, a function form and one inside a template", () => {
         expect(lines(check("L1", "L1-color-literal/fail.tsx"))).toEqual([2, 3, 4]);
     });
