@@ -394,6 +394,23 @@ describe("Switch", () => {
         expect(track.firstElementChild).toHaveClass("size-3", "data-[state=checked]:translate-x-4");
     });
 
+    // jsdom has no layout: assert the state-qualified Tailwind travel rules.
+    it.each(["ltr", "rtl"])("keeps checked thumb travel inside an inherited %s track", (dir) => {
+        render(
+            <div dir={dir}>
+                <Switch aria-label="Follow" checked />
+            </div>,
+        );
+        const track = screen.getByRole("switch");
+        const thumb = track.firstElementChild;
+        expect(track).not.toHaveAttribute("dir");
+        expect(thumb).toHaveAttribute("data-state", "checked");
+        expect(thumb).toHaveClass("data-[state=checked]:translate-x-4");
+        if (dir === "rtl") {
+            expect(thumb).toHaveClass("rtl:data-[state=checked]:-translate-x-4");
+        }
+    });
+
     it("is disabled when told to be", async () => {
         const onCheckedChange = vi.fn();
         render(<Switch aria-label="Follow" disabled onCheckedChange={onCheckedChange} />);
