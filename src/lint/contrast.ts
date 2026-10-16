@@ -89,7 +89,8 @@ export function relativeLuminance([r, g, b]: Rgb): number {
     return LUMA_R * decodeGamma(r) + LUMA_G * decodeGamma(g) + LUMA_B * decodeGamma(b);
 }
 
-const OKLCH_VALUE = /^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*(?:\/\s*([\d.]+)(%?)\s*)?\)$/i;
+const OKLCH_VALUE =
+    /^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*(?:\/\s*([+-]?[\d.]+)(%?)\s*)?\)$/i;
 
 /**
  * Parse an `oklch(l c h)` or `oklch(l c h / a)` value.
@@ -107,7 +108,7 @@ export function parseOklch(value: string): Oklch {
         l: Number(l),
         c: Number(c),
         h: Number(h),
-        alpha: alpha === undefined ? 1 : Number(alpha) / (percent === "%" ? 100 : 1),
+        alpha: alpha === undefined ? 1 : clamp01(Number(alpha) / (percent === "%" ? 100 : 1)),
     };
 }
 
