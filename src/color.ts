@@ -18,6 +18,7 @@
  * own gate cannot disagree about what that colour is.
  */
 export {
+    compositedContrast,
     contrastRatio,
     deltaE,
     type Oklch,

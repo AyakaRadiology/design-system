@@ -17,4 +17,4 @@
  * every voice to, so a consumer's assertion about a colour and this package's
  * own gate cannot disagree about what that colour is.
  */
-export { contrastRatio, deltaE, oklchToSrgb, parseOklch, parseTokens, relativeLuminance, } from "./lint/contrast.js";
+export { compositedContrast, contrastRatio, deltaE, oklchToSrgb, parseOklch, parseTokens, relativeLuminance, } from "./lint/contrast.js";
