@@ -42,7 +42,7 @@ export function Switch({ className, ...props }: SwitchProps) {
             )}
             {...props}
         >
-            <SwitchPrimitive.Thumb className="size-3 rounded-full bg-bg transition-transform duration-(--motion-fast) ease-standard data-[state=checked]:translate-x-4 data-[state=checked]:bg-accent-fg" />
+            <SwitchPrimitive.Thumb className="size-3 rounded-full bg-bg transition-transform duration-(--motion-fast) ease-standard data-[state=checked]:translate-x-4 rtl:data-[state=checked]:-translate-x-4 data-[state=checked]:bg-accent-fg" />
         </SwitchPrimitive.Root>
     );
 }
