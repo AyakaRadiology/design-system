@@ -89,7 +89,8 @@ export function relativeLuminance([r, g, b]: Rgb): number {
     return LUMA_R * decodeGamma(r) + LUMA_G * decodeGamma(g) + LUMA_B * decodeGamma(b);
 }
 
-const OKLCH_VALUE = /^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*(?:\/\s*([\d.]+)(%?)\s*)?\)$/i;
+const OKLCH_VALUE =
+    /^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*(?:\/\s*([+-]?[\d.]+)(%?)\s*)?\)$/i;
 
 /**
  * Parse an `oklch(l c h)` or `oklch(l c h / a)` value.

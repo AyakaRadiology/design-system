@@ -44,6 +44,15 @@ describe("parseOklch", () => {
         expect(contrastRatio(WHITE, value)).toBe(contrastRatio(white, opaque));
     });
 
+    it.each([
+        ["200%", 1],
+        ["2", 1],
+        ["-20%", 0],
+        ["-0.2", 0],
+    ])("clamps alpha %s to %s as CSS does", (alpha, expected) => {
+        expect(parseOklch(`oklch(0.7 0 0 / ${alpha})`).alpha).toBe(expected);
+    });
+
     it("refuses a value that is not an opaque oklch colour", () => {
         expect(() => parseOklch("color-mix(in oklab, var(--accent) 45%, transparent)")).toThrow(
             /not an oklch/,
@@ -249,6 +258,25 @@ describe("tokenBlocks — the theme guard", () => {
 });
 
 describe("glass compositing", () => {
+    it.each([
+        ["200%", 1],
+        ["2", 1],
+        ["-20%", 0],
+        ["-0.2", 0],
+    ])("composites out-of-range alpha %s like alpha %s", (alpha, expected) => {
+        const colour = parseOklch(`oklch(0.7 0 0 / ${alpha})`);
+        const clamped = parseOklch(`oklch(0.7 0 0 / ${expected})`);
+        const opaque = parseOklch("oklch(0.3 0 0)");
+        const backdrop: [number, number, number] = [0.1, 0.2, 0.3];
+        expect(composite(colour, backdrop)).toEqual(composite(clamped, backdrop));
+        expect(compositedContrast(opaque, colour, backdrop)).toBe(
+            compositedContrast(opaque, clamped, backdrop),
+        );
+        expect(compositedContrast(colour, opaque, backdrop)).toBe(
+            compositedContrast(clamped, opaque, backdrop),
+        );
+    });
+
     it("composites alpha in sRGB, not OKLCH or linear light", () => {
         const halfWhite = parseOklch("oklch(1 0 0 / 0.5)");
         for (const channel of composite(halfWhite, [0, 0, 0])) expect(channel).toBeCloseTo(0.5);
