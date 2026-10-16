@@ -1,5 +1,14 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+    closeSync,
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    openSync,
+    readFileSync,
+    rmSync,
+    writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -113,6 +122,42 @@ describe("the CLI as a subprocess with stdout on a pipe", () => {
     if (!existsSync(bin) || !existsSync(join(dirname(bin), "../dist/lint/cli.js"))) {
         throw new Error(`${bin} needs a built dist/. Run \`bun run gen\` first.`);
     }
+
+    it("escapes terminal controls in configuration errors on stderr", () => {
+        const root = mkdtempSync(join(tmpdir(), "design-lint-stderr-"));
+        try {
+            writeFileSync(
+                join(root, "design-lint.json"),
+                JSON.stringify({
+                    include: ["*.tsx"],
+                    themeFile: "theme.css",
+                    rules: { L1: "error" },
+                    allow: [{ rule: "L1", path: "a\u001b]0;pwned\u0007", reason: "" }],
+                }),
+            );
+            const stderrPath = join(root, "stderr.txt");
+            const stderrFile = openSync(stderrPath, "w");
+            let result: ReturnType<typeof runPiped>;
+            try {
+                result = spawnSync(process.execPath, [bin], {
+                    cwd: root,
+                    stdio: ["ignore", "pipe", stderrFile],
+                    encoding: "utf8",
+                });
+            } finally {
+                closeSync(stderrFile);
+            }
+            const stderr = readFileSync(stderrPath, "utf8");
+            expect(result.error).toBeUndefined();
+            expect(result.status).toBe(2);
+            expect(result.stdout).toBe("");
+            expect(stderr.replaceAll("\n", "")).not.toMatch(/\p{Cc}/u);
+            expect(stderr).toContain("a\\u001b]0;pwned\\u0007");
+            expect(stderr).toContain("with no reason");
+        } finally {
+            rmSync(root, { recursive: true, force: true });
+        }
+    });
 
     it("writes every byte of a large JSON report before exiting", () => {
         const root = noisyProject();
