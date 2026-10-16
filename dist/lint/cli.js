@@ -29,11 +29,14 @@ export function parseArgs(argv) {
     }
     return options;
 }
+function escapeControls(text) {
+    return text.replace(/\p{Cc}/gu, (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`);
+}
 export function formatText(findings) {
     // Escape the whole line, including untrusted file names. Only
     // the formatter's own separators may introduce newlines.
     return findings
-        .map((finding) => `${finding.file}:${finding.line}:${finding.col} ${finding.rule} ${finding.severity} ${finding.message}`.replace(/\p{Cc}/gu, (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`))
+        .map((finding) => escapeControls(`${finding.file}:${finding.line}:${finding.col} ${finding.rule} ${finding.severity} ${finding.message}`))
         .join("\n");
 }
 /** The CLI body, exported so it can be tested without spawning a process. */
@@ -43,7 +46,7 @@ export function main(argv, write = console.log, writeError = console.error) {
         options = parseArgs(argv);
     }
     catch (error) {
-        writeError(`design-lint: ${error.message}`);
+        writeError(escapeControls(`design-lint: ${error.message}`));
         writeError(USAGE);
         return 2;
     }
@@ -57,7 +60,7 @@ export function main(argv, write = console.log, writeError = console.error) {
     }
     catch (error) {
         if (error instanceof ConfigError) {
-            writeError(`design-lint: ${error.message}`);
+            writeError(escapeControls(`design-lint: ${error.message}`));
             return 2;
         }
         throw error;

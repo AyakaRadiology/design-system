@@ -34,14 +34,20 @@ export function parseArgs(argv: readonly string[]): Options | "help" {
     return options;
 }
 
+function escapeControls(text: string): string {
+    return text.replace(
+        /\p{Cc}/gu,
+        (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`,
+    );
+}
+
 export function formatText(findings: readonly Finding[]): string {
     // Escape the whole line, including untrusted file names. Only
     // the formatter's own separators may introduce newlines.
     return findings
         .map((finding) =>
-            `${finding.file}:${finding.line}:${finding.col} ${finding.rule} ${finding.severity} ${finding.message}`.replace(
-                /\p{Cc}/gu,
-                (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`,
+            escapeControls(
+                `${finding.file}:${finding.line}:${finding.col} ${finding.rule} ${finding.severity} ${finding.message}`,
             ),
         )
         .join("\n");
@@ -57,7 +63,7 @@ export function main(
     try {
         options = parseArgs(argv);
     } catch (error) {
-        writeError(`design-lint: ${(error as Error).message}`);
+        writeError(escapeControls(`design-lint: ${(error as Error).message}`));
         writeError(USAGE);
         return 2;
     }
@@ -71,7 +77,7 @@ export function main(
         result = run(loadConfig(options.config));
     } catch (error) {
         if (error instanceof ConfigError) {
-            writeError(`design-lint: ${error.message}`);
+            writeError(escapeControls(`design-lint: ${error.message}`));
             return 2;
         }
         throw error;
