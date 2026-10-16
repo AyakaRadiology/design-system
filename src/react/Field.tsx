@@ -1,6 +1,7 @@
 import {
     Children,
     cloneElement,
+    Fragment,
     isValidElement,
     type ReactElement,
     type ReactNode,
@@ -61,7 +62,11 @@ function rendersNothing(node: ReactNode): boolean {
  */
 export function Field({ label, hint, error, htmlFor, children, className }: FieldProps) {
     const generated = useId();
-    const child = Children.only(children);
+    let child = Children.only(children);
+    // Fragments cannot receive control props; validate and unwrap each layer.
+    while (isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment) {
+        child = Children.only(child.props.children);
+    }
     const existingId = isValidElement<WiredProps>(child) ? child.props.id : undefined;
     const controlId = htmlFor ?? existingId ?? generated;
 

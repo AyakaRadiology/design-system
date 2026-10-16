@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { Children, cloneElement, isValidElement, useId, } from "react";
+import { Children, cloneElement, Fragment, isValidElement, useId, } from "react";
 import { cn } from "./cn.js";
 /**
  * Would React render this as nothing?
@@ -30,7 +30,11 @@ function rendersNothing(node) {
  */
 export function Field({ label, hint, error, htmlFor, children, className }) {
     const generated = useId();
-    const child = Children.only(children);
+    let child = Children.only(children);
+    // Fragments cannot receive control props; validate and unwrap each layer.
+    while (isValidElement(child) && child.type === Fragment) {
+        child = Children.only(child.props.children);
+    }
     const existingId = isValidElement(child) ? child.props.id : undefined;
     const controlId = htmlFor ?? existingId ?? generated;
     const hasHint = !rendersNothing(hint);
