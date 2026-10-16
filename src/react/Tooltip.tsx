@@ -1,5 +1,5 @@
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { cn } from "./cn.js";
 
 /**
@@ -11,8 +11,8 @@ export const TooltipProvider = TooltipPrimitive.Provider;
 
 export interface TooltipProps {
     content: ReactNode;
-    /** The trigger. Anything focusable — a Button, an IconButton. */
-    children: ReactNode;
+    /** One focusable trigger element — a Button, an IconButton. */
+    children: ReactElement;
     side?: "top" | "right" | "bottom" | "left";
     className?: string;
 }
