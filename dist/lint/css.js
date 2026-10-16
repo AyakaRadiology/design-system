@@ -61,7 +61,8 @@ export function* walkCustomProperties(root) {
         declarations.push({
             name: decl.prop.slice(2),
             selector: containerOf(decl),
-            value: decl.value.trim(),
+            // CSS whitespace excludes NBSP and other Unicode space characters.
+            value: decl.value.replace(/^[ \t\n\r\f]+|[ \t\n\r\f]+$/g, ""),
             line: decl.source?.start?.line ?? 1,
             col: decl.source?.start?.column ?? 1,
         });
