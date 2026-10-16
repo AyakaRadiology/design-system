@@ -26,7 +26,7 @@ const MIN_VISIBLE_PERCENT = 4;
 export interface MiniBarsProps extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
     /** Oldest first, newest on the right. Negative and non-finite values count as 0. */
     values: readonly number[];
-    /** The value a full-height bar stands for. Defaults to the largest value. */
+    /** The value a full-height bar stands for. Absent or non-finite: use the largest finite value. */
     max?: number;
     /** Fill: a chart colour for a series, or a status colour for a state. */
     series?: ChartSlot | Status;
@@ -63,11 +63,12 @@ export function MiniBars({
     ...props
 }: MiniBarsProps) {
     const ceiling =
-        max ??
-        values.reduce(
-            (largest, value) => (Number.isFinite(value) ? Math.max(largest, value) : largest),
-            0,
-        );
+        max !== undefined && Number.isFinite(max)
+            ? max
+            : values.reduce(
+                  (largest, value) => (Number.isFinite(value) ? Math.max(largest, value) : largest),
+                  0,
+              );
     const named = labels !== undefined;
     // A window of samples has no ids; the position in it is the identity.
     const bars = values.map((value, position) => ({

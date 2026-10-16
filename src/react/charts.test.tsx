@@ -61,6 +61,13 @@ describe("MiniBars", () => {
         expect(heights(capped.container)).toEqual(["25%", "50%"]);
     });
 
+    it.each([Number.NaN, Infinity, -Infinity])("uses the automatic scale when max is %s", (max) => {
+        const auto = render(<MiniBars values={[1, 2, 3]} />);
+        const explicit = render(<MiniBars values={[1, 2, 3]} max={max} />);
+        expect(heights(explicit.container)).toEqual(heights(auto.container));
+        expect(heights(explicit.container)[2]).toBe("100%");
+    });
+
     it("clamps to the box and keeps a hairline for a tiny value, none for zero", () => {
         const { container } = render(<MiniBars values={[0, 0.1, 99]} max={10} />);
         expect(heights(container)).toEqual(["0%", "4%", "100%"]);
