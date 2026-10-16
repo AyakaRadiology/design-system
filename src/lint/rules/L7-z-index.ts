@@ -4,7 +4,7 @@ import { findInStringLiterals, isThemeFile } from "../tsx.js";
 import type { Rule, RuleContext, RuleFinding } from "../types.js";
 
 /** `z-[60]` or `z-50` — a stacking number chosen at the point of use. */
-const Z_UTILITY = /\bz-(?:\[[^\]]*\]|\d+)/;
+const Z_UTILITY = /\bz-(?:\[-?\d+\]|\d+)/;
 
 const NUMERIC = /^-?\d+$/;
 

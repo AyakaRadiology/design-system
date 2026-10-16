@@ -227,6 +227,18 @@ describe("L6 — token hygiene", () => {
 });
 
 describe("L7 — z-index literal", () => {
+    it.each([
+        ["z-[var(--z-modal)]", 0],
+        ["z-[60]", 1],
+        ["z-50", 1],
+        ["z-[-1]", 1],
+        ["z-[999]", 1],
+    ])("reports %s only when it is numeric", (utility, count) => {
+        const file = "consumer.tsx";
+        const source = parseTsx(file, `<div className="${utility}" />`);
+        expect(RULES.L7.checkTsx?.(file, source, context())).toHaveLength(count);
+    });
+
     it("catches an arbitrary and a numeric z utility", () => {
         expect(lines(check("L7", "L7-z-index/fail.tsx"))).toEqual([4, 5]);
     });
