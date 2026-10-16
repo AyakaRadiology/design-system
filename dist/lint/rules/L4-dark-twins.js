@@ -1,6 +1,6 @@
 import { findInStringLiterals } from "../tsx.js";
 /** `dark:` on a utility that sets a colour. `dark:flex` is none of this rule's business. */
-const DARK_COLOR_TWIN = /\bdark:(?:bg|text|border|ring|fill|stroke|outline|shadow|from|to|via)-/;
+const DARK_COLOR_TWIN = /\bdark:(?:[\w-]+:)*(?:bg|text|border|ring|fill|stroke|outline|shadow|from|to|via)-/;
 /**
  * L4 — dark mode is handled in the voice, once.
  *

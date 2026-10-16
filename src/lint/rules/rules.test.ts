@@ -100,6 +100,22 @@ describe("L3 — off-scale value", () => {
 });
 
 describe("L4 — dark twin", () => {
+    it.each([
+        ["dark:bg-slate-900", ["L4"]],
+        ["dark:hover:bg-slate-900", ["L4"]],
+        ["dark:focus:text-white", ["L4"]],
+        ["dark:md:hover:border-x", ["L4"]],
+        ["dark:focus-visible:ring-white", ["L4"]],
+        ["hover:dark:bg-x", ["L4"]],
+        ["dark:flex", []],
+        ["dark:hover:flex", []],
+    ])("checks chained variants in %s", (classes, expected) => {
+        const file = "component.tsx";
+        const source = parseTsx(file, `<div className="${classes}" />`);
+        const findings = RULES.L4.checkTsx?.(file, source, context());
+        expect(findings?.map((finding) => finding.rule)).toEqual(expected);
+    });
+
     it("catches every dark: colour utility", () => {
         expect(lines(check("L4", "L4-dark-twins/fail.tsx"))).toEqual([4, 5, 5]);
     });
