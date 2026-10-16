@@ -27,6 +27,23 @@ describe("parseOklch", () => {
         expect(parseOklch("oklch(0.5 0.1 200 / 0.25)").alpha).toBeCloseTo(0.25, 6);
     });
 
+    it.each(["2", "200%"])("clamps alpha %s to opaque for contrast calculations", (alpha) => {
+        const value = `oklch(0.5 0.1 30 / ${alpha})`;
+        const parsed = parseOklch(value);
+        const opaque = parseOklch("oklch(0.5 0.1 30 / 1)");
+        const white = parseOklch(WHITE);
+        expect(parsed.alpha).toBe(1);
+        expect(composite(parsed, [0, 0, 0])).toEqual(composite(opaque, [0, 0, 0]));
+        expect(compositedContrast(white, parsed, [0, 0, 0])).toBe(
+            compositedContrast(white, opaque, [0, 0, 0]),
+        );
+        expect(compositedContrast(parsed, white, [0, 0, 0])).toBe(
+            compositedContrast(opaque, white, [0, 0, 0]),
+        );
+        expect(contrastRatio(value, WHITE)).toBe(contrastRatio(opaque, white));
+        expect(contrastRatio(WHITE, value)).toBe(contrastRatio(white, opaque));
+    });
+
     it.each([
         ["200%", 1],
         ["2", 1],
