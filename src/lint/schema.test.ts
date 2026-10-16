@@ -92,6 +92,19 @@ describe("validateVoice", () => {
         expect(validateVoice(voiceFixture({ dark: true }), schema)).toEqual([]);
     });
 
+    it("reports every required dark colour when the dark block is empty", () => {
+        const root = voiceFixture();
+        expect(validateVoice(root, schema)).toEqual([]);
+        expect(validateVoice(`${root}\n.dark {}`, schema)).toEqual(
+            Object.entries(schema.tokens)
+                .filter(
+                    ([, spec]) =>
+                        spec.required && VOICE_ROLES.has(spec.role) && spec.type === "color",
+                )
+                .map(([token]) => ({ code: "missing", token, where: ".dark" })),
+        );
+    });
+
     it("reports a token whose value does not match its declared type", () => {
         expect(validateVoice(voiceFixture({ extra: "  --z-modal: 1000;\n" }), schema)).toEqual([]);
         expect(
