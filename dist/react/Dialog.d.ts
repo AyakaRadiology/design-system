@@ -15,7 +15,7 @@ export interface DialogContentProps {
      * region, so Radix warns about it at runtime — a warning nobody reads. In
      * the type it is a compile error instead.
      */
-    title: ReactNode;
+    title: Exclude<ReactNode, null | undefined | boolean>;
     description?: ReactNode;
     /** Footer controls, right-aligned. */
     actions?: ReactNode;
