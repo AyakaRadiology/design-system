@@ -10,6 +10,44 @@ import { Switch } from "./Switch.js";
 
 describe("Field", () => {
     it.each([
+        { nested: false, error: undefined },
+        { nested: false, error: "Invalid port" },
+        { nested: true, error: undefined },
+        { nested: true, error: "Invalid port" },
+    ])("wires a fragment control with nested=$nested and error=$error", ({ nested, error }) => {
+        const consoleError = vi.spyOn(console, "error");
+        const control = <Input />;
+        render(
+            <Field label="Port" hint="Required" error={error}>
+                <>{nested ? <>{control}</> : control}</>
+            </Field>,
+        );
+        const input = screen.getByRole("textbox");
+        expect(input.id).not.toBe("");
+        expect(screen.getByLabelText("Port")).toBe(input);
+        expect(input).toHaveAttribute(
+            "aria-describedby",
+            [`${input.id}-hint`, ...(error ? [`${input.id}-error`] : [])].join(" "),
+        );
+        expect(input).toHaveAccessibleDescription(["Required", error].filter(Boolean).join(" "));
+        if (error) expect(input).toHaveAttribute("aria-invalid", "true");
+        else expect(input).not.toHaveAttribute("aria-invalid");
+        expect(consoleError).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        <></>,
+        <>
+            <Input />
+            <Input />
+        </>,
+    ])("refuses fragments without exactly one control", (child) => {
+        expect(() => render(<Field label="Port">{child}</Field>)).toThrow(
+            "React.Children.only expected to receive a single React element child.",
+        );
+    });
+
+    it.each([
         { hint: undefined, error: undefined },
         { hint: "Digits only", error: undefined },
         { hint: undefined, error: "Invalid port" },
