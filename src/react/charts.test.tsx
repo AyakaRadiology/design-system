@@ -8,6 +8,11 @@ function d(container: HTMLElement, series: "primary" | "comparison") {
 }
 
 describe("Sparkline", () => {
+    it("keeps its drawing space when a viewBox prop is forwarded", () => {
+        const { container } = render(<Sparkline points={[1, 2, 3]} viewBox="0 0 10 10" />);
+        expect(container.querySelector("svg")).toHaveAttribute("viewBox", "0 0 100 24");
+    });
+
     it("draws the points left to right, low values at the bottom", () => {
         const { container } = render(<Sparkline points={[0, 10]} />);
         expect(d(container, "primary")).toBe("M1.00 23.00L99.00 1.00");
