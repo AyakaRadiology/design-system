@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import postcss from "postcss";
 import { collectCustomProperties } from "./css.js";
 
 export const TOKEN_TYPES = [
@@ -219,9 +220,9 @@ function missingFrom(
 export function validateVoice(css: string, schema: Schema): Violation[] {
     const declared = collectCustomProperties(css);
     const violations = missingFrom(declared, schema, VOICE_ROLES, ROOT);
-    const hasDark = [...declared.values()].some((occurrences) =>
-        occurrences.some((occurrence) => occurrence.selector === DARK),
-    );
+    const hasDark = postcss
+        .parse(css)
+        .nodes.some((node) => node.type === "rule" && node.selector === DARK);
     if (hasDark)
         violations.push(
             ...missingFrom(declared, schema, VOICE_ROLES, DARK, (spec) => spec.type === "color"),
