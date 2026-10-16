@@ -10,7 +10,8 @@ import type { Rule, RuleContext, RuleFinding } from "../types.js";
  * `#1e293b` is a slate. The function forms are anchored on `(` so that the
  * word "info" in a sentence is not read as a colour.
  */
-export const COLOR_LITERAL = /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(/i;
+export const COLOR_LITERAL =
+    /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})\b|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(/i;
 
 const MESSAGE = (match: string) =>
     `colour literal ${match} — use a semantic token utility (bg-accent, text-text-secondary, border-border) or a --x- extension declared in the theme file`;
