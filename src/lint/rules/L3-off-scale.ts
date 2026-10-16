@@ -3,7 +3,7 @@ import { findInStringLiterals } from "../tsx.js";
 import type { Rule, RuleFinding } from "../types.js";
 
 /** A Tailwind arbitrary length: `text-[13px]`, `w-[7.5rem]`. */
-const ARBITRARY_LENGTH = /\[[0-9.]+(?:px|rem|em)\]/;
+const ARBITRARY_LENGTH = /\[-?[0-9.]+(?:px|rem|em)\]/;
 
 /**
  * Spacing utilities on a step the scale does not have.
