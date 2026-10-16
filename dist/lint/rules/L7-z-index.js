@@ -1,6 +1,6 @@
 import { findInStringLiterals, isThemeFile } from "../tsx.js";
 /** `z-[60]` or `z-50` — a stacking number chosen at the point of use. */
-const Z_UTILITY = /\bz-(?:\[[^\]]*\]|\d+)/;
+const Z_UTILITY = /\bz-(?:\[-?\d+\]|\d+)/;
 const NUMERIC = /^-?\d+$/;
 const MESSAGE = "stacking numbers belong to the layer tokens — use z-raised, z-overlay, z-modal or z-toast (or var(--z-modal) in CSS)";
 /**

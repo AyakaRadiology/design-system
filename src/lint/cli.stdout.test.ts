@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { main } from "./cli.js";
+import { formatText, main } from "./cli.js";
 
 /* The CLI is exercised here as a SUBPROCESS with its stdout on a pipe, which
  * is the one arrangement none of the other CLI tests reproduce: they call
@@ -61,14 +61,12 @@ function runPiped(cwd: string, args: string[]) {
     });
 }
 
-it("escapes all terminal controls in default text findings from TSX strings", () => {
+it("reports numeric z-index findings from TSX strings in default text", () => {
     const root = mkdtempSync(join(tmpdir(), "design-lint-controls-"));
-    const controls = Array.from({ length: 65 }, (_, i) => (i < 32 ? i : i + 95));
-    const escaped = controls.map((code) => `\\u${code.toString(16).padStart(4, "0")}`);
     try {
         writeFileSync(
             join(root, "attack.tsx"),
-            `export const A = () => <i className={"z-[${escaped.join("")}0;pwned]"} />;`,
+            `export const A = () => <i className={"z-[999]"} />;`,
         );
         writeFileSync(join(root, "theme.css"), ":root {}");
         writeFileSync(
@@ -91,13 +89,23 @@ it("escapes all terminal controls in default text findings from TSX strings", ()
         expect(errors).toEqual([]);
         const stdout = output.join("\n");
         expect(stdout).toContain("L7 error z-[");
-        for (const code of controls) {
-            expect(stdout.replaceAll("\n", "")).not.toContain(String.fromCharCode(code));
-        }
-        expect(stdout).toContain(`${escaped.join("")}0;pwned]`);
+        expect(stdout).toContain("z-[999]");
         expect(stdout.split("\n")).toHaveLength(2);
     } finally {
         rmSync(root, { recursive: true, force: true });
+    }
+});
+
+it("escapes all terminal controls in text findings", () => {
+    const controls = Array.from({ length: 65 }, (_, i) => (i < 32 ? i : i + 95));
+    const payload = `${String.fromCharCode(...controls)}0;pwned`;
+    const stdout = formatText([
+        { file: payload, line: 1, col: 1, rule: "L7", severity: "error", message: payload },
+    ]);
+    const escaped = controls.map((code) => `\\u${code.toString(16).padStart(4, "0")}`).join("");
+    expect(stdout).toBe(`${escaped}0;pwned:1:1 L7 error ${escaped}0;pwned`);
+    for (const code of controls) {
+        expect(stdout).not.toContain(String.fromCharCode(code));
     }
 });
 
