@@ -103,6 +103,13 @@ describe("L2 — inline style", () => {
 });
 
 describe("L3 — off-scale value", () => {
+    it.each(["mt-[-13px]", "-mt-[13px]"])("catches negative arbitrary spacing in %s", (classes) => {
+        const file = "consumer.tsx";
+        const source = parseTsx(file, `<div className="${classes}" />`);
+        const findings = RULES.L3.checkTsx?.(file, source, context());
+        expect(findings?.map((finding) => finding.rule)).toEqual(["L3"]);
+    });
+
     it("catches an arbitrary length and the 5/7/9 spacing steps", () => {
         expect(lines(check("L3", "L3-off-scale/fail.tsx"))).toEqual([4, 5, 5, 6]);
     });
