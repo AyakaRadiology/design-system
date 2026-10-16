@@ -30,8 +30,10 @@ export function parseArgs(argv) {
     return options;
 }
 export function formatText(findings) {
+    // Escape the whole line, including untrusted file names. Only
+    // the formatter's own separators may introduce newlines.
     return findings
-        .map((finding) => `${finding.file}:${finding.line}:${finding.col} ${finding.rule} ${finding.severity} ${finding.message}`)
+        .map((finding) => `${finding.file}:${finding.line}:${finding.col} ${finding.rule} ${finding.severity} ${finding.message}`.replace(/\p{Cc}/gu, (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`))
         .join("\n");
 }
 /** The CLI body, exported so it can be tested without spawning a process. */

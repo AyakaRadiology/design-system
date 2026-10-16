@@ -35,10 +35,14 @@ export function parseArgs(argv: readonly string[]): Options | "help" {
 }
 
 export function formatText(findings: readonly Finding[]): string {
+    // Escape the whole line, including untrusted file names. Only
+    // the formatter's own separators may introduce newlines.
     return findings
-        .map(
-            (finding) =>
-                `${finding.file}:${finding.line}:${finding.col} ${finding.rule} ${finding.severity} ${finding.message}`,
+        .map((finding) =>
+            `${finding.file}:${finding.line}:${finding.col} ${finding.rule} ${finding.severity} ${finding.message}`.replace(
+                /\p{Cc}/gu,
+                (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`,
+            ),
         )
         .join("\n");
 }

@@ -1,9 +1,10 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { main } from "./cli.js";
 
 /* The CLI is exercised here as a SUBPROCESS with its stdout on a pipe, which
  * is the one arrangement none of the other CLI tests reproduce: they call
@@ -59,6 +60,46 @@ function runPiped(cwd: string, args: string[]) {
         maxBuffer: 64 * 1024 * 1024,
     });
 }
+
+it("escapes all terminal controls in default text findings from TSX strings", () => {
+    const root = mkdtempSync(join(tmpdir(), "design-lint-controls-"));
+    const controls = Array.from({ length: 65 }, (_, i) => (i < 32 ? i : i + 95));
+    const escaped = controls.map((code) => `\\u${code.toString(16).padStart(4, "0")}`);
+    try {
+        writeFileSync(
+            join(root, "attack.tsx"),
+            `export const A = () => <i className={"z-[${escaped.join("")}0;pwned]"} />;`,
+        );
+        writeFileSync(join(root, "theme.css"), ":root {}");
+        writeFileSync(
+            join(root, "design-lint.json"),
+            JSON.stringify({
+                include: ["attack.tsx"],
+                themeFile: "theme.css",
+                rules: { L7: "error" },
+            }),
+        );
+        const output: string[] = [];
+        const errors: string[] = [];
+        expect(
+            main(
+                ["--config", join(root, "design-lint.json")],
+                (line) => output.push(line),
+                (line) => errors.push(line),
+            ),
+        ).toBe(1);
+        expect(errors).toEqual([]);
+        const stdout = output.join("\n");
+        expect(stdout).toContain("L7 error z-[");
+        for (const code of controls) {
+            expect(stdout.replaceAll("\n", "")).not.toContain(String.fromCharCode(code));
+        }
+        expect(stdout).toContain(`${escaped.join("")}0;pwned]`);
+        expect(stdout.split("\n")).toHaveLength(2);
+    } finally {
+        rmSync(root, { recursive: true, force: true });
+    }
+});
 
 describe("the CLI as a subprocess with stdout on a pipe", () => {
     if (!existsSync(bin) || !existsSync(join(dirname(bin), "../dist/lint/cli.js"))) {
