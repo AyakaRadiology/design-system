@@ -1,5 +1,5 @@
 import { runInNewContext } from "node:vm";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { diffVariables, type LiveVariables } from "./diff-variables.js";
 import { exportVariablesScript, importVariablesScript } from "./plugin-scripts.js";
 import { loadTokenSource, tokensToVariables, type VariableValue } from "./tokens-to-variables.js";
@@ -81,6 +81,22 @@ describe("emitted Plugin API scripts (contract harness, not a Figma runtime test
             plan.collections.reduce((sum, collection) => sum + collection.variables.length, 0),
         );
         expect(diffVariables(plan, await run(exportVariablesScript(plan)))).toEqual([]);
+        for (const spec of plan.collections) {
+            for (const token of spec.variables) {
+                expect(
+                    variables.find(
+                        (v) =>
+                            v.name === token.name &&
+                            collections.find((c) => c.id === v.variableCollectionId)?.name ===
+                                spec.name,
+                    ),
+                ).toMatchObject({
+                    description: token.description,
+                    scopes: token.scopes,
+                    codeSyntax: { WEB: token.codeSyntax },
+                });
+            }
+        }
     });
     it("preflights every collection before mutating any variable", async () => {
         const { run, variables } = harness();
@@ -88,12 +104,42 @@ describe("emitted Plugin API scripts (contract harness, not a Figma runtime test
         const last = variables.at(-1);
         const first = variables[0];
         if (!last || !first) throw new Error("Missing imported variables");
-        first.description = "designer annotation";
+        const write = vi.spyOn(first, "setValueForMode");
         last.valuesByMode["mode-0"] = 999;
         await expect(run(importVariablesScript(plan))).rejects.toThrow("Value drift");
-        expect(first.description).toBe("designer annotation");
+        expect(write).not.toHaveBeenCalled();
         expect(last.valuesByMode["mode-0"]).toBe(999);
     });
+    it.each(["description", "scopes", "WEB", "missing WEB"])(
+        "rejects %s metadata drift before any mutation and exports it for review",
+        async (field) => {
+            const { run, variables, collections } = harness();
+            await run(importVariablesScript(plan));
+            const last = variables.at(-1);
+            const first = variables[0];
+            if (!last || !first) throw new Error("Missing imported variables");
+            if (field === "description") last.description = "designer annotation";
+            if (field === "scopes") last.scopes = ["ALL_SCOPES"];
+            if (field === "WEB") last.codeSyntax.WEB = "designer-token";
+            if (field === "missing WEB") delete last.codeSyntax.WEB;
+            const snapshot = JSON.stringify({ variables, collections });
+            const write = vi.spyOn(first, "setValueForMode");
+            await expect(run(importVariablesScript(plan))).rejects.toThrow(
+                "Metadata drift; export and review first:",
+            );
+            expect(write).not.toHaveBeenCalled();
+            expect(JSON.stringify({ variables, collections })).toBe(snapshot);
+            const exported = await run(exportVariablesScript(plan));
+            expect(exported.collections.flatMap((c) => c.variables)).toContainEqual(
+                expect.objectContaining({
+                    name: last.name,
+                    description: last.description,
+                    scopes: last.scopes,
+                    codeSyntax: last.codeSyntax,
+                }),
+            );
+        },
+    );
     it("refuses a numeric edit even when it is smaller than the color tolerance", async () => {
         const { run, variables } = harness();
         await run(importVariablesScript(plan));

@@ -38,6 +38,10 @@ for (const spec of plan) {
             throw new Error("Duplicate variable: " + variable.name);
         if (variable.resolvedType !== target.resolvedType)
             throw new Error("Type drift: " + variable.name);
+        if (variable.description !== target.description ||
+            JSON.stringify([...variable.scopes].sort()) !== JSON.stringify([...target.scopes].sort()) ||
+            variable.codeSyntax.WEB !== target.codeSyntax)
+            throw new Error("Metadata drift; export and review first: " + spec.name + "/" + variable.name);
         for (const mode of collection.modes) {
             if (!same(variable.valuesByMode[mode.modeId], target.valuesByMode[mode.name]))
                 throw new Error("Value drift; export and review first: " + spec.name + "/" + variable.name + "/" + mode.name);
@@ -84,6 +88,9 @@ return { collections: collections.filter(c => names.includes(c.name)).map(collec
     variables: variables.filter(v => v.variableCollectionId === collection.id).map(variable => ({
         name: variable.name,
         resolvedType: variable.resolvedType,
+        description: variable.description,
+        scopes: variable.scopes,
+        codeSyntax: variable.codeSyntax,
         valuesByMode: Object.fromEntries(collection.modes.map(mode => {
             const value = variable.valuesByMode[mode.modeId];
             if (value && typeof value === "object" && value.type === "VARIABLE_ALIAS")
