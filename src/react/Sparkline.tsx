@@ -69,7 +69,6 @@ export function Sparkline({
     const range = domain ?? extent([...points, ...(comparison ?? [])]) ?? ([0, 0] as const);
     return (
         <svg
-            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
             preserveAspectRatio="none"
             fill="none"
             data-ds-chart="sparkline"
@@ -78,6 +77,7 @@ export function Sparkline({
             aria-label={label}
             aria-hidden={label ? undefined : true}
             {...props}
+            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         >
             {comparison ? (
                 <path
