@@ -124,6 +124,35 @@ describe("L5 — raw control", () => {
 });
 
 describe("L6 — token hygiene", () => {
+    it("protects schema tokens inside @theme while allowing Tailwind extensions", () => {
+        const ctx = context();
+        const tokens = ["text-xs", "font-sans", "ease-standard", "text-secondary"];
+        const css = postcss.parse(`@theme {
+            --text-xs: 2rem;
+            --font-sans: serif;
+            --ease-standard: linear;
+            --text-secondary: red;
+            --color-x-needle-tracker: red;
+        }`);
+        expect(RULES.L6.checkCss?.("src/app.css", css, ctx)).toEqual(
+            tokens.map((name) => ({
+                rule: "L6",
+                file: "src/app.css",
+                line: expect.any(Number),
+                col: expect.any(Number),
+                message: `schema token --${name} redefined in src/app.css — only ${ctx.themeFile} may set a schema token`,
+            })),
+        );
+        expect(RULES.L6.checkCss?.(ctx.themeFile, css, ctx)).toEqual([]);
+        expect(
+            RULES.L6.checkCss?.(
+                "src/app.css",
+                postcss.parse("@theme { --color-x-needle-tracker: red; }"),
+                ctx,
+            ),
+        ).toEqual([]);
+    });
+
     it("catches an unprefixed property, a redefined schema token and an --x- collision", () => {
         const findings = check("L6", "L6-token-hygiene/fail.css");
         expect(lines(findings)).toEqual([2, 3, 4, 5]);
