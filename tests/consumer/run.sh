@@ -276,9 +276,9 @@ assert_css() {
     fi
 }
 
-assert_css "voice surface value"      -- '--bg: *oklch\('
+assert_css "voice surface value"      '--bg: *oklch\('
 assert_css "Tailwind utility mapping" 'background-color: *var\(--bg\)'
-assert_css "--x- extension token"     -- '--x-needle-tracker'
+assert_css "--x- extension token"     '--x-needle-tracker'
 
 # The classes only the PRIMITIVES use. Tailwind's automatic source detection
 # skips node_modules, so without the `@source` in tailwind.css a consumer gets
@@ -288,7 +288,7 @@ assert_css "the primitives' own utilities (is @source still in tailwind.css?)" '
 assert_css "the primitives' own utilities (is @source still in tailwind.css?)" '\.rounded-full'
 assert_css "viewport-bound dialog" 'max-height: *calc\(100svh'
 assert_css "dialog scroll body" '\.overflow-y-auto'
-assert_css "dialog surface default" -- '--dialog-surface: *var\(--bg-elevated\)'
+assert_css "dialog surface default" '--dialog-surface: *var\(--bg-elevated\)'
 assert_css "voice scrollbar" 'scrollbar-color: *var\(--text-secondary\) var\(--dialog-surface\)'
 assert_css "touch scroll cue" '\.ds-dialog-body:{1,2}after'
 assert_css "status motion guard" 'animation: *none;'
@@ -298,7 +298,7 @@ assert_css "radio indicator" '\.size-2'
 assert_css "numeric slot class" '\.ds-numeric-slot'
 assert_css "numeric slot width" 'calc\(var\(--ds-numeric-chars\) \* 1ch\)'
 assert_css "quiet empty readout" 'max\(calc\(var\(--numeric-empty-scale\) \* 1em\), *var\(--text-xs\)\)'
-assert_css "the app's tuned empty scale" -- '--numeric-empty-scale: *0?\.35'
+assert_css "the app's tuned empty scale" '--numeric-empty-scale: *0?\.35'
 
 # The consumer's override has to WIN, not merely be present: the voice sets
 # --accent on hue 178 and theme.css re-sets it on 195, so the last declaration
