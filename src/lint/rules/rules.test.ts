@@ -163,6 +163,30 @@ describe("L5 — raw control", () => {
 });
 
 describe("L6 — token hygiene", () => {
+    it.each(["@theme", "@theme inline", ":root"])(
+        "allows Tailwind typography namespaces only inside @theme (%s)",
+        (selector) => {
+            const css = postcss.parse(`${selector} {
+                --leading-tight: 1.25;
+                --tracking-wide: 0.025em;
+                --font-weight-book: 450;
+            }`);
+            const findings = RULES.L6.checkCss?.("src/app.css", css, context());
+            expect(findings).toEqual(
+                selector === ":root"
+                    ? ["leading-tight", "tracking-wide", "font-weight-book"].map((name) =>
+                          expect.objectContaining({
+                              rule: "L6",
+                              message: expect.stringContaining(
+                                  `--${name} is neither a schema token nor an extension`,
+                              ),
+                          }),
+                      )
+                    : [],
+            );
+        },
+    );
+
     it("protects schema tokens inside @theme while allowing Tailwind extensions", () => {
         const ctx = context();
         const tokens = ["text-xs", "font-sans", "ease-standard", "text-secondary"];

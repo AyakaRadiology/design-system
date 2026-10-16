@@ -13,6 +13,8 @@ const TAILWIND_NAMESPACES = [
     "z-index-",
     "text-",
     "font-",
+    "leading-",
+    "tracking-",
     "container-",
     "spacing-",
     "radius-",
