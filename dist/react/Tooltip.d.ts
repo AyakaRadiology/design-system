@@ -1,5 +1,5 @@
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import { type ReactElement, type ReactNode } from "react";
+import { type ReactNode } from "react";
 /**
  * Wrap the app once. Radix shares open/close timing across every tooltip
  * under one provider, which is what stops the second tooltip in a toolbar
@@ -8,8 +8,8 @@ import { type ReactElement, type ReactNode } from "react";
 export declare const TooltipProvider: import("react").FC<TooltipPrimitive.TooltipProviderProps>;
 export interface TooltipProps {
     content: ReactNode;
-    /** A single focusable trigger element, such as a Button or IconButton. */
-    children: ReactElement;
+    /** A trigger element, or nodes wrapped in a keyboard-focusable span. */
+    children: ReactNode;
     side?: "top" | "right" | "bottom" | "left";
     className?: string;
 }

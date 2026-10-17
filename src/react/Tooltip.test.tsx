@@ -1,13 +1,43 @@
 // @vitest-environment jsdom
+import { fileURLToPath } from "node:url";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { cloneElement, type ReactElement, type ReactNode } from "react";
-import { expect, expectTypeOf, it } from "vitest";
-import { Tooltip, type TooltipProps, TooltipProvider } from "./Tooltip.js";
+import type { ReactNode } from "react";
+import ts from "typescript";
+import { expect, it } from "vitest";
+import { Tooltip, TooltipProvider } from "./Tooltip.js";
 
-it("requires a single React element in the public type", () => {
-    expectTypeOf<TooltipProps["children"]>().toEqualTypeOf<ReactElement>();
-});
+it("accepts the supported text and multi-node triggers at compile time", () => {
+    void (<Tooltip content="x">Hello</Tooltip>);
+    void (
+        <Tooltip content="x">
+            {[<button type="button" key="a" />, <button type="button" key="b" />]}
+        </Tooltip>
+    );
+    void (
+        <Tooltip content="x">
+            <button type="button" />
+            <button type="button" />
+        </Tooltip>
+    );
+    // Vitest transpiles without checking types, so run the compiler explicitly.
+    const program = ts.createProgram([fileURLToPath(import.meta.url), "vitest.setup.ts"], {
+        strict: true,
+        noEmit: true,
+        skipLibCheck: true,
+        target: ts.ScriptTarget.ES2022,
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+        jsx: ts.JsxEmit.ReactJSX,
+    });
+    expect(
+        ts.formatDiagnostics(ts.getPreEmitDiagnostics(program), {
+            getCanonicalFileName: (name) => name,
+            getCurrentDirectory: () => process.cwd(),
+            getNewLine: () => "\n",
+        }),
+    ).toBe("");
+}, 10_000);
 
 const cases: { name: string; nodes: ReactNode[]; text: string }[] = [
     { name: "text", nodes: ["Label"], text: "Label" },
@@ -33,15 +63,11 @@ const cases: { name: string; nodes: ReactNode[]; text: string }[] = [
 ];
 
 it.each(cases)("provides a working focus trigger for $name at runtime", async ({ nodes, text }) => {
-    // Replace a valid element's children to exercise untyped JavaScript callers.
-    const tooltip = cloneElement(
-        <Tooltip content="x">
-            <span />
-        </Tooltip>,
-        {},
-        ...nodes,
+    const { container } = render(
+        <TooltipProvider>
+            <Tooltip content="x">{nodes.length === 1 ? nodes[0] : nodes}</Tooltip>
+        </TooltipProvider>,
     );
-    const { container } = render(<TooltipProvider>{tooltip}</TooltipProvider>);
     const trigger = container.querySelector<HTMLElement>("[data-state]");
     expect(trigger).not.toBeNull();
     expect(trigger).toHaveTextContent(text);
@@ -50,5 +76,22 @@ it.each(cases)("provides a working focus trigger for $name at runtime", async ({
     expect(trigger).toHaveFocus();
     const content = await screen.findByRole("tooltip");
     expect(content).toHaveTextContent("x");
+    expect(trigger).toHaveAttribute("aria-describedby", content.id);
+});
+
+it("keeps a single element as the direct keyboard-accessible trigger", async () => {
+    const { container } = render(
+        <TooltipProvider>
+            <Tooltip content="Helpful label">
+                <button type="button">Trigger</button>
+            </Tooltip>
+        </TooltipProvider>,
+    );
+    const trigger = screen.getByRole("button", { name: "Trigger" });
+    expect(container.firstElementChild).toBe(trigger);
+    await userEvent.tab();
+    expect(trigger).toHaveFocus();
+    const content = await screen.findByRole("tooltip");
+    expect(content).toHaveTextContent("Helpful label");
     expect(trigger).toHaveAttribute("aria-describedby", content.id);
 });

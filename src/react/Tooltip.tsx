@@ -1,5 +1,5 @@
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import { Fragment, isValidElement, type ReactElement, type ReactNode } from "react";
+import { Fragment, isValidElement, type ReactNode } from "react";
 import { cn } from "./cn.js";
 
 /**
@@ -11,8 +11,8 @@ export const TooltipProvider = TooltipPrimitive.Provider;
 
 export interface TooltipProps {
     content: ReactNode;
-    /** A single focusable trigger element, such as a Button or IconButton. */
-    children: ReactElement;
+    /** A trigger element, or nodes wrapped in a keyboard-focusable span. */
+    children: ReactNode;
     side?: "top" | "right" | "bottom" | "left";
     className?: string;
 }
@@ -26,8 +26,8 @@ export interface TooltipProps {
  * because it is important.
  */
 export function Tooltip({ content, children, side = "top", className }: TooltipProps) {
-    // JavaScript callers can still supply nodes that cannot receive Radix's
-    // trigger props/ref. Give those nodes a concrete, keyboard-focusable host.
+    // Nodes that cannot receive Radix's trigger props/ref get a concrete,
+    // keyboard-focusable host.
     const canSlot = isValidElement(children) && children.type !== Fragment;
 
     return (
