@@ -462,13 +462,15 @@ describe("RadioGroup", () => {
         );
         await userEvent.tab();
         fireEvent.keyDown(screen.getByRole("radio", { name: "One" }), { key: "ArrowRight" });
-        expect(change).toHaveBeenNthCalledWith(1, "three");
-        fireEvent.keyDown(screen.getByRole("radio", { name: "Three" }), {
-            key: "ArrowDown",
-        });
-        expect(change).toHaveBeenNthCalledWith(2, "one");
+        expect(change).not.toHaveBeenCalled();
         expect(screen.getByRole("radio", { name: "One" })).toBeChecked();
         expect(screen.getByRole("radio", { name: "One" })).toHaveFocus();
+        fireEvent.keyDown(screen.getByRole("radio", { name: "One" }), {
+            key: "ArrowDown",
+        });
+        expect(change).toHaveBeenNthCalledWith(1, "three");
+        expect(screen.getByRole("radio", { name: "Three" })).toBeChecked();
+        expect(screen.getByRole("radio", { name: "Three" })).toHaveFocus();
     });
 
     it("Space synchronously commits a focused unchecked option and submits its value", async () => {
