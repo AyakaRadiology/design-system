@@ -26,6 +26,7 @@ it.each([undefined, "vertical", "horizontal"] as const)(
         for (const key of keys) {
             expect(fireEvent.keyDown(first, { key })).toBe(true);
             fireEvent.keyUp(first, { key });
+            await user.keyboard(`{${key}}`);
             expect(first).toHaveFocus();
             expect(first).toBeChecked();
             expect(screen.getAllByRole("radio", { checked: true })).toEqual([first]);
