@@ -104,6 +104,8 @@ export function parseOklch(value: string): Oklch {
     const match = OKLCH_VALUE.exec(value.trim());
     if (!match) throw new Error(`"${value}" is not an oklch(l c h) colour`);
     const [, l, c, h, alpha, percent] = match;
+    if (![l, c, h, alpha ?? "1"].every((component) => Number.isFinite(Number(component))))
+        throw new Error(`"${value}" is not an oklch(l c h) colour`);
     return {
         l: Number(l),
         c: Number(c),

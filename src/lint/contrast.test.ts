@@ -14,6 +14,24 @@ import {
 const WHITE = "oklch(1 0 0)";
 const BLACK = "oklch(0 0 0)";
 
+describe.each([
+    ["parseOklch", (value: string) => parseOklch(value)],
+    ["parseTokens", (value: string) => parseTokens(`:root { --border-strong: ${value}; }`)],
+    ["tokenBlocks", (value: string) => tokenBlocks(`:root { --border-strong: ${value}; }`)],
+] as const)("%s rejects malformed numeric components", (_name, parse) => {
+    it.each(
+        ["0..42", "1.2.3", ".", "9".repeat(400)].flatMap((number) => [
+            `oklch(${number} 0.012 225)`,
+            `oklch(0.42 ${number} 225)`,
+            `oklch(0.42 0.012 ${number})`,
+            `oklch(0.42 0.012 225 / ${number})`,
+            `oklch(0.42 0.012 225 / -${number}%)`,
+        ]),
+    )("refuses %s", (value) => {
+        expect(() => parse(value)).toThrow(/not an oklch/);
+    });
+});
+
 describe("parseOklch", () => {
     it("reads lightness, chroma and hue", () => {
         expect(parseOklch("oklch(0.42 0.15 195)")).toEqual({ l: 0.42, c: 0.15, h: 195, alpha: 1 });
