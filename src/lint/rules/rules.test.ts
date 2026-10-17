@@ -164,6 +164,39 @@ describe("L5 — raw control", () => {
 
 describe("L6 — token hygiene", () => {
     it.each(["@theme", "@theme inline", ":root"])(
+        "allows Tailwind animation and effect namespaces only inside @theme (%s)",
+        (selector) => {
+            const declarations = {
+                "animate-fade-in": "fade-in 0.3s ease-out",
+                "tab-size-4": "4",
+                "inset-shadow-sm": "inset 0 2px 4px rgb(0 0 0 / 0.05)",
+                "drop-shadow-md": "0 3px 3px rgb(0 0 0 / 0.12)",
+                "blur-xs": "4px",
+                "perspective-near": "300px",
+                "zoom-125": "125%",
+                "aspect-video": "16 / 9",
+            };
+            const css = postcss.parse(`${selector} {
+                ${Object.entries(declarations)
+                    .map(([name, value]) => `--${name}: ${value};`)
+                    .join("\n")}
+            }`);
+            expect(RULES.L6.checkCss?.("src/app.css", css, context())).toEqual(
+                selector === ":root"
+                    ? Object.keys(declarations).map((name) =>
+                          expect.objectContaining({
+                              rule: "L6",
+                              message: expect.stringContaining(
+                                  `--${name} is neither a schema token nor an extension`,
+                              ),
+                          }),
+                      )
+                    : [],
+            );
+        },
+    );
+
+    it.each(["@theme", "@theme inline", ":root"])(
         "allows Tailwind typography namespaces only inside @theme (%s)",
         (selector) => {
             const css = postcss.parse(`${selector} {
