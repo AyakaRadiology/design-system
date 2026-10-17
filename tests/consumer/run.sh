@@ -373,11 +373,13 @@ try {
             assert.equal(await two.getAttribute("aria-checked"), "true");
 
             await two.press("ArrowRight");
-            assert.equal(await value.textContent(), "three", `trial ${trial}: ArrowRight`);
-            await three.press("ArrowDown");
+            assert.equal(await value.textContent(), "two", `trial ${trial}: ignored ArrowRight`);
+            assert.equal(await two.getAttribute("aria-checked"), "true");
+            assert.equal(await two.evaluate((radio) => radio === document.activeElement), true);
+            await two.press("ArrowDown");
             assert.equal(
                 await value.textContent(),
-                "one",
+                "three",
                 `trial ${trial}: ArrowDown after ArrowRight`,
             );
 

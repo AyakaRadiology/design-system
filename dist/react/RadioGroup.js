@@ -6,7 +6,11 @@ const RADIOGROUP_SELECTOR = '[role="radiogroup"]';
 const ENABLED_RADIO_SELECTOR = '[role="radio"]:not(:disabled)';
 const SPACE_KEY = " ";
 const ENTER_KEY = "Enter";
-function navigationDirection(key, dir) {
+function navigationDirection(key, dir, orientation) {
+    if (orientation === "vertical" && (key === "ArrowRight" || key === "ArrowLeft"))
+        return 0;
+    if (orientation === "horizontal" && (key === "ArrowDown" || key === "ArrowUp"))
+        return 0;
     if (key === "ArrowDown")
         return 1;
     if (key === "ArrowUp")
@@ -46,7 +50,7 @@ export function RadioGroup({ options, value, defaultValue, onValueChange, id, na
         if (!group)
             throw new Error("RadioGroup item is missing its radiogroup root");
         // Radix resolves its root's dir from both the prop and DirectionProvider.
-        const direction = navigationDirection(event.key, group.getAttribute("dir"));
+        const direction = navigationDirection(event.key, group.getAttribute("dir"), orientation);
         if (direction === 0)
             return;
         event.preventDefault();
