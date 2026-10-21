@@ -42,7 +42,7 @@ jobs:
             # PR stays blocked with no way to satisfy it.
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
             # Every `uses:` must be a full commit SHA with a version comment (Dependabot reads it).
-            - uses: Lin214ia/workflows/.github/actions/check-pins@99dfe7b57cff656c0ff42c69cbf5d4e06a2dd293 # v1.1.0
+            - uses: Lin214ia/workflows/.github/actions/check-pins@1fb0122fa0aa8d8771d95503438f36e33e89eebd # v1.1.2
 
             # Node AND bun, because they do different jobs here and neither
             # substitutes for the other: bun installs and runs the suites,
