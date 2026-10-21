@@ -124,10 +124,45 @@ describe("L3 — off-scale value", () => {
 
 describe("L4 — dark twin", () => {
     it.each([
+        "dark:border-2",
+        "dark:bg-cover",
+        "dark:text-lg",
+        "dark:shadow-md",
+        "dark:ring-2",
+        "dark:md:hover:border-x",
+        "dark:text-lg/6",
+        "dark:outline-dashed",
+        "dark:stroke-2",
+        "dark:from-50%",
+        "dark:bg-center",
+        "dark:border-solid",
+        "dark:ring-offset-2",
+        "dark:border-[3px]",
+        "dark:text-[length:1rem]",
+    ])("allows non-colour utility %s", (classes) => {
+        const source = parseTsx("component.tsx", `<div className="${classes}" />`);
+        expect(RULES.L4.checkTsx?.("component.tsx", source, context())).toEqual([]);
+    });
+
+    it.each([
+        "dark:bg-white",
+        "dark:border-gray-700",
+        "dark:text-slate-200",
+        "dark:hover:bg-red-500",
+        "dark:bg-cover-art",
+        "dark:text-accent",
+        "dark:bg-[#fff]",
+        "dark:ring-offset-red-500",
+    ])("still flags colour utility %s", (classes) => {
+        const source = parseTsx("component.tsx", `<div className="${classes}" />`);
+        expect(RULES.L4.checkTsx?.("component.tsx", source, context())).toHaveLength(1);
+    });
+
+    it.each([
         ["dark:bg-slate-900", ["L4"]],
         ["dark:hover:bg-slate-900", ["L4"]],
         ["dark:focus:text-white", ["L4"]],
-        ["dark:md:hover:border-x", ["L4"]],
+        ["dark:md:hover:border-x-red-500", ["L4"]],
         ["dark:focus-visible:ring-white", ["L4"]],
         ["hover:dark:bg-x", ["L4"]],
         ["dark:flex", []],
