@@ -24,7 +24,7 @@ permissions:
 jobs:
   dependabot-automerge:
     if: github.actor == 'dependabot[bot]'
-    uses: Lin214ia/workflows/.github/workflows/dependabot-automerge.yml@99dfe7b57cff656c0ff42c69cbf5d4e06a2dd293 # v1.1.0
+    uses: Lin214ia/workflows/.github/workflows/dependabot-automerge.yml@1fb0122fa0aa8d8771d95503438f36e33e89eebd # v1.1.2
     with:
       runs-on: '"ubuntu-latest"'
     secrets:
