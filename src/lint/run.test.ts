@@ -87,6 +87,25 @@ describe("selectFiles", () => {
 
 describe("run", () => {
     it.each([
+        ["dark:border-2 dark:bg-cover dark:text-lg dark:shadow-md dark:ring-2", 0],
+        ["dark:bg-white dark:border-gray-700 dark:text-slate-200 dark:hover:bg-red-500", 1],
+    ])("uses only colour twins to fail an L4 error gate (%s)", (classes, exitCode) => {
+        const source = `<div className="${classes}" />`;
+        const config = loadConfig(
+            project(
+                { "src/a.tsx": source },
+                {
+                    ...BASE,
+                    rules: { L4: "error" },
+                },
+            ),
+        );
+        const result = run(config);
+        expect(result.exitCode).toBe(exitCode);
+        expect(result.findings).toHaveLength(exitCode === 0 ? 0 : 4);
+    });
+
+    it.each([
         [CLEAN, 0],
         [OFFENDING, 1],
     ] as const)("lints src/** without reading directories (%s)", (source, exitCode) => {
