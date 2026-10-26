@@ -126,6 +126,14 @@ describe("L4 — dark twin", () => {
     it.each([
         "dark:border-2",
         "dark:bg-cover",
+        "dark:bg-[url(/images/grid-dark.svg)]",
+        "dark:bg-[image:var(--hero)]",
+        "dark:bg-[image-set(url(/grid.svg)_1x,url(/grid@2x.svg)_2x)]",
+        "dark:bg-[linear-gradient(red,blue)]",
+        "dark:bg-[radial-gradient(red,blue)]",
+        "dark:bg-[conic-gradient(red,blue)]",
+        "dark:bg-[repeating-linear-gradient(red,blue)]",
+        "dark:hover:bg-[url(/images/grid-dark.svg)]!",
         "dark:text-lg",
         "dark:shadow-md",
         "dark:ring-2",
@@ -146,6 +154,8 @@ describe("L4 — dark twin", () => {
 
     it.each([
         "dark:bg-white",
+        "dark:bg-red-500",
+        "dark:bg-[rgb(0,0,0)]",
         "dark:border-gray-700",
         "dark:text-slate-200",
         "dark:hover:bg-red-500",
