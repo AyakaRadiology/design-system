@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/AyakaRadiology/design-system/compare/v0.6.2...v0.6.3) (2026-10-21)
+
+
+### Bug Fixes
+
+* [agent-found] dist/lint/rules/L4-dark-twins.js:3 A consumer uses dark:border-2 to increase border width in da ([#154](https://github.com/AyakaRadiology/design-system/issues/154)) ([e17fcdb](https://github.com/AyakaRadiology/design-system/commit/e17fcdbef5a91ddd556314e08e4fec48bd3cc1ac)), closes [#153](https://github.com/AyakaRadiology/design-system/issues/153)
+
 ## [0.6.2](https://github.com/AyakaRadiology/design-system/compare/v0.6.1...v0.6.2) (2026-10-17)
 
 
