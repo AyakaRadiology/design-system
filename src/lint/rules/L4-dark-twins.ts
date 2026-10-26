@@ -17,6 +17,7 @@ const NON_COLOR = [
     "outline-(?:solid|dashed|dotted|double|hidden|none)",
     "shadow-(?:2xs|xs|sm|md|lg|xl|2xl|none|inner)",
     String.raw`(?:bg|text|border|ring|outline|shadow|stroke)-\[(?:length|size|position|image|url|number):[^\]]+\]`,
+    String.raw`bg-\[(?:url|image-set|(?:repeating-)?(?:linear|radial|conic)-gradient)\([^\]]*\)\]`,
 ].join("|");
 
 /** `dark:` on a utility that sets a colour. */

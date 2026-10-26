@@ -147,6 +147,15 @@ describe("L4 — dark twin", () => {
         "dark:ring-offset-2",
         "dark:border-[3px]",
         "dark:text-[length:1rem]",
+        "dark:bg-[image:url(/images/dark-grid.svg)]",
+        "dark:bg-[url(/images/dark-grid.svg)]",
+        "dark:bg-[image-set(url(/images/dark-grid.svg)_1x)]",
+        "dark:bg-[linear-gradient(black,white)]",
+        "dark:bg-[radial-gradient(black,white)]",
+        "dark:bg-[conic-gradient(black,white)]",
+        "dark:bg-[repeating-linear-gradient(black,white)]",
+        "dark:bg-[repeating-radial-gradient(black,white)]",
+        "dark:bg-[repeating-conic-gradient(black,white)]",
     ])("allows non-colour utility %s", (classes) => {
         const source = parseTsx("component.tsx", `<div className="${classes}" />`);
         expect(RULES.L4.checkTsx?.("component.tsx", source, context())).toEqual([]);
@@ -162,6 +171,8 @@ describe("L4 — dark twin", () => {
         "dark:bg-cover-art",
         "dark:text-accent",
         "dark:bg-[#fff]",
+        "dark:bg-[#111]",
+        "dark:bg-[url-colour]",
         "dark:ring-offset-red-500",
     ])("still flags colour utility %s", (classes) => {
         const source = parseTsx("component.tsx", `<div className="${classes}" />`);
