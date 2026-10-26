@@ -129,10 +129,6 @@ describe("L4 — dark twin", () => {
         "dark:bg-[url(/images/grid-dark.svg)]",
         "dark:bg-[image:var(--hero)]",
         "dark:bg-[image-set(url(/grid.svg)_1x,url(/grid@2x.svg)_2x)]",
-        "dark:bg-[linear-gradient(red,blue)]",
-        "dark:bg-[radial-gradient(red,blue)]",
-        "dark:bg-[conic-gradient(red,blue)]",
-        "dark:bg-[repeating-linear-gradient(red,blue)]",
         "dark:hover:bg-[url(/images/grid-dark.svg)]!",
         "dark:text-lg",
         "dark:shadow-md",
@@ -150,12 +146,6 @@ describe("L4 — dark twin", () => {
         "dark:bg-[image:url(/images/dark-grid.svg)]",
         "dark:bg-[url(/images/dark-grid.svg)]",
         "dark:bg-[image-set(url(/images/dark-grid.svg)_1x)]",
-        "dark:bg-[linear-gradient(black,white)]",
-        "dark:bg-[radial-gradient(black,white)]",
-        "dark:bg-[conic-gradient(black,white)]",
-        "dark:bg-[repeating-linear-gradient(black,white)]",
-        "dark:bg-[repeating-radial-gradient(black,white)]",
-        "dark:bg-[repeating-conic-gradient(black,white)]",
     ])("allows non-colour utility %s", (classes) => {
         const source = parseTsx("component.tsx", `<div className="${classes}" />`);
         expect(RULES.L4.checkTsx?.("component.tsx", source, context())).toEqual([]);
@@ -173,6 +163,16 @@ describe("L4 — dark twin", () => {
         "dark:bg-[#fff]",
         "dark:bg-[#111]",
         "dark:bg-[url-colour]",
+        "dark:bg-[linear-gradient(red,blue)]",
+        "dark:bg-[radial-gradient(red,blue)]",
+        "dark:bg-[conic-gradient(red,blue)]",
+        "dark:bg-[repeating-linear-gradient(red,blue)]",
+        "dark:bg-[linear-gradient(black,white)]",
+        "dark:bg-[radial-gradient(black,white)]",
+        "dark:bg-[conic-gradient(black,white)]",
+        "dark:bg-[repeating-linear-gradient(black,white)]",
+        "dark:bg-[repeating-radial-gradient(black,white)]",
+        "dark:bg-[repeating-conic-gradient(black,white)]",
         "dark:ring-offset-red-500",
     ])("still flags colour utility %s", (classes) => {
         const source = parseTsx("component.tsx", `<div className="${classes}" />`);
