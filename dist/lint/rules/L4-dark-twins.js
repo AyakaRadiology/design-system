@@ -4,6 +4,7 @@ import { findInStringLiterals } from "../tsx.js";
 // so a custom colour such as bg-cover-art still counts as a colour twin.
 const END = String.raw `(?=!?\s|!$|$)`;
 const NON_COLOR = [
+    String.raw `bg-\[(?:url|image|image-set|cross-fade|element|(?:repeating-)?(?:linear|radial|conic)-gradient)\([^\]]+\)\]`,
     String.raw `bg-(?:auto|cover|contain|none|fixed|local|scroll|clip-\S+|origin-\S+|repeat(?:-[xy]|-round|-space)?|no-repeat|(?:top|bottom|left|right|center)(?:-(?:top|bottom|left|right))?|(?:linear|radial|conic|gradient)-\S+|blend-\S+)`,
     String.raw `text-(?:xs|sm|base|lg|[2-9]?xl)(?:/\S+)?`,
     "text-(?:left|center|right|justify|start|end|wrap|nowrap|balance|pretty|ellipsis|clip)",
