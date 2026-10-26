@@ -254,6 +254,25 @@ describe("tokenBlocks — the theme guard", () => {
         },
     );
 
+    it.each([
+        "color-mix(in oklch, white, var(--bg))",
+        "var(--bg)",
+        "light-dark(white, black)",
+        "white",
+    ])("rejects nested derived colour declarations: %s", (value) => {
+        for (const mode of [":root", ".dark"]) {
+            const css = `${ROOT} ${mode} { .theme-alt { --text: ${value}; } }`;
+            expect(() => tokenBlocks(css)).toThrow(/declares .* tokens in a nested rule/);
+        }
+    });
+
+    it("allows nested rules without colour tokens, including custom properties", () => {
+        const css = `${ROOT} .dark { --text: ${WHITE}; --bg: ${BLACK};
+            .theme-alt { --text-xs: 0.75rem; padding: var(--text-xs); color: var(--text); }
+        }`;
+        expect([...tokenBlocks(css).keys()]).toEqual([":root", ".dark"]);
+    });
+
     it("rejects deeply nested translucent palettes even without includeAlpha", () => {
         const css = `${ROOT.slice(0, -1)}
             @media (min-width: 20rem) { & .inner { --text: oklch(0.22 0.01 265 / 0.5); } } }`;

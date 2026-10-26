@@ -10,6 +10,8 @@
  * not a dependency.
  */
 
+import schema from "../../tokens/schema.json" with { type: "json" };
+
 /** A parsed `oklch(l c h)` token value: L in 0..1, chroma, hue in degrees. */
 export interface Oklch {
     l: number;
@@ -249,12 +251,24 @@ export function tokenBlocks(css: string, includeAlpha = false): Map<string, Map<
                 `"${LIGHT}" and "${DARK}" — a mode selected by the OS is a palette nothing checks`,
         );
 
+    const colourTokens = new Set(
+        Object.entries(schema.tokens)
+            .filter(([, spec]) => spec.type === "color")
+            .map(([name]) => name),
+    );
     const declaring = topLevelBlocks(code)
         .map((block) => {
             for (const nested of topLevelBlocks(block.body)) {
-                if (parseTokens(nested.body, true).size > 0)
+                // A schema colour is still a palette override when its value
+                // is derived (var(), color-mix(), etc.) and cannot be parsed.
+                if (
+                    [...nested.body.matchAll(/(?:^|[;{}])\s*--([a-z0-9-]+)\s*:/g)].some(
+                        ([, name]) => name !== undefined && colourTokens.has(name),
+                    ) ||
+                    parseTokens(nested.body, true).size > 0
+                )
                     throw new Error(
-                        `the voice CSS declares oklch tokens in a nested rule inside "${block.prelude}" ` +
+                        `the voice CSS declares colour tokens in a nested rule inside "${block.prelude}" ` +
                             "— its palette goes unchecked and cannot define the enclosing mode",
                     );
             }

@@ -9,7 +9,7 @@ import type { ButtonHTMLAttributes } from "react";
  * second answer to a question already answered once.
  */
 export declare const buttonVariants: (props?: ({
-    variant?: "primary" | "secondary" | "ghost" | "danger" | null | undefined;
+    variant?: "danger" | "primary" | "secondary" | "ghost" | null | undefined;
     size?: "md" | "sm" | null | undefined;
 } & import("class-variance-authority/types").ClassProp) | undefined) => string;
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {

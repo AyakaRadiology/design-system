@@ -9,6 +9,7 @@
  * not, hence this hand-rolled OKLab pipeline — four matrix multiplications is
  * not a dependency.
  */
+import schema from "../../tokens/schema.json" with { type: "json" };
 const DEG_TO_RAD = Math.PI / 180;
 /** sRGB transfer function threshold and coefficients (IEC 61966-2-1). */
 const GAMMA_LINEAR_CUTOFF = 0.0031308;
@@ -206,11 +207,17 @@ export function tokenBlocks(css, includeAlpha = false) {
     if (code.includes(SCHEME_QUERY))
         throw new Error(`the voice CSS declares a "${SCHEME_QUERY}" block, but the floors only iterate ` +
             `"${LIGHT}" and "${DARK}" — a mode selected by the OS is a palette nothing checks`);
+    const colourTokens = new Set(Object.entries(schema.tokens)
+        .filter(([, spec]) => spec.type === "color")
+        .map(([name]) => name));
     const declaring = topLevelBlocks(code)
         .map((block) => {
         for (const nested of topLevelBlocks(block.body)) {
-            if (parseTokens(nested.body, true).size > 0)
-                throw new Error(`the voice CSS declares oklch tokens in a nested rule inside "${block.prelude}" ` +
+            // A schema colour is still a palette override when its value
+            // is derived (var(), color-mix(), etc.) and cannot be parsed.
+            if ([...nested.body.matchAll(/(?:^|[;{}])\s*--([a-z0-9-]+)\s*:/g)].some(([, name]) => name !== undefined && colourTokens.has(name)) ||
+                parseTokens(nested.body, true).size > 0)
+                throw new Error(`the voice CSS declares colour tokens in a nested rule inside "${block.prelude}" ` +
                     "— its palette goes unchecked and cannot define the enclosing mode");
         }
         return { prelude: block.prelude, tokens: parseTokens(block.body, includeAlpha) };
