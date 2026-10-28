@@ -8,6 +8,15 @@ import { Input } from "./Input.js";
 import { Select } from "./Select.js";
 import { Switch } from "./Switch.js";
 
+function Validated() {
+    const [value, setValue] = useState("");
+    return (
+        <Field label="Port" error={value.length > 0 && value !== "8790" ? "unknown port" : null}>
+            <Input value={value} onChange={(event) => setValue(event.target.value)} />
+        </Field>
+    );
+}
+
 describe("Field", () => {
     it.each([
         { nested: false, error: undefined },
@@ -228,17 +237,6 @@ describe("Field", () => {
     });
 
     it("announces an error that appears only after the control was used", async () => {
-        function Validated() {
-            const [value, setValue] = useState("");
-            return (
-                <Field
-                    label="Port"
-                    error={value.length > 0 && value !== "8790" ? "unknown port" : null}
-                >
-                    <Input value={value} onChange={(event) => setValue(event.target.value)} />
-                </Field>
-            );
-        }
         render(<Validated />);
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
         await userEvent.type(screen.getByRole("textbox"), "1");
