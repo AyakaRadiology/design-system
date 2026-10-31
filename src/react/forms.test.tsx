@@ -226,6 +226,24 @@ describe("Field", () => {
         );
     });
 
+    it("preserves the control's invalid state when errors are shown elsewhere", () => {
+        render(
+            <Field label="Name">
+                <input aria-invalid={true} />
+            </Field>,
+        );
+        expect(screen.getByRole("textbox")).toHaveAttribute("aria-invalid", "true");
+    });
+
+    it("marks the control invalid even when it explicitly declares itself valid", () => {
+        render(
+            <Field label="Name" error="Required">
+                <input aria-invalid={false} />
+            </Field>,
+        );
+        expect(screen.getByRole("textbox")).toHaveAttribute("aria-invalid", "true");
+    });
+
     it("marks nothing invalid when there is no error", () => {
         render(
             <Field label="Port">

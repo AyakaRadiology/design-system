@@ -87,7 +87,7 @@ export function Field({ label, hint, error, htmlFor, children, className }: Fiel
         ? cloneElement(child as ReactElement<WiredProps>, {
               id: controlId,
               "aria-describedby": describedBy,
-              "aria-invalid": hasError ? true : undefined,
+              "aria-invalid": hasError ? true : child.props["aria-invalid"],
           })
         : child;
 
