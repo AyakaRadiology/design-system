@@ -95,7 +95,7 @@ export function Field({ label, hint, error, htmlFor, children, className }: Fiel
                   child.props["aria-labelledby"] ??
                   (child.props["aria-label"] ? undefined : labelId),
               "aria-describedby": describedBy,
-              "aria-invalid": hasError ? true : undefined,
+              "aria-invalid": hasError ? true : child.props["aria-invalid"],
           })
         : child;
 
