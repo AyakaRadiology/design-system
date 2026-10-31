@@ -5,6 +5,7 @@ import { Fragment, useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { Field } from "./Field.js";
 import { Input } from "./Input.js";
+import { RadioGroup } from "./RadioGroup.js";
 import { Select } from "./Select.js";
 import { Switch } from "./Switch.js";
 
@@ -172,6 +173,33 @@ describe("Field", () => {
             </Field>,
         );
         expect(screen.getByLabelText("Port")).toBe(screen.getByRole("textbox"));
+    });
+
+    it.each([false, true])("names a RadioGroup through Field (fragment=%s)", (fragment) => {
+        const group = <RadioGroup options={[{ value: "basic", label: "Basic" }]} />;
+        render(
+            <Field label="Plan" hint="Choose a plan">
+                {fragment ? <>{group}</> : group}
+            </Field>,
+        );
+        const control = screen.getByRole("radiogroup", { name: "Plan" });
+        expect(control).toHaveAccessibleDescription("Choose a plan");
+        expect(screen.getByRole("radio", { name: "Basic" })).toBeInTheDocument();
+    });
+
+    it.each(["aria-label", "aria-labelledby"] as const)("preserves an explicit %s name", (prop) => {
+        render(
+            <>
+                <span id="plan-name">Subscription</span>
+                <Field label="Plan">
+                    <RadioGroup
+                        options={[]}
+                        {...{ [prop]: prop === "aria-label" ? "Subscription" : "plan-name" }}
+                    />
+                </Field>
+            </>,
+        );
+        expect(screen.getByRole("radiogroup", { name: "Subscription" })).toBeInTheDocument();
     });
 
     it("uses the id the caller fixed rather than inventing one", () => {

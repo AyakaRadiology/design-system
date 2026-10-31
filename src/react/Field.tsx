@@ -29,6 +29,8 @@ export interface FieldProps {
 
 interface WiredProps {
     id?: string;
+    "aria-label"?: string;
+    "aria-labelledby"?: string;
     "aria-describedby"?: string;
     "aria-invalid"?: boolean;
 }
@@ -72,6 +74,7 @@ export function Field({ label, hint, error, htmlFor, children, className }: Fiel
     }
     const existingId = isValidElement<WiredProps>(child) ? child.props.id : undefined;
     const controlId = htmlFor ?? existingId ?? generated;
+    const labelId = `${generated}-label`;
 
     const hasHint = !rendersNothing(hint);
     const hasError = !rendersNothing(error);
@@ -86,6 +89,11 @@ export function Field({ label, hint, error, htmlFor, children, className }: Fiel
     const control = isValidElement<WiredProps>(child)
         ? cloneElement(child as ReactElement<WiredProps>, {
               id: controlId,
+              // ARIA also names non-labelable roots such as a radiogroup div.
+              // Keep explicit names; htmlFor still wires native label behaviour.
+              "aria-labelledby":
+                  child.props["aria-labelledby"] ??
+                  (child.props["aria-label"] ? undefined : labelId),
               "aria-describedby": describedBy,
               "aria-invalid": hasError ? true : undefined,
           })
@@ -99,6 +107,7 @@ export function Field({ label, hint, error, htmlFor, children, className }: Fiel
              * apps show for the same quantity. A label that must shout in a
              * pure-ASCII product adds the class itself (see README). */}
             <label
+                id={labelId}
                 htmlFor={controlId}
                 className="text-xs font-medium tracking-wide text-text-secondary"
             >

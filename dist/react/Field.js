@@ -40,6 +40,7 @@ export function Field({ label, hint, error, htmlFor, children, className }) {
     }
     const existingId = isValidElement(child) ? child.props.id : undefined;
     const controlId = htmlFor ?? existingId ?? generated;
+    const labelId = `${generated}-label`;
     const hasHint = !rendersNothing(hint);
     const hasError = !rendersNothing(error);
     const hintId = hasHint ? `${controlId}-hint` : undefined;
@@ -51,9 +52,13 @@ export function Field({ label, hint, error, htmlFor, children, className }) {
     const control = isValidElement(child)
         ? cloneElement(child, {
             id: controlId,
+            // ARIA also names non-labelable roots such as a radiogroup div.
+            // Keep explicit names; htmlFor still wires native label behaviour.
+            "aria-labelledby": child.props["aria-labelledby"] ??
+                (child.props["aria-label"] ? undefined : labelId),
             "aria-describedby": describedBy,
             "aria-invalid": hasError ? true : undefined,
         })
         : child;
-    return (_jsxs("div", { className: cn("flex flex-col gap-1", className), children: [_jsx("label", { htmlFor: controlId, className: "text-xs font-medium tracking-wide text-text-secondary", children: label }), control, hasHint && (_jsx("p", { id: hintId, className: "text-xs text-text-secondary", children: hint })), hasError && (_jsx("p", { id: errorId, role: "alert", className: "text-xs text-danger", children: error }))] }));
+    return (_jsxs("div", { className: cn("flex flex-col gap-1", className), children: [_jsx("label", { id: labelId, htmlFor: controlId, className: "text-xs font-medium tracking-wide text-text-secondary", children: label }), control, hasHint && (_jsx("p", { id: hintId, className: "text-xs text-text-secondary", children: hint })), hasError && (_jsx("p", { id: errorId, role: "alert", className: "text-xs text-danger", children: error }))] }));
 }
