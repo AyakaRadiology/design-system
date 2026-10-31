@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.4](https://github.com/AyakaRadiology/design-system/compare/v0.6.3...v0.6.4) (2026-10-31)
+
+
+### Bug Fixes
+
+* [agent-found] dist/lint/rules/L4-dark-twins.js:15 A consumer switches background artwork for dark mode using ` ([#165](https://github.com/AyakaRadiology/design-system/issues/165)) ([f5ddec8](https://github.com/AyakaRadiology/design-system/commit/f5ddec8560d23d3a9e02e693290817e866f2ccd1))
+* [agent-found] dist/react/Field.js:55 A form marks its input with aria-invalid={true} and displays ([#173](https://github.com/AyakaRadiology/design-system/issues/173)) ([91caa6d](https://github.com/AyakaRadiology/design-system/commit/91caa6d8455de9d81ea9b2a833e97325b5bd0a97)), closes [#170](https://github.com/AyakaRadiology/design-system/issues/170)
+* [agent-found] src/lint/contrast.ts:255 A voice adds a nested theme selector that overrides `--text` ([#161](https://github.com/AyakaRadiology/design-system/issues/161)) ([ca3910a](https://github.com/AyakaRadiology/design-system/commit/ca3910ae193860a5973145fa4dff4d3e7a2388a9)), closes [#160](https://github.com/AyakaRadiology/design-system/issues/160)
+* [agent-found] src/lint/rules/L4-dark-twins.ts:18 A consumer switches a background image for dark mode using c ([#166](https://github.com/AyakaRadiology/design-system/issues/166)) ([3ca32f4](https://github.com/AyakaRadiology/design-system/commit/3ca32f41715cb213b749e8cb286c774a1b99bdc7)), closes [#164](https://github.com/AyakaRadiology/design-system/issues/164)
+* [agent-found] src/react/Field.tsx:102 A consumer follows the documented pattern and wraps a RadioG ([#172](https://github.com/AyakaRadiology/design-system/issues/172)) ([acee76f](https://github.com/AyakaRadiology/design-system/commit/acee76f975196db9ba3f4cb8d2eed3273efbe71c)), closes [#171](https://github.com/AyakaRadiology/design-system/issues/171)
+* [agent-found] src/react/Field.tsx:46 A caller passes an empty fragment as `error` (for example, a ([#169](https://github.com/AyakaRadiology/design-system/issues/169)) ([30603bf](https://github.com/AyakaRadiology/design-system/commit/30603bff7cd16f60c442b391c66ca7fc4d734992)), closes [#168](https://github.com/AyakaRadiology/design-system/issues/168)
+
 ## [0.6.3](https://github.com/AyakaRadiology/design-system/compare/v0.6.2...v0.6.3) (2026-10-21)
 
 
