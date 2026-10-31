@@ -12,6 +12,9 @@ import { cn } from "./cn.js";
 function rendersNothing(node) {
     if (Array.isArray(node))
         return node.every(rendersNothing);
+    if (isValidElement(node) && node.type === Fragment) {
+        return rendersNothing(node.props.children);
+    }
     return node === null || node === undefined || typeof node === "boolean" || node === "";
 }
 /**
