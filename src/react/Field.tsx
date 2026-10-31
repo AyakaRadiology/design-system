@@ -43,6 +43,9 @@ interface WiredProps {
  */
 function rendersNothing(node: ReactNode): boolean {
     if (Array.isArray(node)) return node.every(rendersNothing);
+    if (isValidElement<{ children?: ReactNode }>(node) && node.type === Fragment) {
+        return rendersNothing(node.props.children);
+    }
     return node === null || node === undefined || typeof node === "boolean" || node === "";
 }
 

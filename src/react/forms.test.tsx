@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { Field } from "./Field.js";
 import { Input } from "./Input.js";
@@ -86,7 +86,28 @@ describe("Field", () => {
         { name: "empty", nodes: [] },
         { name: "empty values", nodes: [null, false, ""] },
         { name: "nested empty", nodes: [[], [null, [false, ""]]] },
-    ])("omits $name arrays from error and hint wiring", ({ nodes }) => {
+        { name: "empty fragment", nodes: <></> },
+        {
+            name: "nested empty fragment",
+            nodes: (
+                <>
+                    <></>
+                </>
+            ),
+        },
+        {
+            name: "fragment of empty values",
+            nodes: (
+                <>
+                    {null}
+                    {false}
+                    {""}
+                </>
+            ),
+        },
+        { name: "fragment with nested arrays", nodes: <>{[null, [false, ""]]}</> },
+        { name: "array with empty fragment", nodes: [<Fragment key="empty" />] },
+    ])("omits $name from error and hint wiring", ({ nodes }) => {
         const { container, rerender } = render(
             <Field label="Port" error={nodes}>
                 <input />
@@ -115,6 +136,32 @@ describe("Field", () => {
         );
         expect(screen.getByRole("textbox")).toHaveAttribute("aria-invalid", "true");
         expect(screen.getByRole("textbox")).toHaveAccessibleDescription(`${message} ${message}`);
+        expect(screen.getByRole("alert")).toHaveTextContent(String(message));
+    });
+
+    it.each(["required", 0])("preserves visible nested fragment content: %s", (message) => {
+        render(
+            <Field
+                label="Port"
+                hint={
+                    <>
+                        <>{message}</>
+                    </>
+                }
+                error={
+                    <>
+                        {null}
+                        <>{message}</>
+                    </>
+                }
+            >
+                <input />
+            </Field>,
+        );
+        const input = screen.getByRole("textbox");
+        expect(input).toHaveAttribute("aria-invalid", "true");
+        expect(input).toHaveAttribute("aria-describedby", `${input.id}-hint ${input.id}-error`);
+        expect(input).toHaveAccessibleDescription(`${message} ${message}`);
         expect(screen.getByRole("alert")).toHaveTextContent(String(message));
     });
 
