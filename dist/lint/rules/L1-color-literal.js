@@ -10,7 +10,45 @@ import { findInStringLiterals, isThemeFile } from "../tsx.js";
 export const COLOR_LITERAL = /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})(?![\w-])|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(/i;
 /** Hide resource identifiers, retaining offsets for TSX diagnostics. */
 function withoutUrls(value) {
-    return value.replace(/\burl\(\s*(?:"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|(?:\\[\s\S]|[^"'\\)])*)\s*\)/gi, (url) => " ".repeat(url.length));
+    const prefix = /\burl\(/gi;
+    const parts = [];
+    let copied = 0;
+    for (let match = prefix.exec(value); match; match = prefix.exec(value)) {
+        let end = prefix.lastIndex;
+        while (end < value.length && /\s/.test(value.charAt(end)))
+            end++;
+        const quote = value[end] === '"' || value[end] === "'" ? value[end++] : null;
+        while (end < value.length) {
+            const char = value[end];
+            if (char === "\\") {
+                end += 2;
+            }
+            else if (quote ? char === quote : char === ")" || char === '"' || char === "'") {
+                break;
+            }
+            else {
+                end++;
+            }
+        }
+        if (quote && value[end] === quote) {
+            end++;
+            while (end < value.length && /\s/.test(value.charAt(end)))
+                end++;
+        }
+        else if (quote) {
+            break;
+        }
+        // Never rescan a consumed suffix, even when the candidate is malformed.
+        prefix.lastIndex = end;
+        if (value[end] !== ")")
+            continue;
+        end++;
+        parts.push(value.slice(copied, match.index), " ".repeat(end - match.index));
+        copied = end;
+        prefix.lastIndex = end;
+    }
+    parts.push(value.slice(copied));
+    return parts.join("");
 }
 const MESSAGE = (match) => `colour literal ${match} — use a semantic token utility (bg-accent, text-text-secondary, border-border) or a --x- extension declared in the theme file`;
 /**
