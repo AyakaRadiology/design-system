@@ -35,6 +35,44 @@ const lines = (findings: RuleFinding[]) => findings.map((finding) => finding.lin
 
 describe("L1 — colour literal", () => {
     it.each([
+        ["filter", "url(#fade)"],
+        ["background", 'url("/icons.svg#add")'],
+        ["mask", "url(#m1a)"],
+        ["mask", "URL( '#fade' ) url(#add)"],
+        ["background", 'url("/icons(1).svg#add")'],
+        ["background", String.raw`url(/icons\).svg#add)`],
+    ])("ignores resource URLs in %s: %s", (property, value) => {
+        const css = postcss.parse(`a { ${property}: ${value}; }`);
+        expect(RULES.L1.checkCss?.("consumer.css", css, context())).toEqual([]);
+        const source = parseTsx(
+            "consumer.tsx",
+            `<div style={{${property}: ${JSON.stringify(value)}}} />`,
+        );
+        expect(RULES.L1.checkTsx?.("consumer.tsx", source, context())).toEqual([]);
+    });
+
+    it.each(["url(#fade) #fff", '#fff url("/icons.svg#add")', "url(#fade) rgb(0 0 0)"])(
+        "still reports real colours alongside URLs: %s",
+        (value) => {
+            const literal = value.includes("#fff") ? "#fff" : "rgb(";
+            const css = postcss.parse(`a { background: ${value}; }`);
+            expect(RULES.L1.checkCss?.("consumer.css", css, context())).toEqual([
+                expect.objectContaining({
+                    message: expect.stringContaining(`colour literal ${literal}`),
+                }),
+            ]);
+            const text = `<div style={{background: ${JSON.stringify(value)}}} />`;
+            const source = parseTsx("consumer.tsx", text);
+            expect(RULES.L1.checkTsx?.("consumer.tsx", source, context())).toEqual([
+                expect.objectContaining({
+                    col: text.indexOf(literal) + 1,
+                    message: expect.stringContaining(`colour literal ${literal}`),
+                }),
+            ]);
+        },
+    );
+
+    it.each([
         ["mask: url(#fade)", null],
         ['background: url("icons.svg#face")', null],
         ["filter: URL( '#fade' )", null],

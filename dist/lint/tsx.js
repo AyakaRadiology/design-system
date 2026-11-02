@@ -102,13 +102,16 @@ export function forEachStringLiteral(source, visit) {
         }
     });
 }
-/** Report every match of `pattern` in every string literal of the file. */
-export function findInStringLiterals(file, source, rule, pattern, message) {
+/**
+ * Report every match of `pattern` in every string literal of the file.
+ * `prepare` must preserve length so diagnostic offsets stay valid.
+ */
+export function findInStringLiterals(file, source, rule, pattern, message, prepare = (text) => text) {
     const findings = [];
     forEachStringLiteral(source, (text, start, offsets) => {
         // A fresh RegExp per string: a shared /g/ instance carries lastIndex
         // between calls and would skip roughly half the matches.
-        for (const match of text.matchAll(new RegExp(pattern.source, `${pattern.flags}g`))) {
+        for (const match of prepare(text).matchAll(new RegExp(pattern.source, `${pattern.flags}g`))) {
             const index = match.index ?? 0;
             const offset = offsets?.[index] ?? index;
             findings.push({

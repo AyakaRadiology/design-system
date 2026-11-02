@@ -28,7 +28,10 @@ export declare function walk(node: ts.Node, visit: (node: ts.Node) => void): voi
  * them.
  */
 export declare function forEachStringLiteral(source: ts.SourceFile, visit: (text: string, start: number, offsets?: readonly number[]) => void): void;
-/** Report every match of `pattern` in every string literal of the file. */
-export declare function findInStringLiterals(file: string, source: ts.SourceFile, rule: RuleId, pattern: RegExp, message: (match: string) => string): RuleFinding[];
+/**
+ * Report every match of `pattern` in every string literal of the file.
+ * `prepare` must preserve length so diagnostic offsets stay valid.
+ */
+export declare function findInStringLiterals(file: string, source: ts.SourceFile, rule: RuleId, pattern: RegExp, message: (match: string) => string, prepare?: (text: string) => string): RuleFinding[];
 /** Is this the one file allowed to declare and redefine schema tokens? */
 export declare function isThemeFile(file: string, context: RuleContext): boolean;
