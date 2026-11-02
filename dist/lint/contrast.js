@@ -210,19 +210,23 @@ export function tokenBlocks(css, includeAlpha = false) {
     const colourTokens = new Set(Object.entries(schema.tokens)
         .filter(([, spec]) => spec.type === "color")
         .map(([name]) => name));
+    const declaresSchemaColour = (body) => [...body.matchAll(/(?:^|[;{}])\s*--([a-z0-9-]+)\s*:/g)].some(([, name]) => name !== undefined && colourTokens.has(name));
     const declaring = topLevelBlocks(code)
         .map((block) => {
         for (const nested of topLevelBlocks(block.body)) {
             // A schema colour is still a palette override when its value
             // is derived (var(), color-mix(), etc.) and cannot be parsed.
-            if ([...nested.body.matchAll(/(?:^|[;{}])\s*--([a-z0-9-]+)\s*:/g)].some(([, name]) => name !== undefined && colourTokens.has(name)) ||
-                parseTokens(nested.body, true).size > 0)
+            if (declaresSchemaColour(nested.body) || parseTokens(nested.body, true).size > 0)
                 throw new Error(`the voice CSS declares colour tokens in a nested rule inside "${block.prelude}" ` +
                     "— its palette goes unchecked and cannot define the enclosing mode");
         }
-        return { prelude: block.prelude, tokens: parseTokens(block.body, includeAlpha) };
+        return {
+            prelude: block.prelude,
+            tokens: parseTokens(block.body, includeAlpha),
+            declaresColour: declaresSchemaColour(block.body),
+        };
     })
-        .filter((block) => block.tokens.size > 0);
+        .filter((block) => block.tokens.size > 0 || block.declaresColour);
     if (declaring.length === 0)
         throw new Error("no block in the voice CSS declares any oklch token");
     const blocks = new Map();
