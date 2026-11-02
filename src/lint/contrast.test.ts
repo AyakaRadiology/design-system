@@ -240,6 +240,16 @@ describe("tokenBlocks — the theme guard", () => {
         );
     });
 
+    it.each([
+        "--bg: color-mix(in oklch, red, blue); --text: var(--x-text);",
+        "--bg: color-mix(in oklch, red, blue);",
+        "--text: var(--x-text);",
+        "--text : white;",
+    ])("rejects alternate palettes with unparsed schema colours: %s", (declarations) => {
+        const css = `${ROOT} [data-theme="light"] { ${declarations} }`;
+        expect(() => tokenBlocks(css)).toThrow(/declares .* tokens on "\[data-theme="light"\]"/);
+    });
+
     it("rejects a second block re-declaring the same mode", () => {
         expect(() => tokenBlocks(`${ROOT} :root { --bg: oklch(0.5 0.01 225); }`)).toThrow(/twice/);
     });
