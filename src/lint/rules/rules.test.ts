@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import postcss from "postcss";
@@ -34,6 +35,37 @@ function check(rule: RuleId, fixture: string, as = fixture, themeFile?: string):
 const lines = (findings: RuleFinding[]) => findings.map((finding) => finding.line);
 
 describe("L1 — colour literal", () => {
+    it.each(["url(", 'url("', "url('", "url( "])(
+        "bounds scanning time for unterminated %s prefixes",
+        (prefix) => {
+            // A subprocess deadline also interrupts a synchronous regex stall.
+            const result = execFileSync(
+                "bun",
+                [
+                    "-e",
+                    `import postcss from "postcss";
+                    import { L1 } from ${JSON.stringify(fileURLToPath(new URL("./L1-color-literal.ts", import.meta.url)))};
+                    const root = postcss.root().append(postcss.decl({
+                        prop: "background", value: ${JSON.stringify(prefix)} + "url(".repeat(200000) + " #fff"
+                    }));
+                    const start = performance.now();
+                    const findings = L1.checkCss("consumer.css", root, {
+                        themeFile: "theme.css", schemaTokens: new Set(), extensionPrefix: "x-"
+                    });
+                    console.log(JSON.stringify({ elapsed: performance.now() - start, findings }));`,
+                ],
+                { encoding: "utf8", timeout: 3000, stdio: ["ignore", "pipe", "pipe"] },
+            );
+            const { elapsed, findings } = JSON.parse(result);
+            expect(elapsed).toBeLessThan(1000);
+            expect(findings).toEqual([
+                expect.objectContaining({
+                    message: expect.stringContaining("colour literal #fff"),
+                }),
+            ]);
+        },
+    );
+
     it.each([
         ["filter", "url(#fade)"],
         ["background", 'url("/icons.svg#add")'],
