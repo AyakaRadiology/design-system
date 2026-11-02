@@ -35,6 +35,21 @@ const lines = (findings: RuleFinding[]) => findings.map((finding) => finding.lin
 
 describe("L1 — colour literal", () => {
     it.each([
+        ["#fff-icon", 0],
+        ["#abc-def", 0],
+        ["#fff_x", 0],
+        ["#1 in the queue", 0],
+        ["#fff", 1],
+        ["#1e293b", 1],
+        ["dark:bg-[#fff]", 1],
+    ])("distinguishes colours from identifiers in %s", (value, count) => {
+        const css = postcss.parse(`a { content: "${value}"; }`);
+        expect(RULES.L1.checkCss?.("consumer.css", css, context())).toHaveLength(count);
+        const source = parseTsx("consumer.tsx", `const label = "${value}";`);
+        expect(RULES.L1.checkTsx?.("consumer.tsx", source, context())).toHaveLength(count);
+    });
+
+    it.each([
         ["#abcde", 0],
         ["#abcdef0", 0],
         ["#12345", 0],

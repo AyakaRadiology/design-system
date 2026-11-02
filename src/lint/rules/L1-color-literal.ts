@@ -6,12 +6,13 @@ import type { Rule, RuleContext, RuleFinding } from "../types.js";
 /**
  * A written-out colour, in any of the forms CSS accepts.
  *
- * `\b` after the hex digits so that `#1 in the queue` is prose and
- * `#1e293b` is a slate. The function forms are anchored on `(` so that the
+ * Valid hex lengths exclude prose like `#1 in the queue`; the trailing
+ * lookahead excludes identifier continuations like `#fff-icon` and `#fff_x`.
+ * The function forms are anchored on `(` so that the
  * word "info" in a sentence is not read as a colour.
  */
 export const COLOR_LITERAL =
-    /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})\b|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(/i;
+    /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})(?![\w-])|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(/i;
 
 const MESSAGE = (match: string) =>
     `colour literal ${match} — use a semantic token utility (bg-accent, text-text-secondary, border-border) or a --x- extension declared in the theme file`;
