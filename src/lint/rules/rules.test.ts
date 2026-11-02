@@ -35,6 +35,25 @@ const lines = (findings: RuleFinding[]) => findings.map((finding) => finding.lin
 
 describe("L1 — colour literal", () => {
     it.each([
+        ["mask: url(#fade)", null],
+        ['background: url("icons.svg#face")', null],
+        ["filter: URL( '#fade' )", null],
+        ['mask: url("icons).svg#face")', null],
+        [String.raw`mask: url(icons\).svg#face)`, null],
+        ["mask: url(#fade), url(#face)", null],
+        ["color: #fade", "#fade"],
+        ["background: url(a.png) #fff", "#fff"],
+        ['background: url("icons.svg#face") #fff', "#fff"],
+        ["background: #fade url(#face)", "#fade"],
+        ["background: url(#fade) rgb(0 0 0)", "rgb("],
+    ])("ignores URL references but checks colours in %s", (declaration, literal) => {
+        const css = postcss.parse(`.panel { ${declaration}; }`);
+        const findings = RULES.L1.checkCss?.("consumer.css", css, context());
+        expect(findings).toHaveLength(literal === null ? 0 : 1);
+        if (literal !== null) expect(findings?.[0]?.message).toContain(`colour literal ${literal}`);
+    });
+
+    it.each([
         ["#fff-icon", 0],
         ["#abc-def", 0],
         ["#fff_x", 0],
