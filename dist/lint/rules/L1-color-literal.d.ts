@@ -2,8 +2,9 @@ import type { Rule } from "../types.js";
 /**
  * A written-out colour, in any of the forms CSS accepts.
  *
- * `\b` after the hex digits so that `#1 in the queue` is prose and
- * `#1e293b` is a slate. The function forms are anchored on `(` so that the
+ * Valid hex lengths exclude prose like `#1 in the queue`; the trailing
+ * lookahead excludes identifier continuations like `#fff-icon` and `#fff_x`.
+ * The function forms are anchored on `(` so that the
  * word "info" in a sentence is not read as a colour.
  */
 export declare const COLOR_LITERAL: RegExp;
