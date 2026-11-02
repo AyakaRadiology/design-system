@@ -14,6 +14,14 @@ import type { Rule, RuleContext, RuleFinding } from "../types.js";
 export const COLOR_LITERAL =
     /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})(?![\w-])|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(/i;
 
+/** Hide resource identifiers, retaining offsets for TSX diagnostics. */
+function withoutUrls(value: string): string {
+    return value.replace(
+        /\burl\(\s*(?:"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|(?:\\[\s\S]|[^"'\\)])*)\s*\)/gi,
+        (url) => " ".repeat(url.length),
+    );
+}
+
 const MESSAGE = (match: string) =>
     `colour literal ${match} — use a semantic token utility (bg-accent, text-text-secondary, border-border) or a --x- extension declared in the theme file`;
 
@@ -30,14 +38,14 @@ export const L1: Rule = {
 
     checkTsx(file: string, source: ts.SourceFile, context: RuleContext): RuleFinding[] {
         if (isThemeFile(file, context)) return [];
-        return findInStringLiterals(file, source, "L1", COLOR_LITERAL, MESSAGE);
+        return findInStringLiterals(file, source, "L1", COLOR_LITERAL, MESSAGE, withoutUrls);
     },
 
     checkCss(file: string, root: postcss.Root, context: RuleContext): RuleFinding[] {
         if (isThemeFile(file, context)) return [];
         const findings: RuleFinding[] = [];
         root.walkDecls((decl) => {
-            const match = COLOR_LITERAL.exec(decl.value);
+            const match = COLOR_LITERAL.exec(withoutUrls(decl.value));
             if (!match) return;
             findings.push({
                 rule: "L1",

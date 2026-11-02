@@ -8,6 +8,10 @@ import { findInStringLiterals, isThemeFile } from "../tsx.js";
  * word "info" in a sentence is not read as a colour.
  */
 export const COLOR_LITERAL = /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})(?![\w-])|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(/i;
+/** Hide resource identifiers, retaining offsets for TSX diagnostics. */
+function withoutUrls(value) {
+    return value.replace(/\burl\(\s*(?:"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|(?:\\[\s\S]|[^"'\\)])*)\s*\)/gi, (url) => " ".repeat(url.length));
+}
 const MESSAGE = (match) => `colour literal ${match} — use a semantic token utility (bg-accent, text-text-secondary, border-border) or a --x- extension declared in the theme file`;
 /**
  * L1 — no colour literals outside the theme file.
@@ -22,14 +26,14 @@ export const L1 = {
     checkTsx(file, source, context) {
         if (isThemeFile(file, context))
             return [];
-        return findInStringLiterals(file, source, "L1", COLOR_LITERAL, MESSAGE);
+        return findInStringLiterals(file, source, "L1", COLOR_LITERAL, MESSAGE, withoutUrls);
     },
     checkCss(file, root, context) {
         if (isThemeFile(file, context))
             return [];
         const findings = [];
         root.walkDecls((decl) => {
-            const match = COLOR_LITERAL.exec(decl.value);
+            const match = COLOR_LITERAL.exec(withoutUrls(decl.value));
             if (!match)
                 return;
             findings.push({
