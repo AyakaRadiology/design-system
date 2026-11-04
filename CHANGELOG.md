@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.5](https://github.com/AyakaRadiology/design-system/compare/v0.6.4...v0.6.5) (2026-11-04)
+
+
+### Bug Fixes
+
+* [agent-found] dist/lint/rules/L1-color-literal.js:31 A consumer uses an SVG filter or mask referenced by CSS, suc ([#180](https://github.com/AyakaRadiology/design-system/issues/180)) ([16c19d9](https://github.com/AyakaRadiology/design-system/commit/16c19d927962223e2b43d2388d2a14570260ebbc)), closes [#177](https://github.com/AyakaRadiology/design-system/issues/177)
+* [agent-found] dist/lint/rules/L1-color-literal.js:9 A stylesheet uses `content: "#fff-icon"` to display that ide ([#175](https://github.com/AyakaRadiology/design-system/issues/175)) ([b8bb9a1](https://github.com/AyakaRadiology/design-system/commit/b8bb9a1bc9d3a7851a689b280e09854b504639a9)), closes [#174](https://github.com/AyakaRadiology/design-system/issues/174)
+* [agent-found] src/lint/contrast.ts:275 A voice adds a valid alternate palette such as `[data-theme= ([#183](https://github.com/AyakaRadiology/design-system/issues/183)) ([6160fee](https://github.com/AyakaRadiology/design-system/commit/6160feec8f4265d6178aed04598fc34acdf15bc9)), closes [#182](https://github.com/AyakaRadiology/design-system/issues/182)
+* [agent-found] src/lint/rules/L1-color-literal.ts:21 An untrusted pull request adds a CSS declaration whose value ([#184](https://github.com/AyakaRadiology/design-system/issues/184)) ([69c1b88](https://github.com/AyakaRadiology/design-system/commit/69c1b88b50886463304e3ae4de56e0d5f42175f9)), closes [#181](https://github.com/AyakaRadiology/design-system/issues/181)
+* [agent-found] src/lint/rules/L1-color-literal.ts:40 A consumer uses an SVG mask or filter with a hexadecimal-loo ([#179](https://github.com/AyakaRadiology/design-system/issues/179)) ([37bb4f8](https://github.com/AyakaRadiology/design-system/commit/37bb4f80f828ac8b79f5ffb076ecf36574d33d2e)), closes [#178](https://github.com/AyakaRadiology/design-system/issues/178)
+
 ## [0.6.4](https://github.com/AyakaRadiology/design-system/compare/v0.6.3...v0.6.4) (2026-10-31)
 
 
