@@ -37,6 +37,15 @@ describe("parseOklch", () => {
         expect(parseOklch("oklch(0.42 0.15 195)")).toEqual({ l: 0.42, c: 0.15, h: 195, alpha: 1 });
     });
 
+    it.each(["-30", "-30.5", "+30", "+30.5"])("reads signed hue %s", (hue) => {
+        expect(parseOklch(`oklch(0.5 0.1 ${hue})`)).toEqual({
+            l: 0.5,
+            c: 0.1,
+            h: Number(hue),
+            alpha: 1,
+        });
+    });
+
     it("reads a percentage alpha", () => {
         expect(parseOklch("oklch(0.5 0.1 200 / 50%)").alpha).toBeCloseTo(0.5, 6);
     });
