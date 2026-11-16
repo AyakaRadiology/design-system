@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.6](https://github.com/AyakaRadiology/design-system/compare/v0.6.5...v0.6.6) (2026-11-12)
+
+
+### Bug Fixes
+
+* [agent-found] src/lint/contrast.ts:95 A consumer passes a valid CSS value such as `oklch(0.5 0.1 - ([#187](https://github.com/AyakaRadiology/design-system/issues/187)) ([a01cbb4](https://github.com/AyakaRadiology/design-system/commit/a01cbb4b5dab1d6b910d89c9724c6982fb358fc0)), closes [#186](https://github.com/AyakaRadiology/design-system/issues/186)
+
 ## [0.6.5](https://github.com/AyakaRadiology/design-system/compare/v0.6.4...v0.6.5) (2026-11-04)
 
 
