@@ -24,9 +24,10 @@ function height(value, max) {
         return 0;
     return Math.max(MIN_VISIBLE_PERCENT, Math.min(100, (safe / max) * 100));
 }
-const SLOT_CLASSES = "flex h-full min-w-px flex-1 items-end";
+const SLOT_CLASSES = "flex h-full min-w-0 flex-1 items-end";
 function Bar({ percent, fill, label }) {
-    const bar = _jsx("div", { className: cn("w-full rounded-sm", fill), style: { height: `${percent}%` } });
+    // Keep spacing inside each slot so even subpixel slots fit the window.
+    const bar = (_jsx("div", { className: cn("rounded-sm", fill), style: { height: `${percent}%`, width: "calc(100% - min(1px, 50%))" } }));
     return label === undefined ? (_jsx("div", { className: SLOT_CLASSES, children: bar })) : (_jsx("div", { role: "img", "aria-label": label, className: SLOT_CLASSES, children: bar }));
 }
 /** A fixed-height strip of bars for the last N samples, with no axes. */
@@ -41,5 +42,5 @@ export function MiniBars({ values, max, series = "chart-1", labels, className, .
         percent: height(value, ceiling),
         label: labels?.[position],
     }));
-    return (_jsx("div", { "data-ds-chart": "mini-bars", role: named ? "group" : undefined, "aria-hidden": named ? undefined : true, className: cn("flex h-6 items-end gap-px", className), ...props, children: bars.map((bar) => (_jsx(Bar, { percent: bar.percent, fill: FILL[series], label: bar.label }, bar.id))) }));
+    return (_jsx("div", { "data-ds-chart": "mini-bars", role: named ? "group" : undefined, "aria-hidden": named ? undefined : true, className: cn("flex h-6 min-w-0 items-end overflow-hidden", className), ...props, children: bars.map((bar) => (_jsx(Bar, { percent: bar.percent, fill: FILL[series], label: bar.label }, bar.id))) }));
 }

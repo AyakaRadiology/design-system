@@ -40,10 +40,16 @@ function height(value: number, max: number): number {
     return Math.max(MIN_VISIBLE_PERCENT, Math.min(100, (safe / max) * 100));
 }
 
-const SLOT_CLASSES = "flex h-full min-w-px flex-1 items-end";
+const SLOT_CLASSES = "flex h-full min-w-0 flex-1 items-end";
 
 function Bar({ percent, fill, label }: { percent: number; fill: string; label?: string }) {
-    const bar = <div className={cn("w-full rounded-sm", fill)} style={{ height: `${percent}%` }} />;
+    // Keep spacing inside each slot so even subpixel slots fit the window.
+    const bar = (
+        <div
+            className={cn("rounded-sm", fill)}
+            style={{ height: `${percent}%`, width: "calc(100% - min(1px, 50%))" }}
+        />
+    );
     return label === undefined ? (
         <div className={SLOT_CLASSES}>{bar}</div>
     ) : (
@@ -81,7 +87,7 @@ export function MiniBars({
             data-ds-chart="mini-bars"
             role={named ? "group" : undefined}
             aria-hidden={named ? undefined : true}
-            className={cn("flex h-6 items-end gap-px", className)}
+            className={cn("flex h-6 min-w-0 items-end overflow-hidden", className)}
             {...props}
         >
             {bars.map((bar) => (
