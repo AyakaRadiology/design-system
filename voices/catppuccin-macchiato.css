@@ -1,0 +1,91 @@
+/* Voice: catppuccin-macchiato — dark-only, soft pastel on slate-violet, for
+ * tools someone works in for hours.
+ *
+ * The Catppuccin Macchiato palette (https://catppuccin.com/palette, MIT) laid
+ * onto the schema: mantle/base/surface for the layers, text/subtext for the
+ * text levels, mauve as the accent, green/yellow/red/blue as the statuses.
+ * Every value is the palette's own colour converted to OKLCH, with its name
+ * and hex beside it, except where a contrast floor in src/lint/voices.test.ts
+ * forced a step off the palette; those say so. See
+ * voices/catppuccin-macchiato/VOICE.md for the rules that go with the values.
+ *
+ * DARK ONLY, like biomonitor: one mode, one set of values to keep honest
+ * against the contrast gate. (Catppuccin's light flavour, Latte, would be a
+ * separate voice.)
+ *
+ * Usage in a Tailwind entry (plain CSS needs only the voice import):
+ *   @import "tailwindcss";
+ *   @import "@ayaka/design-system/tailwind.css";
+ *   @import "@ayaka/design-system/voices/catppuccin-macchiato.css";
+ */
+
+@import "../tokens/scales.css";
+@import "../tokens/glass.css";
+
+:root {
+    /* Shared floating material: surface0, nearly opaque. surface1 (the
+     * elevated surface) fails AA for secondary text once a white backdrop
+     * shows through, so glass sits one step darker than a popover. */
+    --x-glass-fill: oklch(0.354 0.037 276 / 0.96);
+    --x-glass-fill-strong: oklch(0.354 0.037 276 / 0.98);
+    --x-glass-border: oklch(0 0 0 / 0.4);
+    --x-glass-highlight: oklch(0.871 0.048 273.7 / 0.18);
+    --x-glass-shadow: inset 0 1px 2px oklch(0 0 0 / 0.06), 0 8px 24px oklch(0 0 0 / 0.32);
+    --x-glass-blur: 10px;
+    --x-glass-saturate: 1.08;
+    --x-glass-radius: 8px;
+
+    color-scheme: dark;
+
+    /* neutrals — the palette's own ladder. The page is mantle and a panel is
+     * base, so a panel sits lighter than the page it lies on. */
+    --bg: oklch(0.279 0.035 276.9); /* base #24273a: cards, panels, inputs */
+    --bg-subtle: oklch(0.249 0.03 278.4); /* mantle #1e2030: page chrome, table headers */
+    --bg-muted: oklch(0.354 0.037 276); /* surface0 #363a4f: wells, hover, disabled fills */
+    --bg-elevated: oklch(0.426 0.039 276.9); /* surface1 #494d64: popovers, menus, dialogs */
+    --border: oklch(0.354 0.037 276); /* surface0 #363a4f: dividers, quiet on purpose */
+    --border-strong: oklch(0.494 0.039 275.7); /* surface2 #5b6078: control borders */
+    --text: oklch(0.871 0.048 273.7); /* text #cad3f5 */
+    /* subtext1, not subtext0: subtext0 is 3.7:1 on the elevated surface, and
+     * menus and tooltips carry secondary text as often as cards do. */
+    --text-secondary: oklch(0.812 0.046 274.3); /* subtext1 #b8c0e0 */
+    --text-tertiary: oklch(0.627 0.041 273.7); /* overlay1 #8087a2: decorative meta only */
+
+    /* accent — mauve, Catppuccin's own default accent. Hover is the same hue
+     * 0.05 L up (no palette colour is "mauve, lighter"). */
+    --accent: oklch(0.772 0.126 303.9); /* mauve #c6a0f6 */
+    --accent-hover: oklch(0.822 0.11 303.9);
+    --accent-fg: oklch(0.219 0.025 280.7); /* crust #181926 */
+    --accent-subtle: oklch(0.366 0.051 289.7); /* mauve 16 % into base */
+
+    /* status — -fg is crust on every fill; -subtle is the status colour mixed
+     * into base (14–16 %), light enough that the status colour itself still
+     * clears AA as the label on its own tint (StatusPill draws exactly that). */
+    --success: oklch(0.835 0.108 138.2); /* green #a6da95 */
+    --success-subtle: oklch(0.379 0.017 227);
+    --success-fg: oklch(0.219 0.025 280.7);
+    --warning: oklch(0.879 0.074 84.8); /* yellow #eed49f */
+    --warning-subtle: oklch(0.372 0.015 290.7);
+    --warning-fg: oklch(0.219 0.025 280.7);
+    --danger: oklch(0.737 0.125 11.2); /* red #ed8796 */
+    --danger-hover: oklch(0.77 0.102 14.4); /* maroon #ee99a0 */
+    --danger-subtle: oklch(0.346 0.036 312.9);
+    --danger-fg: oklch(0.219 0.025 280.7);
+    --info: oklch(0.75 0.11 263.8); /* blue #8aadf4 */
+    --info-subtle: oklch(0.353 0.047 270.7);
+    --info-fg: oklch(0.219 0.025 280.7);
+
+    /* series — the one place the palette could not be used as it is. A series
+     * must sit ΔE ≥ 10 from every status colour and ≥ 15 from its neighbour,
+     * and most Catppuccin pastels are within 8 of a status (teal of green,
+     * sapphire and lavender of blue, flamingo and rosewater of yellow). Pink
+     * is the palette's own; peach is more saturated and turned a few degrees, to
+     * clear both red and yellow; and
+     * mauve, teal and sapphire are taken deeper, where lightness keeps them
+     * apart from the statuses their hues sit next to. */
+    --chart-1: oklch(0.66 0.16 304); /* mauve, deeper */
+    --chart-2: oklch(0.79 0.135 58); /* peach, more saturated and hue +8 */
+    --chart-3: oklch(0.62 0.09 190); /* teal, deeper */
+    --chart-4: oklch(0.861 0.083 336.2); /* pink #f5bde6 */
+    --chart-5: oklch(0.6 0.11 235); /* sapphire, deeper */
+}
