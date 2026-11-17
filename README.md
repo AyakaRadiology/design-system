@@ -126,6 +126,7 @@ shown in the wiring example and exercised by the packed consumer build.
 |---|---|---|
 | `base` | light + dark | general tool UI, anything with a light mode |
 | `biomonitor` | dark only | instrument surfaces — telemetry, monitors, dashboards. See `voices/biomonitor/VOICE.md`. |
+| `catppuccin-macchiato` | dark only | tools someone works in for hours — soft pastels on slate-violet, quiet borders. See `voices/catppuccin-macchiato/VOICE.md`. |
 
 Picking a voice is a values decision; a voice is not a starting point to edit.
 More than about eight overrides in one `theme.css` means the product wants a

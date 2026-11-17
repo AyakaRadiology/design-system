@@ -38,10 +38,11 @@ describe("Figma diff extraction", () => {
     });
     it("reports deleted collections and rejects unresolved aliases or incomplete modes", () => {
         const live = snapshot();
-        live.collections.pop();
+        const deleted = live.collections.pop();
+        if (!deleted) throw new Error("Missing collection");
         expect(
             diffVariables(plan, live).some(
-                (change) => change.path === "biomonitor/modes" && change.after === null,
+                (change) => change.path === `${deleted.name}/modes` && change.after === null,
             ),
         ).toBe(true);
         const broken = snapshot();
