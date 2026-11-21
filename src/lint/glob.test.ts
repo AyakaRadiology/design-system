@@ -14,6 +14,13 @@ describe("globToRegExp", () => {
         expect(matches("src/*.tsx", "src/panels/App.tsx")).toBe(false);
     });
 
+    it.each([
+        ["src/demos/?.tsx", true],
+        ["src/demos/??.tsx", false],
+    ])("matches a supplementary Unicode character against %s: %s", (pattern, expected) => {
+        expect(matches(pattern, "src/demos/𠮷.tsx")).toBe(expected);
+    });
+
     it("lets a double star cross separators, including zero of them", () => {
         expect(matches("**/*.test.*", "src/lint/run.test.ts")).toBe(true);
         expect(matches("**/*.test.*", "run.test.ts")).toBe(true);
