@@ -473,9 +473,15 @@ describe("L7 — z-index literal", () => {
         ["z-50", 1],
         ["z-[-1]", 1],
         ["z-[999]", 1],
-    ])("reports %s only when it is numeric", (utility, count) => {
+        ["md:z-10", 1],
+        ["-z-10", 1],
+        ["hover:z-[5]", 1],
+        ["translate-z-4 z-modal", 0],
+        ["rotate-z-45", 0],
+        ["scale-z-50", 0],
+    ])("reports literal z-index utilities in %s", (classes, count) => {
         const file = "consumer.tsx";
-        const source = parseTsx(file, `<div className="${utility}" />`);
+        const source = parseTsx(file, `<div className="${classes}" />`);
         expect(RULES.L7.checkTsx?.(file, source, context())).toHaveLength(count);
     });
 
