@@ -132,6 +132,7 @@ export function projectValue(raw: string, spec: TokenSpec): VariableValue {
     if (!Number.isFinite(value)) throw new Error(`Non-finite value: ${raw}`);
     switch (spec.type) {
         case "length":
+            if (!unit && value === 0) return 0;
             if (unit === "px") return value;
             if (unit === "rem") return value * ROOT_FONT_PX;
             break;

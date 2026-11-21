@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
+import { importVariablesScript } from "./plugin-scripts.js";
 import {
     loadTokenSource,
     projectValue,
@@ -70,6 +71,20 @@ describe("offline Figma adapter", () => {
         expect(projectValue("2rem", length)).toBe(32);
         expect(projectValue("0.2s", duration)).toBe(200);
         expect(() => projectValue("2em", length)).toThrow("Unsupported");
+        expect(() => projectValue("2", length)).toThrow("Unsupported length unit: 2");
+    });
+    it("generates an import script with a FLOAT for a unitless zero length", () => {
+        const edited = structuredClone(source);
+        const dark = edited.voices.biomonitor?.dark;
+        if (!dark) throw new Error("Missing biomonitor/dark");
+        dark["x-glass-radius"] = "0";
+
+        const editedPlan = tokensToVariables(edited);
+        const radius = editedPlan.collections
+            .find((collection) => collection.name === "biomonitor")
+            ?.variables.find((variable) => variable.name === "x-glass-radius");
+        expect(radius).toMatchObject({ resolvedType: "FLOAT", valuesByMode: { dark: 0 } });
+        expect(importVariablesScript(editedPlan)).toContain(JSON.stringify(radius));
     });
     it("detects a missing required token, an unknown token and unsupported CSS", () => {
         const missing = structuredClone(source);
