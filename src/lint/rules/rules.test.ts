@@ -493,6 +493,13 @@ describe("L7 — z-index literal", () => {
         expect(lines(check("L7", "L7-z-index/fail.css"))).toEqual([2]);
     });
 
+    it.each(["Z-INDEX", "Z-Index"])("catches a numeric %s declaration", (property) => {
+        const css = postcss.parse(`.toolbar { ${property}: 9999 }`);
+        expect(RULES.L7.checkCss?.("consumer.css", css, context())).toEqual([
+            expect.objectContaining({ rule: "L7" }),
+        ]);
+    });
+
     it("passes the layer tokens in both languages", () => {
         expect(check("L7", "L7-z-index/pass.tsx")).toEqual([]);
         expect(check("L7", "L7-z-index/pass.css")).toEqual([]);

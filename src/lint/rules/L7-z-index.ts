@@ -35,7 +35,7 @@ export const L7: Rule = {
     checkCss(file: string, root: postcss.Root, context: RuleContext): RuleFinding[] {
         if (isThemeFile(file, context)) return [];
         const findings: RuleFinding[] = [];
-        root.walkDecls("z-index", (decl) => {
+        root.walkDecls(/^z-index$/i, (decl) => {
             if (!NUMERIC.test(decl.value.trim())) return;
             findings.push({
                 rule: "L7",
