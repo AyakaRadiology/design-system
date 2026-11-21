@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.7.0](https://github.com/AyakaRadiology/design-system/compare/v0.6.6...v0.7.0) (2026-11-21)
+
+
+### Features
+
+* **voices:** catppuccin-macchiato, a dark voice for tools someone works in for hours ([#194](https://github.com/AyakaRadiology/design-system/issues/194)) ([495dc19](https://github.com/AyakaRadiology/design-system/commit/495dc19b3ef95e90ba46a97982d340abb7b3ca4b))
+
+
+### Bug Fixes
+
+* [agent-found] dist/lint/glob.js:83 A design-lint consumer excludes single-character demo files ([#201](https://github.com/AyakaRadiology/design-system/issues/201)) ([36dbd85](https://github.com/AyakaRadiology/design-system/commit/36dbd8523f77eed883da021b27f6696eedc9eca3)), closes [#198](https://github.com/AyakaRadiology/design-system/issues/198)
+* [agent-found] scripts/figma/tokens-to-variables.ts:135 A voice author sets `--x-glass-radius: 0` to give panels squ ([#202](https://github.com/AyakaRadiology/design-system/issues/202)) ([bac40c6](https://github.com/AyakaRadiology/design-system/commit/bac40c620d82033525dde9b15c9764df59283459)), closes [#199](https://github.com/AyakaRadiology/design-system/issues/199)
+* [agent-found] src/lint/rules/L7-z-index.ts:7 A consumer uses `className="translate-z-4 z-modal"` to move ([#200](https://github.com/AyakaRadiology/design-system/issues/200)) ([57225fb](https://github.com/AyakaRadiology/design-system/commit/57225fb8932dab0509f1a1d84d06c282a2aba819)), closes [#196](https://github.com/AyakaRadiology/design-system/issues/196)
+* [agent-found] src/react/MiniBars.tsx:45 Displaying an hour of 60 Hz samples in a normal-width MiniBa ([#192](https://github.com/AyakaRadiology/design-system/issues/192)) ([618b243](https://github.com/AyakaRadiology/design-system/commit/618b2433014892e932ea2ad6ffd74125cd7cb224)), closes [#191](https://github.com/AyakaRadiology/design-system/issues/191)
+
 ## [0.6.6](https://github.com/AyakaRadiology/design-system/compare/v0.6.5...v0.6.6) (2026-11-12)
 
 
