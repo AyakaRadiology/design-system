@@ -40,10 +40,11 @@ class Variable {
         this.codeSyntax[platform] = value;
     }
 }
-function harness() {
+function harness(documentColorProfile = "SRGB") {
     const collections: Collection[] = [];
     const variables: Variable[] = [];
     const figma = {
+        root: { documentColorProfile },
         variables: {
             getLocalVariableCollectionsAsync: async () => collections,
             getLocalVariablesAsync: async () => variables,
@@ -66,12 +67,12 @@ function harness() {
     };
     const run = (script: string): Promise<LiveVariables> =>
         runInNewContext(`(async () => { ${script} })()`, { figma });
-    return { collections, variables, run };
+    return { collections, variables, root: figma.root, run };
 }
 
 describe("emitted Plugin API scripts (contract harness, not a Figma runtime test)", () => {
-    it("imports idempotently and exports all variables/modes back to an empty diff", async () => {
-        const { run, collections, variables } = harness();
+    it.each(["SRGB", "LEGACY"])("round-trips variables idempotently in %s", async (profile) => {
+        const { run, collections, variables } = harness(profile);
         await run(importVariablesScript(plan));
         const count = variables.length;
         await run(importVariablesScript(plan));
@@ -98,6 +99,32 @@ describe("emitted Plugin API scripts (contract harness, not a Figma runtime test
             }
         }
     });
+    it("rejects Display P3 before provisioning variables", async () => {
+        const { run, collections, variables } = harness("DISPLAY_P3");
+        await expect(run(importVariablesScript(plan)).then(() => undefined)).rejects.toThrow(
+            /DISPLAY_P3.*sRGB/,
+        );
+        expect(collections).toHaveLength(0);
+        expect(variables).toHaveLength(0);
+    });
+    it.each([
+        ["import preflight", importVariablesScript],
+        ["export", exportVariablesScript],
+    ])(
+        "%s rejects an existing library in Display P3 even when its channel numbers match",
+        async (_operation, emitScript) => {
+            const { run, root, variables } = harness();
+            await run(importVariablesScript(plan));
+            const first = variables[0];
+            if (!first) throw new Error("Missing imported variables");
+            root.documentColorProfile = "DISPLAY_P3";
+            const write = vi.spyOn(first, "setValueForMode");
+            await expect(run(emitScript(plan)).then(() => undefined)).rejects.toThrow(
+                /DISPLAY_P3.*sRGB/,
+            );
+            expect(write).not.toHaveBeenCalled();
+        },
+    );
     it("preflights every collection before mutating any variable", async () => {
         const { run, variables } = harness();
         await run(importVariablesScript(plan));

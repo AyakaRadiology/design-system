@@ -10,9 +10,17 @@ import {
     variablesToTokens,
 } from "./tokens-to-variables.js";
 
+// The plan stores sRGB channels; Figma interprets RGBA in its document profile.
+const requireSrgbChannels = `const profile = figma.root.documentColorProfile;
+if (profile !== "SRGB" && profile !== "LEGACY") {
+    throw new Error("Unsupported Figma document color profile: " + profile +
+        ". Use an sRGB Figma Design file to import or export token variables.");
+}
+`;
+
 export function importVariablesScript(plan: FigmaPlan): string {
     variablesToTokens(plan);
-    return `const plan = ${JSON.stringify(plan.collections)};
+    return `${requireSrgbChannels}const plan = ${JSON.stringify(plan.collections)};
 const tolerance = ${COLOR_STORAGE_TOLERANCE};
 const equalStoredFloat = ${equalStoredFloat.toString()};
 const collections = await figma.variables.getLocalVariableCollectionsAsync();
@@ -79,7 +87,7 @@ return { collectionIds, variableIds, createdVariableIds, count: variableIds.leng
  * an engineer must resolve their target/mode rather than guess during extraction. */
 export function exportVariablesScript(plan: FigmaPlan): string {
     variablesToTokens(plan);
-    return `const names = ${JSON.stringify(plan.collections.map((collection) => collection.name))};
+    return `${requireSrgbChannels}const names = ${JSON.stringify(plan.collections.map((collection) => collection.name))};
 const collections = await figma.variables.getLocalVariableCollectionsAsync();
 const variables = await figma.variables.getLocalVariablesAsync();
 return { collections: collections.filter(c => names.includes(c.name)).map(collection => ({
