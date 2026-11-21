@@ -19,10 +19,31 @@ export interface RunResult {
 /** Paths use `/` in the config and in output, whatever the host separator is. */
 const toPosix = (path: string) => path.split("\\").join("/");
 
-function ruleContext(config: Config): RuleContext {
+function selectedThemeFile(config: Config, files: ReadonlyMap<string, string>): string {
+    const configuredPath = resolve(config.root, config.themeFile);
+    const themeFile = toPosix(relative(config.root, configuredPath));
+    if (files.has(themeFile)) return themeFile;
+
+    const normalizedTheme = themeFile.normalize("NFC");
+    const candidates = [...files].filter(([file]) => file.normalize("NFC") === normalizedTheme);
+    if (candidates.length === 0) return themeFile;
+
+    // Some volumes store both spellings as separate files. Only grant the
+    // theme exemption when the listed path identifies the configured file.
+    const theme = statSync(configuredPath, { bigint: true, throwIfNoEntry: false });
+    if (!theme) return themeFile;
+
+    for (const [file, target] of candidates) {
+        const candidate = statSync(target, { bigint: true });
+        if (candidate.dev === theme.dev && candidate.ino === theme.ino) return file;
+    }
+    return themeFile;
+}
+
+function ruleContext(config: Config, files: ReadonlyMap<string, string>): RuleContext {
     const schema = loadPackageSchema();
     return {
-        themeFile: toPosix(relative(config.root, resolve(config.root, config.themeFile))),
+        themeFile: selectedThemeFile(config, files),
         schemaTokens: new Set(Object.keys(schema.tokens)),
         extensionPrefix: schema.extensionPrefix,
     };
@@ -73,10 +94,10 @@ function parseCss(file: string, text: string) {
  * a line from.
  */
 export function run(config: Config): RunResult {
-    const context = ruleContext(config);
+    const files = selectFilePaths(config);
+    const context = ruleContext(config, files);
     const active = (Object.keys(RULES) as RuleId[]).filter((id) => config.rules[id] !== "off");
     const raw: RuleFinding[] = [];
-    const files = selectFilePaths(config);
 
     for (const [file, target] of files) {
         const text = readFileSync(target, "utf8");

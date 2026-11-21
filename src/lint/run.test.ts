@@ -1,6 +1,9 @@
 import { spawnSync } from "node:child_process";
 import {
     closeSync,
+    existsSync,
+    globSync,
+    linkSync,
     mkdirSync,
     mkdtempSync,
     openSync,
@@ -12,10 +15,15 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { formatText, main, parseArgs } from "./cli.js";
 import { ConfigError, loadConfig } from "./config.js";
 import { run, selectFiles } from "./run.js";
+
+vi.mock("node:fs", async (importOriginal) => {
+    const fs = await importOriginal<typeof import("node:fs")>();
+    return { ...fs, globSync: vi.fn(fs.globSync) };
+});
 
 /* A throwaway project on disk, because run() answers questions about file
  * selection and relative paths that a fake filesystem would answer for it. */
@@ -290,6 +298,30 @@ describe("run", () => {
         expect(result.findings).toEqual([]);
         expect(result.exitCode).toBe(0);
         expect(result.filesChecked).toBe(1);
+    });
+
+    it.each([
+        ["NFC", "NFD"],
+        ["NFD", "NFC"],
+    ] as const)("recognises a %s theme path listed in %s", (configuredForm, listedForm) => {
+        const themeFile = "src/Café/theme.css".normalize(configuredForm);
+        const listedPath = "src/Café/theme.css".normalize(listedForm);
+        const config = loadConfig(
+            project({ [listedPath]: ":root { --bg: #121212; }" }, { ...BASE, themeFile }),
+        );
+        try {
+            const configuredPath = join(config.root, themeFile);
+            // On volumes that distinguish the spellings, make both names refer to the same file.
+            if (!existsSync(configuredPath)) {
+                mkdirSync(dirname(configuredPath), { recursive: true });
+                linkSync(join(config.root, listedPath), configuredPath);
+            }
+            vi.mocked(globSync).mockReturnValueOnce([listedPath]);
+
+            expect(run(config)).toEqual({ findings: [], exitCode: 0, filesChecked: 1 });
+        } finally {
+            rmSync(config.root, { recursive: true, force: true });
+        }
     });
 
     it("reports how many files it read", () => {
