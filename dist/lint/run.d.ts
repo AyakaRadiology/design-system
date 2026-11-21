@@ -1,4 +1,4 @@
-import type { Config } from "./config.js";
+import { type Config } from "./config.js";
 import type { Finding } from "./types.js";
 export interface RunResult {
     findings: Finding[];
