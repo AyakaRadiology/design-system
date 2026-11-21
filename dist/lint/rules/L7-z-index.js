@@ -20,7 +20,7 @@ export const L7 = {
         if (isThemeFile(file, context))
             return [];
         const findings = [];
-        root.walkDecls("z-index", (decl) => {
+        root.walkDecls(/^z-index$/i, (decl) => {
             if (!NUMERIC.test(decl.value.trim()))
                 return;
             findings.push({
