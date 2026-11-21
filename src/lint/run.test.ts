@@ -1,6 +1,17 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import {
+    closeSync,
+    mkdirSync,
+    mkdtempSync,
+    openSync,
+    readFileSync,
+    rmSync,
+    symlinkSync,
+    writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { formatText, main, parseArgs } from "./cli.js";
 import { ConfigError, loadConfig } from "./config.js";
@@ -42,7 +53,53 @@ const CLEAN = 'export const Chip = () => <span className="p-4 bg-accent text-acc
 const THEME =
     ":root {\n  --accent: oklch(0.8 0.12 195);\n  --x-needle-tracker: var(--chart-1);\n}\n";
 
+function runCli(configPath: string) {
+    const bin = fileURLToPath(new URL("../../bin/design-lint.js", import.meta.url));
+    const stdout = join(dirname(configPath), "stdout.txt");
+    const stderr = join(dirname(configPath), "stderr.txt");
+    const out = openSync(stdout, "w");
+    const err = openSync(stderr, "w");
+    try {
+        const { error, status } = spawnSync(process.execPath, [bin, "--config", configPath], {
+            stdio: ["ignore", out, err],
+        });
+        expect(error).toBeUndefined();
+        return {
+            status,
+            stdout: readFileSync(stdout, "utf8"),
+            stderr: readFileSync(stderr, "utf8"),
+        };
+    } finally {
+        closeSync(out);
+        closeSync(err);
+    }
+}
+
 describe("selectFiles", () => {
+    it("rejects a matching stylesheet symlink outside the project before reading it", () => {
+        const configPath = project(
+            { "src/theme.css": THEME },
+            { ...BASE, include: ["src/**/*.css"] },
+        );
+        const root = dirname(configPath);
+        const outside = `${root}.env`;
+        const secret = "API_KEY=SECRET123";
+        try {
+            writeFileSync(outside, secret);
+            symlinkSync(outside, join(root, "src/linked.css"));
+
+            const result = runCli(configPath);
+            expect.soft(() => selectFiles(loadConfig(configPath))).toThrow(ConfigError);
+            expect.soft(result.stdout).not.toContain(secret);
+            expect.soft(result.stderr).not.toContain(secret);
+            expect(result.status).toBe(2);
+            expect(result.stderr).toContain("src/linked.css resolves outside the project root");
+        } finally {
+            rmSync(root, { recursive: true, force: true });
+            rmSync(outside, { force: true });
+        }
+    });
+
     it("selects only regular files when src/** also matches directories", () => {
         const config = loadConfig(
             project({ "src/Button.tsx": CLEAN }, { ...BASE, include: ["src/**"] }),
@@ -245,6 +302,22 @@ describe("run", () => {
 });
 
 describe("the command line", () => {
+    it("escapes the filename and omits source text from a CSS syntax error", () => {
+        const source = "INVALID_CSS=PRIVATE_TEXT";
+        const configPath = project({ "src/bad\u0085file.css": source }, BASE);
+        try {
+            const result = runCli(configPath);
+            expect.soft(result.stdout).not.toContain(source);
+            expect.soft(result.stderr).not.toContain(source);
+            expect(result.status).toBe(2);
+            expect(result.stderr).toBe(
+                "design-lint: src/bad\\u0085file.css:1:1 invalid CSS syntax\n",
+            );
+        } finally {
+            rmSync(dirname(configPath), { recursive: true, force: true });
+        }
+    });
+
     it("defaults the config path and the format", () => {
         expect(parseArgs([])).toEqual({ config: "design-lint.json", format: "text" });
     });

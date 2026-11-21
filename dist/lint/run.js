@@ -1,6 +1,7 @@
-import { globSync, readFileSync, statSync } from "node:fs";
-import { relative, resolve } from "node:path";
+import { globSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 import postcss from "postcss";
+import { ConfigError } from "./config.js";
 import { matchesAny } from "./glob.js";
 import { RULES } from "./rules/index.js";
 import { loadPackageSchema } from "./schema.js";
@@ -17,11 +18,37 @@ function ruleContext(config) {
 }
 /** The files the config selects, relative to its directory, in a stable order. */
 export function selectFiles(config) {
-    const found = globSync(config.include, { cwd: config.root })
-        .map((path) => toPosix(relative(config.root, resolve(config.root, path))))
-        .filter((path) => !matchesAny(path, config.exclude))
-        .filter((path) => statSync(resolve(config.root, path)).isFile());
-    return [...new Set(found)].sort();
+    return [...selectFilePaths(config).keys()].sort();
+}
+function selectFilePaths(config) {
+    const root = realpathSync(config.root);
+    const paths = globSync(config.include, { cwd: config.root }).map((path) => relative(config.root, resolve(config.root, path)));
+    const files = new Map();
+    for (const path of [...new Set(paths)].sort()) {
+        const file = toPosix(path);
+        if (matchesAny(file, config.exclude))
+            continue;
+        const target = realpathSync(resolve(config.root, path));
+        if (!statSync(target).isFile())
+            continue;
+        const fromRoot = relative(root, target);
+        if (fromRoot === ".." || fromRoot.startsWith(`..${sep}`) || isAbsolute(fromRoot)) {
+            throw new ConfigError(`${file} resolves outside the project root`);
+        }
+        files.set(file, target);
+    }
+    return files;
+}
+function parseCss(file, text) {
+    try {
+        return postcss.parse(text, { from: file, map: false });
+    }
+    catch (error) {
+        if (!(error instanceof postcss.CssSyntaxError))
+            throw error;
+        // Both the PostCSS error object and its message can contain source text.
+        throw new ConfigError(`${file}:${error.line}:${error.column} invalid CSS syntax`);
+    }
 }
 /**
  * Lint everything the config selects.
@@ -35,12 +62,12 @@ export function run(config) {
     const context = ruleContext(config);
     const active = Object.keys(RULES).filter((id) => config.rules[id] !== "off");
     const raw = [];
-    const files = selectFiles(config);
-    for (const file of files) {
-        const text = readFileSync(resolve(config.root, file), "utf8");
+    const files = selectFilePaths(config);
+    for (const [file, target] of files) {
+        const text = readFileSync(target, "utf8");
         const isCss = file.endsWith(".css");
         const source = isCss ? null : parseTsx(file, text);
-        const root = isCss ? postcss.parse(text, { from: file }) : null;
+        const root = isCss ? parseCss(file, text) : null;
         for (const id of active) {
             const rule = RULES[id];
             if (root && rule.checkCss)
@@ -64,6 +91,6 @@ export function run(config) {
     return {
         findings,
         exitCode: findings.some((finding) => finding.severity === "error") ? 1 : 0,
-        filesChecked: files.length,
+        filesChecked: files.size,
     };
 }
