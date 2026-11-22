@@ -409,6 +409,32 @@ describe("L6 — token hygiene", () => {
         ).toEqual([]);
     });
 
+    it("allows Tailwind defaults inside @theme", () => {
+        const css = postcss.parse(`@theme {
+            --default-transition-duration: var(--motion-fast);
+            --default-transition-timing-function: var(--ease-standard);
+            --default-font-family: var(--font-sans);
+            --default-font-feature-settings: normal;
+            --default-font-variation-settings: normal;
+            --default-mono-font-family: var(--font-mono);
+            --default-mono-font-feature-settings: normal;
+            --default-mono-font-variation-settings: normal;
+        }`);
+        expect(RULES.L6.checkCss?.("src/app.css", css, context())).toEqual([]);
+    });
+
+    it("flags a Tailwind default declared outside @theme", () => {
+        const css = postcss.parse(":root { --default-transition-duration: var(--motion-fast); }");
+        expect(RULES.L6.checkCss?.("src/app.css", css, context())).toEqual([
+            expect.objectContaining({
+                rule: "L6",
+                message: expect.stringContaining(
+                    "--default-transition-duration is neither a schema token nor an extension",
+                ),
+            }),
+        ]);
+    });
+
     it("catches an unprefixed property, a redefined schema token and an --x- collision", () => {
         const findings = check("L6", "L6-token-hygiene/fail.css");
         expect(lines(findings)).toEqual([2, 3, 4, 5]);
