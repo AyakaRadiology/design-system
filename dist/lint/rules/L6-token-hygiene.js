@@ -1,9 +1,7 @@
 import { walkCustomProperties } from "../css.js";
 /**
- * Tailwind theme namespaces. Inside `@theme` these produce utilities rather
- * than name a design token — `--color-x-needle-tracker` is how an extension
- * token becomes `text-x-needle-tracker` — so they are not custom properties
- * this rule has an opinion about, unless the name is a schema token.
+ * Inside `@theme`, Tailwind namespaces configure utility classes and their
+ * defaults. Schema tokens still follow this rule's ownership checks.
  */
 const TAILWIND_NAMESPACES = [
     "color-",
@@ -25,6 +23,7 @@ const TAILWIND_NAMESPACES = [
     "zoom-",
     "aspect-",
     "ease-",
+    "default-",
     "breakpoint-",
 ];
 const isTailwindNamespace = (name, selector) => selector.startsWith("@theme") && TAILWIND_NAMESPACES.some((prefix) => name.startsWith(prefix));
