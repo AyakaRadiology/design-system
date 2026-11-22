@@ -1,4 +1,7 @@
 import { execFileSync } from "node:child_process";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { importVariablesScript } from "./plugin-scripts.js";
 import {
@@ -13,6 +16,36 @@ const source = loadTokenSource();
 const plan = tokensToVariables(source);
 
 describe("offline Figma adapter", () => {
+    it.each([true, false])("ignores commented color schemes (explicit scheme: %s)", (explicit) => {
+        const root = mkdtempSync(join(tmpdir(), "figma-token-source-"));
+        try {
+            cpSync(new URL("../../tokens/", import.meta.url), join(root, "tokens"), {
+                recursive: true,
+            });
+            mkdirSync(join(root, "voices"));
+            const css = readFileSync(
+                new URL("../../voices/biomonitor.css", import.meta.url),
+                "utf8",
+            );
+            const voice = explicit ? css : css.replace("color-scheme: dark;", "");
+            writeFileSync(
+                join(root, "voices/biomonitor.css"),
+                `/* base voice uses color-scheme: light; */\n${voice}`,
+            );
+
+            if (explicit) {
+                expect(Object.keys(loadTokenSource(root).voices.biomonitor ?? {})).toEqual([
+                    "dark",
+                ]);
+            } else {
+                expect(() => loadTokenSource(root)).toThrow(
+                    "Missing explicit color-scheme in biomonitor.css",
+                );
+            }
+        } finally {
+            rmSync(root, { recursive: true, force: true });
+        }
+    });
     it("roundtrips the JSON-serialized plan to every source token, including non-variable CSS", () => {
         expect(variablesToTokens(JSON.parse(serializePlan(plan)))).toEqual(source);
     });

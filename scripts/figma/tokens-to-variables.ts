@@ -2,6 +2,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import postcss, { type Declaration } from "postcss";
 import { oklchToSrgb, parseOklch } from "../../src/color.js";
 import { collectCustomProperties } from "../../src/lint/css.js";
 import {
@@ -100,8 +101,16 @@ export function loadTokenSource(
         const dark = declarations(css, [".dark"]);
         const hasDark = Object.keys(dark).length > 0;
         // Dark-only is an explicit source contract, not inferred from a filename.
-        const scheme = css.match(/color-scheme:\s*(light|dark)\s*;/)?.[1];
-        if (!scheme) throw new Error(`Missing explicit color-scheme in ${file}`);
+        const scheme = postcss
+            .parse(css)
+            .nodes.flatMap((node) =>
+                node.type === "rule" && node.selector === ":root" ? node.nodes : [],
+            )
+            .find(
+                (node): node is Declaration => node.type === "decl" && node.prop === "color-scheme",
+            )?.value;
+        if (scheme !== "light" && scheme !== "dark")
+            throw new Error(`Missing explicit color-scheme in ${file}`);
         voices[file.slice(0, -4)] = hasDark
             ? { light: rootValues, dark: { ...rootValues, ...dark } }
             : { [scheme]: rootValues };
