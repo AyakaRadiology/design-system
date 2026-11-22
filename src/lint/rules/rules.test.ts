@@ -531,6 +531,31 @@ describe("L7 — z-index literal", () => {
         ]);
     });
 
+    it.each([
+        ["z-50", "z-50"],
+        ["fixed z-[9999]", "z-[9999]"],
+    ])("reports the numeric utility in @apply %s", (params, utility) => {
+        const file = "consumer.css";
+        const css = postcss.parse(`\n.support-widget { @apply ${params}; }`);
+        expect(RULES.L7.checkCss?.(file, css, context())).toEqual([
+            {
+                rule: "L7",
+                file,
+                line: 2,
+                col: 19,
+                message: `${utility} — stacking numbers belong to the layer tokens — use z-raised, z-overlay, z-modal or z-toast (or var(--z-modal) in CSS)`,
+            },
+        ]);
+    });
+
+    it.each([
+        ["consumer.css", "z-modal"],
+        ["src/styles/theme.css", "z-[9999]"],
+    ])("allows @apply in %s with %s", (file, params) => {
+        const css = postcss.parse(`.support-widget { @apply ${params}; }`);
+        expect(RULES.L7.checkCss?.(file, css, context())).toEqual([]);
+    });
+
     it("passes the layer tokens in both languages", () => {
         expect(check("L7", "L7-z-index/pass.tsx")).toEqual([]);
         expect(check("L7", "L7-z-index/pass.css")).toEqual([]);

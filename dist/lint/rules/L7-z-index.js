@@ -62,6 +62,18 @@ export const L7 = {
                 message: `z-index: ${decl.value} — ${MESSAGE}`,
             });
         });
+        root.walkAtRules("apply", (atRule) => {
+            const match = Z_UTILITY.exec(atRule.params);
+            if (!match)
+                return;
+            findings.push({
+                rule: "L7",
+                file,
+                line: atRule.source?.start?.line ?? 1,
+                col: atRule.source?.start?.column ?? 1,
+                message: `${match[0]} — ${MESSAGE}`,
+            });
+        });
         return findings;
     },
 };
