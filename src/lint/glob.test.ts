@@ -28,6 +28,18 @@ describe("globToRegExp", () => {
         expect(matches("**/__fixtures__/**", "src/lint/rules/fail.tsx")).toBe(false);
     });
 
+    it.each([
+        ["src/generated-**/Button.tsx", "src/generated-Button.tsx", false],
+        ["src/generated-**/Button.tsx", "src/generated-a/Button.tsx", true],
+        ["src/generated-**/Button.tsx", "src/generated-a/b/Button.tsx", true],
+        ["**/Button.tsx", "Button.tsx", true],
+        ["src/**/Button.tsx", "src/Button.tsx", true],
+        ["src/generated-{**,legacy}/Button.tsx", "src/generated-Button.tsx", false],
+        ["src/generated-{**,legacy}/Button.tsx", "src/generated-a/b/Button.tsx", true],
+    ])("matches %s against %s: %s", (pattern, path, expected) => {
+        expect(matches(pattern, path)).toBe(expected);
+    });
+
     it("expands brace alternation", () => {
         expect(matches("src/**/*.{ts,tsx,css}", "src/react/Button.tsx")).toBe(true);
         expect(matches("src/**/*.{ts,tsx,css}", "src/styles/theme.css")).toBe(true);

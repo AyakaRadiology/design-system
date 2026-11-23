@@ -29,11 +29,12 @@ export function globToRegExp(pattern) {
             }
         }
     }
-    const compile = (start, end, separator = "") => {
+    const compile = (start, end, startsSegment, separator = "") => {
         let out = "";
         for (let i = start; i < end; i++) {
             const char = pattern[i];
             const group = alternation.get(i);
+            const atSegmentStart = i === start ? startsSegment : pattern[i - 1] === "/";
             if (group) {
                 const close = group.end;
                 // Put a following slash inside each branch so a terminal **
@@ -43,7 +44,7 @@ export function globToRegExp(pattern) {
                 const branches = [];
                 let branchStart = i + 1;
                 for (const boundary of group.boundaries) {
-                    branches.push(compile(branchStart, boundary, suffix));
+                    branches.push(compile(branchStart, boundary, atSegmentStart, suffix));
                     branchStart = boundary + 1;
                 }
                 out += `(?:${branches.join("|")})`;
@@ -54,10 +55,10 @@ export function globToRegExp(pattern) {
             else if (char === "*") {
                 if (pattern[i + 1] === "*" && i + 1 < end) {
                     if (pattern[i + 2] === "/" && i + 2 < end) {
-                        out += "(?:.*/)?";
+                        out += atSegmentStart ? "(?:.*/)?" : ".*/";
                         i += 2;
                     }
-                    else if (i + 2 === end && separator === "/") {
+                    else if (atSegmentStart && i + 2 === end && separator === "/") {
                         out += "(?:.*/)?";
                         separator = "";
                         i++;
@@ -80,7 +81,7 @@ export function globToRegExp(pattern) {
         }
         return out + separator;
     };
-    return new RegExp(`^${compile(0, pattern.length)}$`, "su");
+    return new RegExp(`^${compile(0, pattern.length, true)}$`, "su");
 }
 /** Does `path` (relative, `/`-separated) match any of these globs? */
 export function matchesAny(path, patterns) {
