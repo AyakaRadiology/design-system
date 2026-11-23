@@ -127,8 +127,12 @@ describe("L1 — colour literal", () => {
         ["#fff-icon", 0],
         ["#abc-def", 0],
         ["#fff_x", 0],
+        ["#Cafeメニュー", 0],
+        ["#abc𝟙", 0],
+        ["#abc\u0301", 0],
         ["#1 in the queue", 0],
         ["#fff", 1],
+        ["#Cafe", 1],
         ["#1e293b", 1],
         ["dark:bg-[#fff]", 1],
     ])("distinguishes colours from identifiers in %s", (value, count) => {
