@@ -12,7 +12,7 @@ import type { Rule, RuleContext, RuleFinding } from "../types.js";
  * word "info" in a sentence is not read as a colour.
  */
 export const COLOR_LITERAL =
-    /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})(?![\w-])|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(/i;
+    /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})(?![\p{L}\p{N}\p{M}_-])|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(/iu;
 
 /** Hide resource identifiers, retaining offsets for TSX diagnostics. */
 function withoutUrls(value: string): string {
