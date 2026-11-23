@@ -7,6 +7,29 @@ export class ConfigError extends Error {
 function fail(message) {
     throw new ConfigError(message);
 }
+function rejectDuplicateKeys(text, path) {
+    // JSON.parse has already checked the syntax. Match complete strings so
+    // braces inside them cannot open or close an object, and use the following
+    // colon to distinguish keys from string values.
+    const objectKeys = [];
+    for (const [token, quotedString, colon] of text.matchAll(/[{}]|("(?:[^"\\]|\\.)*")(\s*:)?/g)) {
+        if (token === "{") {
+            objectKeys.push(new Set());
+        }
+        else if (token === "}") {
+            objectKeys.pop();
+        }
+        else {
+            const keys = objectKeys.at(-1);
+            if (!keys || !quotedString || !colon)
+                continue;
+            const key = JSON.parse(quotedString);
+            if (keys.has(key))
+                fail(`${path} contains duplicate key ${JSON.stringify(key)}`);
+            keys.add(key);
+        }
+    }
+}
 function stringArray(value, field) {
     if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string"))
         fail(`"${field}" must be an array of strings`);
@@ -79,6 +102,7 @@ export function loadConfig(path) {
     catch (error) {
         fail(`${absolute} is not valid JSON: ${error.message}`);
     }
+    rejectDuplicateKeys(text, absolute);
     if (typeof parsed !== "object" || parsed === null)
         fail(`${absolute} must contain an object`);
     const raw = parsed;
