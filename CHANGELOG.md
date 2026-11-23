@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.7.0](https://github.com/AyakaRadiology/design-system/compare/v0.6.6...v0.7.0) (2026-11-22)
+
+
+### Features
+
+* **voices:** catppuccin-macchiato, a dark voice for tools someone works in for hours ([#194](https://github.com/AyakaRadiology/design-system/issues/194)) ([495dc19](https://github.com/AyakaRadiology/design-system/commit/495dc19b3ef95e90ba46a97982d340abb7b3ca4b))
+
+
+### Bug Fixes
+
+* [agent-found] dist/lint/glob.js:83 A design-lint consumer excludes single-character demo files ([#201](https://github.com/AyakaRadiology/design-system/issues/201)) ([36dbd85](https://github.com/AyakaRadiology/design-system/commit/36dbd8523f77eed883da021b27f6696eedc9eca3)), closes [#198](https://github.com/AyakaRadiology/design-system/issues/198)
+* [agent-found] dist/lint/rules/L7-z-index.js:23 A consumer styles a floating support widget with `.support-w ([#217](https://github.com/AyakaRadiology/design-system/issues/217)) ([2685402](https://github.com/AyakaRadiology/design-system/commit/26854023bc4174c3653cd9c69ff3376bc93eb6e7)), closes [#213](https://github.com/AyakaRadiology/design-system/issues/213)
+* [agent-found] dist/lint/rules/L7-z-index.js:3 A consumer uses `group-[.z-50]:z-modal` to style a child und ([#219](https://github.com/AyakaRadiology/design-system/issues/219)) ([9b67777](https://github.com/AyakaRadiology/design-system/commit/9b677770d39d9226e2cde29c947b60dfc84a0683)), closes [#214](https://github.com/AyakaRadiology/design-system/issues/214)
+* [agent-found] dist/lint/run.js:13 On a macOS volume that treats canonically equivalent Unicode ([#209](https://github.com/AyakaRadiology/design-system/issues/209)) ([f6741b4](https://github.com/AyakaRadiology/design-system/commit/f6741b4b86812d24beba720a9b2e3e20fa4f4465)), closes [#204](https://github.com/AyakaRadiology/design-system/issues/204)
+* [agent-found] dist/lint/run.js:40 A maintainer runs design-lint on a contributor's branch usin ([#210](https://github.com/AyakaRadiology/design-system/issues/210)) ([c9adde2](https://github.com/AyakaRadiology/design-system/commit/c9adde2cecb056b08c2a3a8b2cb8a5a7cf0276ee)), closes [#203](https://github.com/AyakaRadiology/design-system/issues/203)
+* [agent-found] scripts/figma/plugin-scripts.ts:71 A designer provisions the library in a Figma Design file con ([#208](https://github.com/AyakaRadiology/design-system/issues/208)) ([7dd5655](https://github.com/AyakaRadiology/design-system/commit/7dd56559da2982b237fe6207b126544a6149d36c)), closes [#205](https://github.com/AyakaRadiology/design-system/issues/205)
+* [agent-found] scripts/figma/tokens-to-variables.ts:103 A voice author documents that the base voice uses `color-sch ([#220](https://github.com/AyakaRadiology/design-system/issues/220)) ([23f81d3](https://github.com/AyakaRadiology/design-system/commit/23f81d3b203a5b0d359a47430605014e6314e026)), closes [#216](https://github.com/AyakaRadiology/design-system/issues/216)
+* [agent-found] scripts/figma/tokens-to-variables.ts:135 A voice author sets `--x-glass-radius: 0` to give panels squ ([#202](https://github.com/AyakaRadiology/design-system/issues/202)) ([bac40c6](https://github.com/AyakaRadiology/design-system/commit/bac40c620d82033525dde9b15c9764df59283459)), closes [#199](https://github.com/AyakaRadiology/design-system/issues/199)
+* [agent-found] src/lint/rules/L6-token-hygiene.ts:35 A Tailwind v4 consumer maps its default transition duration ([#218](https://github.com/AyakaRadiology/design-system/issues/218)) ([d3e073e](https://github.com/AyakaRadiology/design-system/commit/d3e073ea3f42bfe701428292521ece6ce493a119)), closes [#215](https://github.com/AyakaRadiology/design-system/issues/215)
+* [agent-found] src/lint/rules/L7-z-index.ts:38 A consumer brings a legacy fixed toolbar into its app styles ([#211](https://github.com/AyakaRadiology/design-system/issues/211)) ([df1bd78](https://github.com/AyakaRadiology/design-system/commit/df1bd785823d265a7706045a4ae3b64ed627c011)), closes [#206](https://github.com/AyakaRadiology/design-system/issues/206)
+* [agent-found] src/lint/rules/L7-z-index.ts:7 A consumer uses `className="translate-z-4 z-modal"` to move ([#200](https://github.com/AyakaRadiology/design-system/issues/200)) ([57225fb](https://github.com/AyakaRadiology/design-system/commit/57225fb8932dab0509f1a1d84d06c282a2aba819)), closes [#196](https://github.com/AyakaRadiology/design-system/issues/196)
+* [agent-found] src/react/MiniBars.tsx:45 Displaying an hour of 60 Hz samples in a normal-width MiniBa ([#192](https://github.com/AyakaRadiology/design-system/issues/192)) ([618b243](https://github.com/AyakaRadiology/design-system/commit/618b2433014892e932ea2ad6ffd74125cd7cb224)), closes [#191](https://github.com/AyakaRadiology/design-system/issues/191)
+
 ## [0.6.6](https://github.com/AyakaRadiology/design-system/compare/v0.6.5...v0.6.6) (2026-11-12)
 
 
