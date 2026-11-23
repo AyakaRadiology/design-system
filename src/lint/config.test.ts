@@ -76,6 +76,23 @@ describe("loadConfig", () => {
         expect(load({ ...VALID, allow: undefined }).allow).toEqual([]);
     });
 
+    it.each([
+        ["rules", '"rules":{"L1":"error"},"rules":{"L2":"error"}'],
+        ["L1", '"rules":{"L1":"error","L1":"off"}'],
+        ["L1", String.raw`"rules":{"L1":"error","\u004c1":"off"}`],
+        ["path", '"rules":{},"allow":[{"rule":"L1","path":"a","path":"b","reason":"why"}]'],
+    ])("rejects duplicate JSON key %s in %s", (key, fields) => {
+        const parse = () => load(`{"themeFile":"t.css","include":["src"],${fields}}`);
+        expect(parse).toThrow(ConfigError);
+        expect(parse).toThrow(`duplicate key "${key}"`);
+    });
+
+    it("accepts repeated keys in separate objects and key-like text in values", () => {
+        const first = { rule: "L1", path: "src/one.css", reason: 'text { "rules": {} } \\' };
+        const second = { rule: "L1", path: "src/two.css", reason: "why" };
+        expect(load({ ...VALID, allow: [first, second] }).allow).toEqual([first, second]);
+    });
+
     /* The rule this file exists for. An allowlist without reasons becomes a
      * list nobody can shorten, because nobody remembers which entries were
      * meant to be temporary. */
