@@ -1,9 +1,47 @@
+import { execFileSync } from "node:child_process";
+import { closeSync, mkdtempSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { diffVariables, equalStoredFloat, type LiveVariables } from "./diff-variables.js";
 import { loadTokenSource, tokensToVariables } from "./tokens-to-variables.js";
 
 const plan = tokensToVariables(loadTokenSource());
 const snapshot = (): LiveVariables => structuredClone(plan);
+
+describe("Figma diff CLI", () => {
+    it.each(["baseline", "live"])("accepts a UTF-8 BOM on the %s input", (input) => {
+        const work = mkdtempSync(join(tmpdir(), "figma-diff-"));
+        try {
+            const script = fileURLToPath(new URL("./diff-variables.ts", import.meta.url));
+            const plain = join(work, "plain.json");
+            const withBom = join(work, "with-bom.json");
+            const json = JSON.stringify(plan);
+            writeFileSync(plain, json, "utf8");
+            writeFileSync(withBom, `\uFEFF${json}`, "utf8");
+
+            const report = join(work, "report.json");
+            const run = (baseline: string, live: string) => {
+                const stdout = openSync(report, "w");
+                try {
+                    execFileSync("bun", [script, baseline, live], {
+                        stdio: ["ignore", stdout, "inherit"],
+                    });
+                } finally {
+                    closeSync(stdout);
+                }
+                return readFileSync(report, "utf8");
+            };
+            const expected = run(plain, plain);
+            expect(expected).toBe("[]\n");
+            const actual = input === "baseline" ? run(withBom, plain) : run(plain, withBom);
+            expect(actual).toBe(expected);
+        } finally {
+            rmSync(work, { recursive: true, force: true });
+        }
+    });
+});
 
 describe("Figma diff extraction", () => {
     it("is empty for a matching snapshot", () =>

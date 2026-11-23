@@ -130,14 +130,15 @@ export function diffVariables(plan: FigmaPlan, live: LiveVariables): VariableCha
     });
 }
 
+function readSnapshot(path: string) {
+    return JSON.parse(readFileSync(path, "utf8").replace(/^\uFEFF/, ""));
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
     const [, , baseline, live, ...extra] = process.argv;
     if (!baseline || !live || extra.length)
         throw new Error("Usage: bun scripts/figma/diff-variables.ts plan.json live.json");
-    const changes = diffVariables(
-        JSON.parse(readFileSync(baseline, "utf8")),
-        JSON.parse(readFileSync(live, "utf8")),
-    );
+    const changes = diffVariables(readSnapshot(baseline), readSnapshot(live));
     process.stdout.write(`${JSON.stringify(changes, null, 4)}\n`);
     if (changes.length) process.exitCode = 1;
 }
