@@ -5,7 +5,6 @@ const RAW_CONTROLS = {
     button: "Button or IconButton",
     input: "Input",
     select: "Select",
-    textarea: "Input",
     dialog: "Dialog",
 };
 /**
@@ -30,13 +29,16 @@ export const L5 = {
                 return;
             const name = tag.text;
             const replacement = RAW_CONTROLS[name];
-            if (!replacement)
+            const guidance = name === "textarea"
+                ? "keep the textarea for multiline input and request a design review"
+                : replacement && `use ${replacement} from @ayaka/design-system/react`;
+            if (!guidance)
                 return;
             findings.push({
                 rule: "L5",
                 file,
                 ...positionAt(source, node.getStart()),
-                message: `raw <${name}> — use ${replacement} from @ayaka/design-system/react`,
+                message: `raw <${name}> — ${guidance}`,
             });
         });
         return findings;

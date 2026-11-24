@@ -324,6 +324,12 @@ describe("L5 — raw control", () => {
     it("names the primitive to use instead", () => {
         expect(check("L5", "L5-raw-controls/fail.tsx")[0]?.message).toContain("Input");
     });
+
+    it("does not recommend Input for a multiline textarea", () => {
+        const finding = check("L5", "L5-raw-controls/fail.tsx").find(({ line }) => line === 6);
+        expect(finding?.message).toContain("raw <textarea>");
+        expect(finding?.message).not.toContain("use Input");
+    });
 });
 
 describe("L6 — token hygiene", () => {
