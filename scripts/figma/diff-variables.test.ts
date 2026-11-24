@@ -46,6 +46,24 @@ describe("Figma diff CLI", () => {
 describe("Figma diff extraction", () => {
     it("is empty for a matching snapshot", () =>
         expect(diffVariables(plan, snapshot())).toEqual([]));
+    it("treats RGB colors as opaque and reports edits to them", () => {
+        const live = snapshot();
+        const accent = live.collections
+            .find((collection) => collection.name === "base")
+            ?.variables.find((variable) => variable.name === "accent");
+        const color = accent?.valuesByMode.light;
+        if (!accent || typeof color !== "object" || color.a !== 1)
+            throw new Error("Missing opaque accent");
+        const { r, g, b } = color;
+        accent.valuesByMode.light = { r, g, b };
+        expect(diffVariables(plan, live)).toEqual([]);
+
+        const edited = { r: (r + 0.5) % 1, g, b };
+        accent.valuesByMode.light = edited;
+        expect(diffVariables(plan, live)).toEqual([
+            { path: "base/accent/light", before: color, after: edited },
+        ]);
+    });
     it("accepts exact Float32 storage but reports even adjacent representable edits", () => {
         const live = snapshot();
         const variable = live.collections[0]?.variables.find(

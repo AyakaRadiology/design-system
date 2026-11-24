@@ -2,7 +2,11 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { type FigmaPlan, type VariableValue, variablesToTokens } from "./tokens-to-variables.js";
+import { type FigmaPlan, type Rgba, variablesToTokens } from "./tokens-to-variables.js";
+
+const rgbChannels = ["r", "g", "b"] as const;
+type LiveValue = number | (Omit<Rgba, "a"> & { a?: number });
+type SnapshotValue = LiveValue | string | string[];
 
 // Figma stores single-precision color channels. This absorbs storage noise only.
 export const COLOR_STORAGE_TOLERANCE = 0.000001;
@@ -19,7 +23,7 @@ export interface LiveVariables {
         variables: {
             name: string;
             resolvedType: string;
-            valuesByMode: Record<string, VariableValue>;
+            valuesByMode: Record<string, LiveValue>;
         }[];
     }[];
 }
@@ -29,12 +33,12 @@ export interface VariableChange {
     after: unknown;
 }
 
-function validateValue(value: unknown): asserts value is VariableValue {
+function validateValue(value: unknown): asserts value is LiveValue {
     if (typeof value === "number" && Number.isFinite(value)) return;
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
         const channels = Object.entries(value);
         if (
-            channels.length === 4 &&
+            rgbChannels.every((key) => Object.hasOwn(value, key)) &&
             channels.every(
                 ([key, channel]) =>
                     ["r", "g", "b", "a"].includes(key) &&
@@ -46,12 +50,12 @@ function validateValue(value: unknown): asserts value is VariableValue {
         )
             return;
     }
-    throw new Error(`Expected a resolved finite FLOAT or RGBA, got ${JSON.stringify(value)}`);
+    throw new Error(`Expected a resolved finite FLOAT, RGB or RGBA, got ${JSON.stringify(value)}`);
 }
 
-function flatten(snapshot: LiveVariables): Map<string, unknown> {
-    const output = new Map<string, unknown>();
-    const add = (path: string, value: unknown) => {
+function flatten(snapshot: LiveVariables): Map<string, SnapshotValue> {
+    const output = new Map<string, SnapshotValue>();
+    const add = (path: string, value: SnapshotValue) => {
         if (output.has(path)) throw new Error(`Duplicate snapshot entry ${path}`);
         output.set(path, value);
     };
@@ -91,21 +95,12 @@ function flatten(snapshot: LiveVariables): Map<string, unknown> {
     return output;
 }
 
-function equal(a: unknown, b: unknown): boolean {
+function equal(a: SnapshotValue | undefined, b: SnapshotValue | undefined): boolean {
     if (typeof a === "number" && typeof b === "number") return equalStoredFloat(a, b);
-    if (
-        typeof a === "object" &&
-        a !== null &&
-        !Array.isArray(a) &&
-        typeof b === "object" &&
-        b !== null &&
-        !Array.isArray(b)
-    ) {
-        return Object.entries(a).every(
-            ([key, value]) =>
-                key in b &&
-                typeof value === "number" &&
-                Math.abs(value - Reflect.get(b, key)) <= COLOR_STORAGE_TOLERANCE,
+    if (typeof a === "object" && !Array.isArray(a) && typeof b === "object" && !Array.isArray(b)) {
+        return (
+            rgbChannels.every((key) => Math.abs(a[key] - b[key]) <= COLOR_STORAGE_TOLERANCE) &&
+            Math.abs((a.a ?? 1) - (b.a ?? 1)) <= COLOR_STORAGE_TOLERANCE
         );
     }
     return JSON.stringify(a) === JSON.stringify(b);
