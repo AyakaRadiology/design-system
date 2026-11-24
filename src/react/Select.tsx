@@ -1,5 +1,5 @@
 import * as SelectPrimitive from "@radix-ui/react-select";
-import type { ReactNode } from "react";
+import { type ReactNode, useRef } from "react";
 import { cn } from "./cn.js";
 
 export interface SelectOption {
@@ -8,6 +8,10 @@ export interface SelectOption {
 }
 
 export interface SelectProps {
+    /**
+     * Pass at mount to control the selection, or omit for uncontrolled use.
+     * An explicit undefined shows the placeholder.
+     */
     value?: string;
     onValueChange?: (value: string) => void;
     options: SelectOption[];
@@ -51,20 +55,13 @@ export interface SelectProps {
  * the trigger. A spread would also let a caller set `role` or `type` on a
  * Radix trigger and quietly break the control it is trying to label.
  */
-export function Select({
-    value,
-    onValueChange,
-    options,
-    placeholder,
-    id,
-    name,
-    disabled,
-    className,
-    ...aria
-}: SelectProps) {
+export function Select(props: SelectProps) {
+    const { value, onValueChange, options, placeholder, id, name, disabled, className, ...aria } =
+        props;
+    const isControlled = useRef("value" in props).current;
     return (
         <SelectPrimitive.Root
-            value={value ?? ""}
+            value={isControlled ? (value ?? "") : undefined}
             onValueChange={onValueChange}
             name={name}
             disabled={disabled}

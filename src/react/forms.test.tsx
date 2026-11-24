@@ -424,22 +424,27 @@ describe("Select", () => {
         expect(screen.getByRole("combobox")).toHaveTextContent("protocol");
     });
 
-    it("opens and reports the chosen value", async () => {
+    it("shows the chosen label and updates the form and callback when uncontrolled", async () => {
         const onValueChange = vi.fn();
         render(
-            <Select
-                options={[
-                    { value: "v1", label: "v1" },
-                    { value: "v2", label: "v2" },
-                ]}
-                placeholder="protocol"
-                onValueChange={onValueChange}
-            />,
+            <form aria-label="Settings">
+                <Select
+                    name="protocol"
+                    options={[
+                        { value: "v1", label: "One" },
+                        { value: "v2", label: "Two" },
+                    ]}
+                    placeholder="Choose a protocol"
+                    onValueChange={onValueChange}
+                />
+            </form>,
         );
-        await userEvent.click(screen.getByRole("combobox"));
-        await waitFor(() => expect(screen.getByRole("option", { name: "v2" })).toBeInTheDocument());
-        await userEvent.click(screen.getByRole("option", { name: "v2" }));
+        const trigger = screen.getByRole("combobox");
+        await userEvent.click(trigger);
+        await userEvent.click(await screen.findByRole("option", { name: "Two" }));
+        expect(trigger).toHaveTextContent("Two");
         expect(onValueChange).toHaveBeenCalledWith("v2");
+        expect(screen.getByRole("form", { name: "Settings" })).toHaveFormValues({ protocol: "v2" });
     });
 
     it("restores the placeholder when the parent clears a chosen value", async () => {
