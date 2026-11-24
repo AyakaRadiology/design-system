@@ -10,6 +10,16 @@ const RAW_CONTROLS: Record<string, string> = {
     dialog: "Dialog",
 };
 
+function mayAllowMultiple(attributes: ts.JsxAttributes): boolean {
+    return attributes.properties.some((attribute) => {
+        if (!ts.isJsxAttribute(attribute) || attribute.name.getText() !== "multiple") return false;
+        const initializer = attribute.initializer;
+        const value =
+            initializer && ts.isJsxExpression(initializer) ? initializer.expression : undefined;
+        return value?.kind !== ts.SyntaxKind.FalseKeyword;
+    });
+}
+
 /**
  * L5 — controls come from the package.
  *
@@ -30,6 +40,9 @@ export const L5: Rule = {
             // component reference and none of this rule's business.
             if (!ts.isIdentifier(tag)) return;
             const name = tag.text;
+            // Select is single-choice. Keep the native control if multiple selection may be enabled.
+            if (name === "select" && mayAllowMultiple(node.attributes)) return;
+
             const replacement = RAW_CONTROLS[name];
             const guidance =
                 name === "textarea"

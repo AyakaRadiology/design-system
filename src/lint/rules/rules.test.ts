@@ -313,6 +313,23 @@ describe("L4 — dark twin", () => {
 });
 
 describe("L5 — raw control", () => {
+    it.each(["multiple", "multiple={true}", "multiple={allowMultiple}"])(
+        "leaves a select with %s alone",
+        (attribute) => {
+            const file = "consumer.tsx";
+            const source = parseTsx(file, `<select ${attribute} name="labels" />`);
+            expect(RULES.L5.checkTsx?.(file, source, context())).toEqual([]);
+        },
+    );
+
+    it.each(["<select />", "<select multiple={false} />"])("recommends Select for %s", (jsx) => {
+        const file = "consumer.tsx";
+        const findings = RULES.L5.checkTsx?.(file, parseTsx(file, jsx), context());
+        expect(findings?.[0]?.message).toBe(
+            "raw <select> — use Select from @ayaka/design-system/react",
+        );
+    });
+
     it("catches all five intrinsic controls", () => {
         expect(lines(check("L5", "L5-raw-controls/fail.tsx"))).toEqual([4, 5, 6, 7, 8]);
     });
