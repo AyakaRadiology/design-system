@@ -64,7 +64,7 @@ export function Select({
 }: SelectProps) {
     return (
         <SelectPrimitive.Root
-            value={value}
+            value={value ?? ""}
             onValueChange={onValueChange}
             name={name}
             disabled={disabled}
