@@ -1,9 +1,13 @@
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 export interface SelectOption {
     value: string;
     label: ReactNode;
 }
 export interface SelectProps {
+    /**
+     * Pass at mount to control the selection, or omit for uncontrolled use.
+     * An explicit undefined shows the placeholder.
+     */
     value?: string;
     onValueChange?: (value: string) => void;
     options: SelectOption[];
@@ -46,4 +50,4 @@ export interface SelectProps {
  * the trigger. A spread would also let a caller set `role` or `type` on a
  * Radix trigger and quietly break the control it is trying to label.
  */
-export declare function Select({ value, onValueChange, options, placeholder, id, name, disabled, className, ...aria }: SelectProps): import("react").JSX.Element;
+export declare function Select(props: SelectProps): import("react").JSX.Element;

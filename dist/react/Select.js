@@ -1,5 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import * as SelectPrimitive from "@radix-ui/react-select";
+import { useRef } from "react";
 import { cn } from "./cn.js";
 /**
  * A single-choice control.
@@ -18,6 +19,8 @@ import { cn } from "./cn.js";
  * the trigger. A spread would also let a caller set `role` or `type` on a
  * Radix trigger and quietly break the control it is trying to label.
  */
-export function Select({ value, onValueChange, options, placeholder, id, name, disabled, className, ...aria }) {
-    return (_jsxs(SelectPrimitive.Root, { value: value, onValueChange: onValueChange, name: name, disabled: disabled, children: [_jsxs(SelectPrimitive.Trigger, { id: id, "aria-label": aria["aria-label"], "aria-labelledby": aria["aria-labelledby"], "aria-describedby": aria["aria-describedby"], "aria-invalid": aria["aria-invalid"], className: cn("inline-flex h-8 w-full items-center justify-between gap-2 rounded-md border border-border-strong bg-bg px-3 text-sm aria-invalid:border-danger disabled:opacity-50", className), children: [_jsx(SelectPrimitive.Value, { placeholder: placeholder }), _jsx(SelectPrimitive.Icon, { className: "text-text-secondary", children: "\u25BE" })] }), _jsx(SelectPrimitive.Portal, { children: _jsx(SelectPrimitive.Content, { position: "popper", sideOffset: 4, className: "z-overlay overflow-hidden rounded-md border border-border bg-bg-elevated shadow-sm", children: _jsx(SelectPrimitive.Viewport, { children: options.map((option) => (_jsx(SelectPrimitive.Item, { value: option.value, className: "flex h-8 cursor-default items-center px-3 text-sm data-[highlighted]:bg-bg-subtle data-[highlighted]:outline-none data-[state=checked]:text-accent", children: _jsx(SelectPrimitive.ItemText, { children: option.label }) }, option.value))) }) }) })] }));
+export function Select(props) {
+    const { value, onValueChange, options, placeholder, id, name, disabled, className, ...aria } = props;
+    const isControlled = useRef("value" in props).current;
+    return (_jsxs(SelectPrimitive.Root, { value: isControlled ? (value ?? "") : undefined, onValueChange: onValueChange, name: name, disabled: disabled, children: [_jsxs(SelectPrimitive.Trigger, { id: id, "aria-label": aria["aria-label"], "aria-labelledby": aria["aria-labelledby"], "aria-describedby": aria["aria-describedby"], "aria-invalid": aria["aria-invalid"], className: cn("inline-flex h-8 w-full items-center justify-between gap-2 rounded-md border border-border-strong bg-bg px-3 text-sm aria-invalid:border-danger disabled:opacity-50", className), children: [_jsx(SelectPrimitive.Value, { placeholder: placeholder }), _jsx(SelectPrimitive.Icon, { className: "text-text-secondary", children: "\u25BE" })] }), _jsx(SelectPrimitive.Portal, { children: _jsx(SelectPrimitive.Content, { position: "popper", sideOffset: 4, className: "z-overlay overflow-hidden rounded-md border border-border bg-bg-elevated shadow-sm", children: _jsx(SelectPrimitive.Viewport, { children: options.map((option) => (_jsx(SelectPrimitive.Item, { value: option.value, className: "flex h-8 cursor-default items-center px-3 text-sm data-[highlighted]:bg-bg-subtle data-[highlighted]:outline-none data-[state=checked]:text-accent", children: _jsx(SelectPrimitive.ItemText, { children: option.label }) }, option.value))) }) }) })] }));
 }

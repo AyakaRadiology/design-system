@@ -398,28 +398,64 @@ describe("Input", () => {
     });
 });
 
+function ResettableSelect() {
+    const [value, setValue] = useState<string>();
+    return (
+        <>
+            <Select
+                value={value}
+                onValueChange={setValue}
+                options={[
+                    { value: "a", label: "Option A" },
+                    { value: "b", label: "Option B" },
+                ]}
+                placeholder="Custom"
+            />
+            <button type="button" onClick={() => setValue(undefined)}>
+                Clear selection
+            </button>
+        </>
+    );
+}
+
 describe("Select", () => {
     it("shows the placeholder until something is chosen", () => {
         render(<Select options={[{ value: "v1", label: "v1" }]} placeholder="protocol" />);
         expect(screen.getByRole("combobox")).toHaveTextContent("protocol");
     });
 
-    it("opens and reports the chosen value", async () => {
+    it("shows the chosen label and updates the form and callback when uncontrolled", async () => {
         const onValueChange = vi.fn();
         render(
-            <Select
-                options={[
-                    { value: "v1", label: "v1" },
-                    { value: "v2", label: "v2" },
-                ]}
-                placeholder="protocol"
-                onValueChange={onValueChange}
-            />,
+            <form aria-label="Settings">
+                <Select
+                    name="protocol"
+                    options={[
+                        { value: "v1", label: "One" },
+                        { value: "v2", label: "Two" },
+                    ]}
+                    placeholder="Choose a protocol"
+                    onValueChange={onValueChange}
+                />
+            </form>,
         );
-        await userEvent.click(screen.getByRole("combobox"));
-        await waitFor(() => expect(screen.getByRole("option", { name: "v2" })).toBeInTheDocument());
-        await userEvent.click(screen.getByRole("option", { name: "v2" }));
+        const trigger = screen.getByRole("combobox");
+        await userEvent.click(trigger);
+        await userEvent.click(await screen.findByRole("option", { name: "Two" }));
+        expect(trigger).toHaveTextContent("Two");
         expect(onValueChange).toHaveBeenCalledWith("v2");
+        expect(screen.getByRole("form", { name: "Settings" })).toHaveFormValues({ protocol: "v2" });
+    });
+
+    it("restores the placeholder when the parent clears a chosen value", async () => {
+        render(<ResettableSelect />);
+        const trigger = screen.getByRole("combobox");
+        expect(trigger).toHaveTextContent("Custom");
+        await userEvent.click(trigger);
+        await userEvent.click(await screen.findByRole("option", { name: "Option A" }));
+        expect(trigger).toHaveTextContent("Option A");
+        await userEvent.click(screen.getByRole("button", { name: "Clear selection" }));
+        expect(trigger).toHaveTextContent("Custom");
     });
 
     /* Every assertion below is on the COMPUTED accessible name, not on the
