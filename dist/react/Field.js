@@ -60,5 +60,5 @@ export function Field({ label, hint, error, htmlFor, children, className }) {
             "aria-invalid": hasError ? true : child.props["aria-invalid"],
         })
         : child;
-    return (_jsxs("div", { className: cn("flex flex-col gap-1", className), children: [_jsx("label", { id: labelId, htmlFor: controlId, className: "text-xs font-medium tracking-wide text-text-secondary", children: label }), control, hasHint && (_jsx("div", { id: hintId, className: "text-xs text-text-secondary", children: hint })), hasError && (_jsx("p", { id: errorId, role: "alert", className: "text-xs text-danger", children: error }))] }));
+    return (_jsxs("div", { className: cn("flex flex-col gap-1", className), children: [_jsx("label", { id: labelId, htmlFor: controlId, className: "text-xs font-medium tracking-wide text-text-secondary", children: label }), control, hasHint && (_jsx("div", { id: hintId, className: "text-xs text-text-secondary", children: hint })), hasError && (_jsx("div", { id: errorId, role: "alert", className: "text-xs text-danger", children: error }))] }));
 }

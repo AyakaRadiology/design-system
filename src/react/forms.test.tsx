@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Fragment, useState } from "react";
 import { renderToString } from "react-dom/server";
@@ -119,7 +119,7 @@ describe("Field", () => {
         expect(input).not.toHaveAttribute("aria-invalid");
         expect(input).not.toHaveAttribute("aria-describedby");
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-        expect(container.querySelector("p")).toBeNull();
+        expect(container.querySelector(`[id="${input.id}-error"]`)).toBeNull();
 
         rerender(
             <Field label="Port" hint={nodes}>
@@ -127,7 +127,7 @@ describe("Field", () => {
             </Field>,
         );
         expect(input).not.toHaveAttribute("aria-describedby");
-        expect(container.querySelector('[id$="-hint"]')).toBeNull();
+        expect(container.querySelector(`[id="${input.id}-hint"]`)).toBeNull();
     });
 
     it.each(["required", 0])("preserves visible nested array content: %s", (message) => {
@@ -232,36 +232,6 @@ describe("Field", () => {
         expect(screen.getByRole("textbox")).toHaveAccessibleDescription("8790 by default");
     });
 
-    it("keeps a server-rendered list hint and the password typed before hydration", () => {
-        const field = (
-            <Field
-                label="Password"
-                hint={
-                    <ul>
-                        <li>8+ characters</li>
-                    </ul>
-                }
-            >
-                <input type="password" />
-            </Field>
-        );
-        const container = document.body.appendChild(document.createElement("div"));
-        container.innerHTML = renderToString(field);
-        const input = screen.getByLabelText<HTMLInputElement>("Password");
-        const hint = document.getElementById(input.getAttribute("aria-describedby") ?? "");
-        const parsedHintItem = hint?.querySelector("ul > li");
-        input.value = "typed before hydration";
-
-        const onRecoverableError = vi.fn();
-        render(field, { container, hydrate: true, onRecoverableError });
-
-        const hydratedInput = screen.getByLabelText("Password");
-        expect.soft(parsedHintItem).toHaveTextContent("8+ characters");
-        expect.soft(onRecoverableError).not.toHaveBeenCalled();
-        expect.soft(hydratedInput).toBe(input);
-        expect(hydratedInput).toHaveValue("typed before hydration");
-    });
-
     it("announces an error and marks the control invalid", () => {
         render(
             <Field label="Port" error="must be a number">
@@ -283,6 +253,55 @@ describe("Field", () => {
         expect(screen.getByRole("textbox")).toHaveAccessibleDescription(
             "8790 by default must be a number",
         );
+    });
+
+    it("hydrates lists in the hint and error without replacing an edited control", () => {
+        const field = (
+            <Field
+                label="Port"
+                hint={
+                    <ul aria-label="Port hints">
+                        <li>Use four digits</li>
+                    </ul>
+                }
+                error={
+                    <ul aria-label="Port errors">
+                        <li>Too low</li>
+                        <li>Not a number</li>
+                    </ul>
+                }
+            >
+                <Input id="port" defaultValue="8790" />
+            </Field>
+        );
+        const consoleError = vi.spyOn(console, "error");
+        const consoleWarn = vi.spyOn(console, "warn");
+        const onRecoverableError = vi.fn();
+        const container = document.createElement("div");
+        container.innerHTML = renderToString(field);
+        const parsed = within(container);
+        expect
+            .soft(container.querySelector("#port-hint"))
+            .toContainElement(parsed.getByRole("list", { name: "Port hints" }));
+        expect
+            .soft(parsed.getByRole("alert"))
+            .toContainElement(parsed.getByRole("list", { name: "Port errors" }));
+
+        const input = parsed.getByRole<HTMLInputElement>("textbox");
+        expect(input).toHaveValue("8790");
+        input.value = "8791";
+
+        document.body.appendChild(container);
+        const { getByRole } = render(field, { container, hydrate: true, onRecoverableError });
+
+        const hydratedInput = getByRole("textbox", { name: "Port" });
+        expect.soft(onRecoverableError).not.toHaveBeenCalled();
+        expect.soft(consoleError).not.toHaveBeenCalled();
+        expect.soft(consoleWarn).not.toHaveBeenCalled();
+        expect.soft(hydratedInput).toBe(input);
+        expect.soft(hydratedInput).toHaveValue("8791");
+        expect(hydratedInput).toHaveAttribute("aria-describedby", "port-hint port-error");
+        expect(getByRole("alert")).toHaveAttribute("id", "port-error");
     });
 
     it("preserves the control's invalid state when errors are shown elsewhere", () => {
@@ -333,8 +352,7 @@ describe("Field", () => {
         expect(container.querySelector(".text-danger")).toBeNull();
     });
 
-    /* Same predicate, same reason: a hint that renders nothing must not leave
-     * the control describing itself by an empty paragraph. */
+    /* A hint that renders nothing must not leave an empty description. */
     it.each([
         ["null", null],
         ["an empty string", ""],
@@ -344,8 +362,9 @@ describe("Field", () => {
                 <Input />
             </Field>,
         );
-        expect(screen.getByRole("textbox")).not.toHaveAccessibleDescription();
-        expect(container.querySelectorAll("p")).toHaveLength(0);
+        const input = screen.getByRole("textbox");
+        expect(input).not.toHaveAccessibleDescription();
+        expect(container.querySelector(`[id="${input.id}-hint"]`)).toBeNull();
     });
 
     /* aria-describedby alone only reaches a reader that navigates back to the

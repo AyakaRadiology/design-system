@@ -124,9 +124,9 @@ export function Field({ label, hint, error, htmlFor, children, className }: Fiel
              * that moves back to the control, which is not what happens when
              * validation fires on blur. */}
             {hasError && (
-                <p id={errorId} role="alert" className="text-xs text-danger">
+                <div id={errorId} role="alert" className="text-xs text-danger">
                     {error}
-                </p>
+                </div>
             )}
         </div>
     );
