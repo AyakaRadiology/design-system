@@ -1,12 +1,14 @@
 import {
     composeStories,
+    composeStory,
     type Meta,
     type StoryObj,
     setProjectAnnotations,
 } from "@storybook/react-vite";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
-import { cdp } from "vitest/browser";
+import { cdp, page } from "vitest/browser";
 import preview from "../.storybook/preview.js";
+import selectMeta from "./Select.stories.js";
 
 const VOICES = ["base-light", "base-dark", "biomonitor"];
 type StoryModule = { default: Meta } & Record<string, StoryObj>;
@@ -26,6 +28,38 @@ afterEach(() => {
     } finally {
         consoleErrors.mockRestore();
     }
+});
+
+test("Select can wheel to and click the last protocol in a short window", async ({
+    onTestFinished,
+}) => {
+    const protocolPicker = composeStory(
+        {
+            args: {
+                "aria-label": "Protocol",
+                placeholder: "Choose a protocol",
+                options: Array.from({ length: 30 }, (_, i) => ({
+                    value: String(i + 1),
+                    label: `Protocol ${i + 1}`,
+                })),
+            },
+        },
+        selectMeta,
+    );
+    const { innerWidth, innerHeight } = window;
+    onTestFinished(() => page.viewport(innerWidth, innerHeight));
+    await page.viewport(800, 600);
+    await protocolPicker.run();
+    const trigger = page.getByRole("combobox", { name: "Protocol" });
+    await trigger.click();
+    const first = page.getByRole("option", { name: "Protocol 1", exact: true });
+    const last = page.getByRole("option", { name: "Protocol 30", exact: true });
+    await expect.element(first).toBeInViewport();
+    await expect.element(last).not.toBeInViewport();
+    await first.wheel({ delta: { y: 1000 } });
+    await expect.element(last).toBeInViewport({ ratio: 1 });
+    await last.click();
+    await expect.element(trigger).toHaveTextContent("Protocol 30");
 });
 
 for (const voice of VOICES) {

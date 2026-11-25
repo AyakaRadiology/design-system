@@ -84,7 +84,7 @@ export function Select(props: SelectProps) {
                 <SelectPrimitive.Content
                     position="popper"
                     sideOffset={4}
-                    className="z-overlay overflow-hidden rounded-md border border-border bg-bg-elevated shadow-sm"
+                    className="z-overlay max-h-(--radix-select-content-available-height) overflow-hidden rounded-md border border-border bg-bg-elevated shadow-sm"
                 >
                     <SelectPrimitive.Viewport>
                         {options.map((option) => (
