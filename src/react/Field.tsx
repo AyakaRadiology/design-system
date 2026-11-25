@@ -115,18 +115,18 @@ export function Field({ label, hint, error, htmlFor, children, className }: Fiel
             </label>
             {control}
             {hasHint && (
-                <p id={hintId} className="text-xs text-text-secondary">
+                <div id={hintId} className="text-xs text-text-secondary">
                     {hint}
-                </p>
+                </div>
             )}
             {/* role="alert" so an error that appears AFTER the control was
              * used is announced. aria-describedby alone only reaches a reader
              * that moves back to the control, which is not what happens when
              * validation fires on blur. */}
             {hasError && (
-                <p id={errorId} role="alert" className="text-xs text-danger">
+                <div id={errorId} role="alert" className="text-xs text-danger">
                     {error}
-                </p>
+                </div>
             )}
         </div>
     );
