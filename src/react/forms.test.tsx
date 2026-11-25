@@ -2,6 +2,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Fragment, useState } from "react";
+import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { Field } from "./Field.js";
 import { Input } from "./Input.js";
@@ -126,7 +127,7 @@ describe("Field", () => {
             </Field>,
         );
         expect(input).not.toHaveAttribute("aria-describedby");
-        expect(container.querySelector("p")).toBeNull();
+        expect(container.querySelector('[id$="-hint"]')).toBeNull();
     });
 
     it.each(["required", 0])("preserves visible nested array content: %s", (message) => {
@@ -229,6 +230,36 @@ describe("Field", () => {
             </Field>,
         );
         expect(screen.getByRole("textbox")).toHaveAccessibleDescription("8790 by default");
+    });
+
+    it("keeps a server-rendered list hint and the password typed before hydration", () => {
+        const field = (
+            <Field
+                label="Password"
+                hint={
+                    <ul>
+                        <li>8+ characters</li>
+                    </ul>
+                }
+            >
+                <input type="password" />
+            </Field>
+        );
+        const container = document.body.appendChild(document.createElement("div"));
+        container.innerHTML = renderToString(field);
+        const input = screen.getByLabelText<HTMLInputElement>("Password");
+        const hint = document.getElementById(input.getAttribute("aria-describedby") ?? "");
+        const parsedHintItem = hint?.querySelector("ul > li");
+        input.value = "typed before hydration";
+
+        const onRecoverableError = vi.fn();
+        render(field, { container, hydrate: true, onRecoverableError });
+
+        const hydratedInput = screen.getByLabelText("Password");
+        expect.soft(parsedHintItem).toHaveTextContent("8+ characters");
+        expect.soft(onRecoverableError).not.toHaveBeenCalled();
+        expect.soft(hydratedInput).toBe(input);
+        expect(hydratedInput).toHaveValue("typed before hydration");
     });
 
     it("announces an error and marks the control invalid", () => {
