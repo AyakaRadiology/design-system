@@ -73,7 +73,7 @@ export function Field({ label, hint, error, htmlFor, children, className }: Fiel
         child = Children.only(child.props.children);
     }
     const existingId = isValidElement<WiredProps>(child) ? child.props.id : undefined;
-    const controlId = htmlFor ?? existingId ?? generated;
+    const controlId = htmlFor || existingId || generated;
     const labelId = `${generated}-label`;
 
     const hasHint = !rendersNothing(hint);

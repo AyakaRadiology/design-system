@@ -220,6 +220,35 @@ describe("Field", () => {
         expect(screen.getByRole("textbox")).toHaveAttribute("id", "preset");
     });
 
+    it.each(["htmlFor", "id"])("wires labels and hints when %s is empty", async (idProp) => {
+        const user = userEvent.setup();
+        const fields = [
+            { label: "Port", hint: "8790 by default" },
+            { label: "Hostname", hint: "localhost by default" },
+        ];
+        render(
+            fields.map(({ label, hint }) => (
+                <Field
+                    key={label}
+                    label={label}
+                    hint={hint}
+                    htmlFor={idProp === "htmlFor" ? "" : undefined}
+                >
+                    <Input id={idProp === "id" ? "" : undefined} />
+                </Field>
+            )),
+        );
+
+        for (const { label, hint } of fields) {
+            const input = screen.getByRole("textbox", { name: label });
+            expect(input).toHaveAccessibleDescription(hint);
+            const labelElement = screen.getByText<HTMLLabelElement>(label, { selector: "label" });
+            expect(labelElement.control).toBe(input);
+            await user.click(labelElement);
+            expect(input).toHaveFocus();
+        }
+    });
+
     /* A hint that is not named in aria-describedby is invisible to a screen
      * reader, which is the whole reason this component wires it. */
     it("announces a hint through aria-describedby", () => {
