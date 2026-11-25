@@ -115,9 +115,9 @@ export function Field({ label, hint, error, htmlFor, children, className }: Fiel
             </label>
             {control}
             {hasHint && (
-                <p id={hintId} className="text-xs text-text-secondary">
+                <div id={hintId} className="text-xs text-text-secondary">
                     {hint}
-                </p>
+                </div>
             )}
             {/* role="alert" so an error that appears AFTER the control was
              * used is announced. aria-describedby alone only reaches a reader
