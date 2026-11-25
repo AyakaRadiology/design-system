@@ -511,6 +511,17 @@ describe("Select", () => {
         await waitFor(() => expect(screen.getByRole("listbox")).toBeInTheDocument());
         expect(screen.getByRole("listbox").closest(".bg-bg-elevated")).not.toBeNull();
     });
+
+    it("caps a long menu at the available popper height", async () => {
+        const options = Array.from({ length: 30 }, (_, i) => ({
+            value: String(i + 1),
+            label: `Protocol ${i + 1}`,
+        }));
+        render(<Select options={options} placeholder="Choose a protocol" />);
+        await userEvent.click(screen.getByRole("combobox"));
+        const menu = await screen.findByRole("listbox");
+        expect(menu).toHaveClass("max-h-(--radix-select-content-available-height)");
+    });
 });
 
 describe("Switch", () => {
