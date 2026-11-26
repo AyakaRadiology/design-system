@@ -1,0 +1,2 @@
+# Sample text a test wrote to a temp file to prove design-lint never prints it; not a key (now built at runtime).
+c9adde2cecb056b08c2a3a8b2cb8a5a7cf0276ee:src/lint/run.test.ts:generic-api-key:86
