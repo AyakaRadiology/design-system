@@ -54,9 +54,11 @@ export function main(argv, write = console.log, writeError = console.error) {
         write(USAGE);
         return 0;
     }
+    let config;
     let result;
     try {
-        result = run(loadConfig(options.config));
+        config = loadConfig(options.config);
+        result = run(config);
     }
     catch (error) {
         if (error instanceof ConfigError) {
@@ -76,7 +78,7 @@ export function main(argv, write = console.log, writeError = console.error) {
      * glob, and CI goes green while checking nothing. It is a config error,
      * not a clean run. */
     if (result.filesChecked === 0) {
-        writeError(`design-lint: the "include" patterns matched no files under ${process.cwd()} — the gate would have checked nothing`);
+        writeError(escapeControls(`design-lint: the "include" patterns matched no files under ${config.root} — the gate would have checked nothing`));
         return 2;
     }
     const errors = result.findings.filter((finding) => finding.severity === "error").length;

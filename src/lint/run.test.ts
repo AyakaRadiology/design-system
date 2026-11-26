@@ -445,6 +445,29 @@ describe("the command line", () => {
         ).toBe(2);
     });
 
+    it("reports the package directory when a nested config matches no files", () => {
+        const root = mkdtempSync(join(tmpdir(), "design-lint-monorepo-"));
+        const packageRoot = join(root, "packages", "ui");
+        const configPath = join(packageRoot, "design-lint.json");
+        const cwd = vi.spyOn(process, "cwd").mockReturnValue(root);
+        try {
+            mkdirSync(packageRoot, { recursive: true });
+            writeFileSync(configPath, JSON.stringify({ ...BASE, include: ["old-src/**/*.tsx"] }));
+            const errors: string[] = [];
+            expect(
+                main(
+                    ["--config", configPath],
+                    () => {},
+                    (line) => errors.push(line),
+                ),
+            ).toBe(2);
+            expect(errors.join("\n")).toContain(`matched no files under ${packageRoot} —`);
+        } finally {
+            cwd.mockRestore();
+            rmSync(root, { recursive: true, force: true });
+        }
+    });
+
     it("emits machine-readable findings with --format json", () => {
         const configPath = project({ "src/a.tsx": OFFENDING, "src/styles/theme.css": THEME }, BASE);
         const said: string[] = [];
