@@ -175,20 +175,34 @@ describe("emitted Plugin API scripts (contract harness, not a Figma runtime test
         saturation.setValueForMode("mode-0", 1.0800002);
         await expect(run(importVariablesScript(plan))).rejects.toThrow("Value drift");
     });
-    it("rejects a dark base default before writing variables", async () => {
-        const { run, collections, variables } = harness();
-        const script = importVariablesScript(plan);
-        await run(script);
-        const base = collections.find((collection) => collection.name === "base");
-        const dark = base?.modes.find((mode) => mode.name === "dark");
-        const first = variables[0];
-        if (!base || !dark || !first) throw new Error("Missing base modes or imported variables");
-        base.defaultModeId = dark.modeId;
-        const snapshot = JSON.stringify({ variables, collections });
-        const write = vi.spyOn(first, "setValueForMode");
+    it.each([true, false])(
+        "reports and rejects a dark base default (reordered: %s)",
+        async (reordered) => {
+            const { run, collections, variables } = harness();
+            const script = importVariablesScript(plan);
+            await run(script);
+            const base = collections.find((collection) => collection.name === "base");
+            const dark = base?.modes.find((mode) => mode.name === "dark");
+            const first = variables[0];
+            if (!base || !dark || !first)
+                throw new Error("Missing base modes or imported variables");
+            expect(base.modes[0]).toEqual({ modeId: base.defaultModeId, name: "light" });
+            if (reordered) base.modes.reverse();
+            base.defaultModeId = dark.modeId;
+            const snapshot = JSON.stringify({ variables, collections });
+            const write = vi.spyOn(first, "setValueForMode");
 
-        await expect(run(script)).rejects.toThrow("Default mode drift: base");
-        expect(write).not.toHaveBeenCalled();
-        expect(JSON.stringify({ variables, collections })).toBe(snapshot);
-    });
+            await expect(run(script)).rejects.toThrow("Default mode drift: base");
+            expect(write).not.toHaveBeenCalled();
+            expect(JSON.stringify({ variables, collections })).toBe(snapshot);
+
+            const live = await run(exportVariablesScript(plan));
+            expect
+                .soft(diffVariables(plan, live))
+                .toEqual([{ path: "base/defaultMode", before: "light", after: "dark" }]);
+            expect(
+                live.collections.find((collection) => collection.name === "base"),
+            ).toHaveProperty("defaultMode", "dark");
+        },
+    );
 });

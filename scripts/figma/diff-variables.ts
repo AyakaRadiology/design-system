@@ -20,6 +20,7 @@ export interface LiveVariables {
     collections: {
         name: string;
         modes: string[];
+        defaultMode?: string | null;
         variables: {
             name: string;
             resolvedType: string;
@@ -74,6 +75,12 @@ function flatten(snapshot: LiveVariables): Map<string, SnapshotValue> {
         )
             throw new Error(`Invalid modes in ${collection.name}`);
         add(`${collection.name}/modes`, modes);
+        // Plans and older exports represent the default as the first mode.
+        const defaultMode =
+            collection.defaultMode === undefined ? collection.modes[0] : collection.defaultMode;
+        if (typeof defaultMode !== "string" || !modes.includes(defaultMode))
+            throw new Error(`Invalid default mode in ${collection.name}`);
+        add(`${collection.name}/defaultMode`, defaultMode);
         for (const variable of collection.variables) {
             if (typeof variable.name !== "string" || !variable.name || variable.name.includes("/"))
                 throw new Error("Expected a semantic token name without slashes");
@@ -111,6 +118,7 @@ export function diffVariables(plan: FigmaPlan, live: LiveVariables): VariableCha
     const expected = flatten({
         collections: plan.collections.map((collection) => ({
             ...collection,
+            defaultMode: collection.modes[0],
             variables: collection.variables.map((variable) => ({
                 ...variable,
                 valuesByMode: variable.valuesByMode,

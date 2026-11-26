@@ -96,6 +96,7 @@ const variables = await figma.variables.getLocalVariablesAsync();
 return { collections: collections.filter(c => names.includes(c.name)).map(collection => ({
     name: collection.name,
     modes: collection.modes.map(mode => mode.name),
+    defaultMode: collection.modes.find(mode => mode.modeId === collection.defaultModeId)?.name ?? null,
     variables: variables.filter(v => v.variableCollectionId === collection.id).map(variable => ({
         name: variable.name,
         resolvedType: variable.resolvedType,
