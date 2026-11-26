@@ -427,22 +427,34 @@ describe("the command line", () => {
      * checks nothing — the one failure mode that looks exactly like success. */
     it("exits 2 when the include patterns match no files, in either format", () => {
         const configPath = project({ "src/a.tsx": CLEAN }, { ...BASE, include: ["app/**/*.tsx"] });
-        const said: string[] = [];
-        expect(
-            main(
-                ["--config", configPath],
-                () => {},
-                (line) => said.push(String(line)),
-            ),
-        ).toBe(2);
-        expect(said.join("\n")).toMatch(/matched no files/);
-        expect(
-            main(
-                ["--config", configPath, "--format", "json"],
-                () => {},
-                () => {},
-            ),
-        ).toBe(2);
+        try {
+            const runInFormat = (format: "text" | "json") => {
+                const stdout: string[] = [];
+                const stderr: string[] = [];
+                const status = main(
+                    ["--config", configPath, "--format", format],
+                    (line) => stdout.push(line),
+                    (line) => stderr.push(line),
+                );
+                return { status, stdout, stderr };
+            };
+
+            const text = runInFormat("text");
+            expect(text.status).toBe(2);
+            expect(text.stdout).toEqual([]);
+            expect(text.stderr).toEqual([
+                `design-lint: the "include" patterns matched no files under ${process.cwd()} — the gate would have checked nothing`,
+            ]);
+
+            const json = runInFormat("json");
+            expect(json.status).toBe(2);
+            expect(json.stdout).toEqual([
+                JSON.stringify({ findings: [], filesChecked: 0 }, null, 2),
+            ]);
+            expect(json.stderr).toEqual(text.stderr);
+        } finally {
+            rmSync(dirname(configPath), { recursive: true, force: true });
+        }
     });
 
     it("emits machine-readable findings with --format json", () => {
