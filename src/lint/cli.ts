@@ -1,4 +1,4 @@
-import { ConfigError, loadConfig } from "./config.js";
+import { type Config, ConfigError, loadConfig } from "./config.js";
 import { run } from "./run.js";
 import type { Finding } from "./types.js";
 
@@ -72,9 +72,11 @@ export function main(
         return 0;
     }
 
+    let config: Config;
     let result: ReturnType<typeof run>;
     try {
-        result = run(loadConfig(options.config));
+        config = loadConfig(options.config);
+        result = run(config);
     } catch (error) {
         if (error instanceof ConfigError) {
             writeError(escapeControls(`design-lint: ${error.message}`));
@@ -96,7 +98,9 @@ export function main(
     // A renamed directory or a typo in a glob must fail CI when nothing is checked.
     if (result.filesChecked === 0) {
         writeError(
-            `design-lint: the "include" patterns matched no files under ${process.cwd()} — the gate would have checked nothing`,
+            escapeControls(
+                `design-lint: the "include" patterns matched no files under ${config.root} — the gate would have checked nothing`,
+            ),
         );
         return 2;
     }

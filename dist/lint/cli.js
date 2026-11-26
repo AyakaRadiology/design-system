@@ -54,9 +54,11 @@ export function main(argv, write = console.log, writeError = console.error) {
         write(USAGE);
         return 0;
     }
+    let config;
     let result;
     try {
-        result = run(loadConfig(options.config));
+        config = loadConfig(options.config);
+        result = run(config);
     }
     catch (error) {
         if (error instanceof ConfigError) {
@@ -70,7 +72,7 @@ export function main(argv, write = console.log, writeError = console.error) {
     }
     // A renamed directory or a typo in a glob must fail CI when nothing is checked.
     if (result.filesChecked === 0) {
-        writeError(`design-lint: the "include" patterns matched no files under ${process.cwd()} — the gate would have checked nothing`);
+        writeError(escapeControls(`design-lint: the "include" patterns matched no files under ${config.root} — the gate would have checked nothing`));
         return 2;
     }
     if (options.format === "json")
