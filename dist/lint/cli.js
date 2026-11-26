@@ -67,18 +67,16 @@ export function main(argv, write = console.log, writeError = console.error) {
     }
     if (options.format === "json") {
         write(JSON.stringify({ findings: result.findings, filesChecked: result.filesChecked }, null, 2));
-        return result.filesChecked === 0 ? 2 : result.exitCode;
     }
-    if (result.findings.length > 0)
-        write(formatText(result.findings));
-    /* A gate that matched no files passes silently, which is the one failure
-     * mode that looks exactly like success — a renamed directory, a typo in a
-     * glob, and CI goes green while checking nothing. It is a config error,
-     * not a clean run. */
+    // A renamed directory or a typo in a glob must fail CI when nothing is checked.
     if (result.filesChecked === 0) {
         writeError(`design-lint: the "include" patterns matched no files under ${process.cwd()} — the gate would have checked nothing`);
         return 2;
     }
+    if (options.format === "json")
+        return result.exitCode;
+    if (result.findings.length > 0)
+        write(formatText(result.findings));
     const errors = result.findings.filter((finding) => finding.severity === "error").length;
     const warnings = result.findings.length - errors;
     write(`design-lint: ${result.filesChecked} file(s), ${errors} error(s), ${warnings} warning(s)`);
