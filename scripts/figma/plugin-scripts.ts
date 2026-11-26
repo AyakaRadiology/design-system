@@ -36,7 +36,9 @@ for (const spec of plan) {
     if (matches.length > 1) throw new Error("Duplicate collection: " + spec.name);
     const collection = matches[0];
     if (!collection) continue;
-    if (JSON.stringify(collection.modes.map(m => m.name).sort()) !== JSON.stringify([...spec.modes].sort()))
+    const defaultMode = collection.modes.find(mode => mode.modeId === collection.defaultModeId);
+    if (defaultMode?.name !== spec.modes[0] ||
+        JSON.stringify(collection.modes.map(m => m.name).sort()) !== JSON.stringify([...spec.modes].sort()))
         throw new Error("Mode drift: " + spec.name);
     const defaultMode = collection.modes.find(m => m.modeId === collection.defaultModeId);
     if (defaultMode?.name !== spec.modes[0])
@@ -96,6 +98,7 @@ const variables = await figma.variables.getLocalVariablesAsync();
 return { collections: collections.filter(c => names.includes(c.name)).map(collection => ({
     name: collection.name,
     modes: collection.modes.map(mode => mode.name),
+    defaultMode: collection.modes.find(mode => mode.modeId === collection.defaultModeId)?.name ?? null,
     variables: variables.filter(v => v.variableCollectionId === collection.id).map(variable => ({
         name: variable.name,
         resolvedType: variable.resolvedType,

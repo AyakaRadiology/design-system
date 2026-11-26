@@ -137,6 +137,29 @@ describe("emitted Plugin API scripts (contract harness, not a Figma runtime test
         expect(write).not.toHaveBeenCalled();
         expect(last.valuesByMode["mode-0"]).toBe(999);
     });
+    it("reports a reordered default mode and rejects it before writing variables", async () => {
+        const { run, collections, variables } = harness();
+        await run(importVariablesScript(plan));
+        const base = collections.find((collection) => collection.name === "base");
+        const first = variables[0];
+        if (!base || !first) throw new Error("Missing imported base collection or variables");
+        expect(base.modes[0]).toEqual({ modeId: base.defaultModeId, name: "light" });
+        base.modes.reverse();
+        const defaultMode = base.modes[0];
+        if (!defaultMode) throw new Error("Missing reordered mode");
+        base.defaultModeId = defaultMode.modeId;
+
+        const live = await run(exportVariablesScript(plan));
+        expect
+            .soft(live.collections.find((collection) => collection.name === "base"))
+            .toHaveProperty("defaultMode", "dark");
+        expect
+            .soft(diffVariables(plan, live))
+            .toEqual([{ path: "base/defaultMode", before: "light", after: "dark" }]);
+        const write = vi.spyOn(first, "setValueForMode");
+        await expect(run(importVariablesScript(plan))).rejects.toThrow("Mode drift: base");
+        expect(write).not.toHaveBeenCalled();
+    });
     it.each(["description", "scopes", "WEB", "missing WEB"])(
         "rejects %s metadata drift before any mutation and exports it for review",
         async (field) => {
