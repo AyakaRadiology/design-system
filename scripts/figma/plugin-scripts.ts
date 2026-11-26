@@ -36,9 +36,7 @@ for (const spec of plan) {
     if (matches.length > 1) throw new Error("Duplicate collection: " + spec.name);
     const collection = matches[0];
     if (!collection) continue;
-    const defaultMode = collection.modes.find(mode => mode.modeId === collection.defaultModeId);
-    if (defaultMode?.name !== spec.modes[0] ||
-        JSON.stringify(collection.modes.map(m => m.name).sort()) !== JSON.stringify([...spec.modes].sort()))
+    if (JSON.stringify(collection.modes.map(m => m.name).sort()) !== JSON.stringify([...spec.modes].sort()))
         throw new Error("Mode drift: " + spec.name);
     const defaultMode = collection.modes.find(m => m.modeId === collection.defaultModeId);
     if (defaultMode?.name !== spec.modes[0])

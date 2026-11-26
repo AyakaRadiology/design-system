@@ -118,6 +118,7 @@ export function diffVariables(plan: FigmaPlan, live: LiveVariables): VariableCha
     const expected = flatten({
         collections: plan.collections.map((collection) => ({
             ...collection,
+            defaultMode: collection.modes[0],
             variables: collection.variables.map((variable) => ({
                 ...variable,
                 valuesByMode: variable.valuesByMode,
