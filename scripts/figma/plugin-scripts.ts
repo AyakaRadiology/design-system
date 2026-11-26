@@ -38,6 +38,9 @@ for (const spec of plan) {
     if (!collection) continue;
     if (JSON.stringify(collection.modes.map(m => m.name).sort()) !== JSON.stringify([...spec.modes].sort()))
         throw new Error("Mode drift: " + spec.name);
+    const defaultMode = collection.modes.find(m => m.modeId === collection.defaultModeId);
+    if (defaultMode?.name !== spec.modes[0])
+        throw new Error("Default mode drift: " + spec.name + "; expected " + spec.modes[0]);
     const local = variables.filter(v => v.variableCollectionId === collection.id);
     for (const variable of local) {
         const target = spec.variables.find(v => v.name === variable.name);
