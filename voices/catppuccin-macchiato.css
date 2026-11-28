@@ -10,8 +10,9 @@
  * voices/catppuccin-macchiato/VOICE.md for the rules that go with the values.
  *
  * DARK ONLY, like biomonitor: one mode, one set of values to keep honest
- * against the contrast gate. (Catppuccin's light flavour, Latte, would be a
- * separate voice.)
+ * against the contrast gate. The other flavours (Latte, Frappé, Mocha) are
+ * voices of their own; themes/catppuccin.css carries all four behind
+ * data-theme for an app that lets the user choose.
  *
  * Usage in a Tailwind entry (plain CSS needs only the voice import):
  *   @import "tailwindcss";

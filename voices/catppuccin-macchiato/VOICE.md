@@ -11,7 +11,8 @@ A tool someone sits in for hours and should find easy on the eyes: an
 annotation workstation, an editor-like surface. Text on a panel is about 10:1
 here against about 15:1 in biomonitor, and borders are one quiet step off the
 surface. Not for a monitor that has to be read at a glance from across the
-room (that is biomonitor), and not for anything that needs a light mode.
+room (that is biomonitor); a light mode is the Latte flavour, chosen through
+the theme set.
 
 ## The rules that make it read as itself
 
@@ -34,6 +35,9 @@ room (that is biomonitor), and not for anything that needs a light mode.
 ## What this voice is not
 
 Not a general-purpose replacement for base or biomonitor, and not the other
-Catppuccin flavours (Latte, Frappé, Mocha): those would be voices of their own.
+Catppuccin flavours: Latte, Frappé and Mocha are voices of their own
+(`../catppuccin-latte.css`, `../catppuccin-frappe.css`,
+`../catppuccin-mocha.css`), and `themes/catppuccin.css` offers all four behind
+`data-theme` when an app lets its user choose.
 The ui rules' scale and density all still hold; this voice only re-values the
 tokens.
