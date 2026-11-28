@@ -35,6 +35,30 @@ describe("parseTsx", () => {
     });
 });
 
+describe("template literal locations", () => {
+    it.each(["\n", "\r\n"])("reports source positions with line ending %j", (newline) => {
+        const text = [
+            "const plain = css`",
+            ...Array<string>(9).fill(""),
+            "  margin: 0;",
+            "  color: #fff;",
+            "`;",
+            "const interpolated = css`",
+            `  color: #abc; \${first}`,
+            `  color: #def; \${second}`,
+            "  /* \\u{1F600} */ color: \\x23123;",
+            "`;",
+        ].join(newline);
+        const findings = L1.checkTsx?.("a.ts", parseTsx("a.ts", text), context);
+        expect(findings?.map(({ line, col }) => [line, col])).toEqual([
+            [12, 10],
+            [15, 10],
+            [16, 10],
+            [17, 26],
+        ]);
+    });
+});
+
 describe("JSX attribute entities", () => {
     it.each(["&#1114112;", "&#x110000;", `&#${"9".repeat(400)};`, `&#x${"f".repeat(400)};`])(
         "preserves invalid numeric references and continues linting: %s",

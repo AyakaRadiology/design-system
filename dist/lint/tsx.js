@@ -85,6 +85,28 @@ function decodeJsxAttribute(text) {
     }
     return { text: decoded, offsets };
 }
+/** Map the compiler's cooked template text back to its raw UTF-16 offsets. */
+function templateOffsets(raw) {
+    const offsets = [];
+    const scanner = ts.createScanner(ts.ScriptTarget.Latest, false);
+    // Keep each escape together so the scanner can tell how many units it emits.
+    for (const match of raw.matchAll(/\\(?:u\{[\da-fA-F]+\}|u[\da-fA-F]{4}|x[\da-fA-F]{2}|[0-3][0-7]{0,2}|[4-7][0-7]?|\r\n|.)?|\r\n|[^\\\r]+|\r/gs)) {
+        const chunk = match[0];
+        if (chunk.startsWith("\\")) {
+            scanner.setText(`\`${chunk}`);
+            scanner.scan();
+            for (let i = 0; i < scanner.getTokenValue().length; i++)
+                offsets.push(match.index);
+        }
+        else {
+            const length = chunk === "\r\n" ? 1 : chunk.length;
+            for (let i = 0; i < length; i++)
+                offsets.push(match.index + i);
+        }
+    }
+    offsets.push(raw.length);
+    return offsets;
+}
 /**
  * Every string the source spells out: a quoted literal, a bare template, and
  * each fixed chunk of a template with substitutions.
@@ -97,19 +119,21 @@ function decodeJsxAttribute(text) {
  */
 export function forEachStringLiteral(source, visit) {
     walk(source, (node) => {
-        if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
-            if (ts.isStringLiteral(node) && ts.isJsxAttribute(node.parent)) {
+        if (ts.isTemplateLiteralToken(node)) {
+            const raw = node.rawText;
+            const offsets = raw !== undefined && raw.length !== node.text.length
+                ? templateOffsets(raw)
+                : undefined;
+            visit(node.text, node.getStart() + 1, offsets);
+        }
+        else if (ts.isStringLiteral(node)) {
+            if (ts.isJsxAttribute(node.parent)) {
                 const { text, offsets } = decodeJsxAttribute(node.text);
                 visit(text, node.getStart() + 1, offsets);
             }
             else {
                 visit(node.text, node.getStart() + 1);
             }
-        }
-        else if (ts.isTemplateHead(node) ||
-            ts.isTemplateMiddle(node) ||
-            ts.isTemplateTail(node)) {
-            visit(node.text, node.getStart() + 1);
         }
     });
 }
