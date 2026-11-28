@@ -30,8 +30,10 @@ const TAILWIND_NAMESPACES = [
     "breakpoint-",
 ];
 
-const isTailwindNamespace = (name: string, selector: string) =>
-    selector.startsWith("@theme") && TAILWIND_NAMESPACES.some((prefix) => name.startsWith(prefix));
+const isTailwindThemeDeclaration = (name: string, selector: string, value: string) =>
+    (selector === "@theme" || selector.startsWith("@theme ")) &&
+    ((name === "*" && value === "initial") ||
+        TAILWIND_NAMESPACES.some((prefix) => name.startsWith(prefix)));
 
 /**
  * L6 — one file owns the tokens, and extensions say they are extensions.
@@ -55,7 +57,7 @@ export const L6: Rule = {
         const findings: RuleFinding[] = [];
         const isTheme = file === context.themeFile;
 
-        for (const { name, selector, line, col } of walkCustomProperties(root)) {
+        for (const { name, selector, value, line, col } of walkCustomProperties(root)) {
             const at = { rule: "L6" as const, file, line, col };
 
             if (context.schemaTokens.has(name)) {
@@ -67,7 +69,7 @@ export const L6: Rule = {
                 continue;
             }
 
-            if (isTailwindNamespace(name, selector)) continue;
+            if (isTailwindThemeDeclaration(name, selector, value)) continue;
 
             if (name.startsWith(context.extensionPrefix)) {
                 const bare = name.slice(context.extensionPrefix.length);
