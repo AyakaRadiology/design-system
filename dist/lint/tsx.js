@@ -1,4 +1,5 @@
 import ts from "typescript";
+import { ConfigError } from "./config.js";
 /**
  * Parse a TS/TSX file for linting.
  *
@@ -9,7 +10,17 @@ import ts from "typescript";
  */
 export function parseTsx(file, text) {
     const scriptKind = /\.(?:ts|mts|cts)$/i.test(file) ? ts.ScriptKind.TS : ts.ScriptKind.TSX;
-    return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind);
+    const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind);
+    // TypeScript 5.9 attaches diagnostics to the recovery tree but omits them
+    // from the public SourceFile type. Read them without building a program.
+    const [diagnostic] = source.parseDiagnostics;
+    if (diagnostic) {
+        const { line, col } = positionAt(source, diagnostic.start);
+        const language = scriptKind === ts.ScriptKind.TS ? "TypeScript" : "TSX";
+        // Diagnostic messages can contain source text.
+        throw new ConfigError(`${file}:${line}:${col} invalid ${language} syntax`);
+    }
+    return source;
 }
 /** 1-based line and column of an absolute offset. */
 export function positionAt(source, offset) {

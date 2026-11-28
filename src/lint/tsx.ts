@@ -1,4 +1,5 @@
 import ts from "typescript";
+import { ConfigError } from "./config.js";
 import type { RuleContext, RuleFinding, RuleId } from "./types.js";
 
 /**
@@ -11,7 +12,19 @@ import type { RuleContext, RuleFinding, RuleId } from "./types.js";
  */
 export function parseTsx(file: string, text: string): ts.SourceFile {
     const scriptKind = /\.(?:ts|mts|cts)$/i.test(file) ? ts.ScriptKind.TS : ts.ScriptKind.TSX;
-    return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind);
+    const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind);
+    // TypeScript 5.9 attaches diagnostics to the recovery tree but omits them
+    // from the public SourceFile type. Read them without building a program.
+    const [diagnostic] = (
+        source as ts.SourceFile & { parseDiagnostics: readonly ts.DiagnosticWithLocation[] }
+    ).parseDiagnostics;
+    if (diagnostic) {
+        const { line, col } = positionAt(source, diagnostic.start);
+        const language = scriptKind === ts.ScriptKind.TS ? "TypeScript" : "TSX";
+        // Diagnostic messages can contain source text.
+        throw new ConfigError(`${file}:${line}:${col} invalid ${language} syntax`);
+    }
+    return source;
 }
 
 export interface Position {

@@ -336,6 +336,33 @@ describe("run", () => {
 });
 
 describe("the command line", () => {
+    it.each([
+        ['"p-4"', 0, []],
+        ["p-5", 2, ["design-lint: src/Control.tsx:1:45 invalid TSX syntax"]],
+    ] as const)("checks TSX with className=%s", (classValue, exitCode, errors) => {
+        const source = `export const Control = () => <div className=${classValue} />;`;
+        const configPath = project(
+            { "src/Control.tsx": source },
+            { ...BASE, rules: { L3: "error" } },
+        );
+        try {
+            const stdout: string[] = [];
+            const stderr: string[] = [];
+            const status = main(
+                ["--config", configPath],
+                (line) => stdout.push(line),
+                (line) => stderr.push(line),
+            );
+            expect(status).toBe(exitCode);
+            expect(stderr).toEqual(errors);
+            expect(stdout).toEqual(
+                exitCode === 0 ? ["design-lint: 1 file(s), 0 error(s), 0 warning(s)"] : [],
+            );
+        } finally {
+            rmSync(dirname(configPath), { recursive: true, force: true });
+        }
+    });
+
     it("escapes the filename and omits source text from a CSS syntax error", () => {
         const source = "INVALID_CSS=PRIVATE_TEXT";
         const configPath = project({ "src/bad\u0085file.css": source }, BASE);
