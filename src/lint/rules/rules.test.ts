@@ -350,6 +350,22 @@ describe("L5 — raw control", () => {
 });
 
 describe("L6 — token hygiene", () => {
+    it.each([
+        ["@theme { --*: initial; }", []],
+        ["@theme inline { --*: initial; }", []],
+        ["@theme { --color-*: initial; }", []],
+        [":root { --*: initial; }", ["--* is neither a schema token nor an extension"]],
+        ["@theme-other { --*: initial; }", ["--* is neither a schema token nor an extension"]],
+        ["@theme { --*: unset; }", ["--* is neither a schema token nor an extension"]],
+    ])("checks Tailwind resets in %s", (source, messages) => {
+        const findings = RULES.L6.checkCss?.("src/app.css", postcss.parse(source), context());
+        expect(findings).toEqual(
+            messages.map((message) =>
+                expect.objectContaining({ rule: "L6", message: expect.stringContaining(message) }),
+            ),
+        );
+    });
+
     it.each(["@theme", "@theme inline", ":root"])(
         "allows Tailwind animation and effect namespaces only inside @theme (%s)",
         (selector) => {
