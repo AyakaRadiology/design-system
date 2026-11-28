@@ -60,7 +60,10 @@ describe("offline Figma adapter", () => {
         expect(plan.collections.map(({ name, modes }) => ({ name, modes }))).toEqual([
             { name: "base", modes: ["light", "dark"] },
             { name: "biomonitor", modes: ["dark"] },
+            { name: "catppuccin-frappe", modes: ["dark"] },
+            { name: "catppuccin-latte", modes: ["light"] },
             { name: "catppuccin-macchiato", modes: ["dark"] },
+            { name: "catppuccin-mocha", modes: ["dark"] },
         ]);
         for (const collection of plan.collections) {
             for (const variable of collection.variables) {
