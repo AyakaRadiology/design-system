@@ -443,7 +443,7 @@ describe("the command line", () => {
             expect(text.status).toBe(2);
             expect(text.stdout).toEqual([]);
             expect(text.stderr).toEqual([
-                `design-lint: the "include" patterns matched no files under ${process.cwd()} — the gate would have checked nothing`,
+                `design-lint: the "include" patterns matched no files under ${dirname(configPath)} — the gate would have checked nothing`,
             ]);
 
             const json = runInFormat("json");
