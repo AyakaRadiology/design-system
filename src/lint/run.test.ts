@@ -127,11 +127,11 @@ describe("selectFiles", () => {
         expect(selectFiles(config)).toEqual(["src/a.tsx", "src/b.tsx", "src/styles/theme.css"]);
     });
 
-    it("drops excluded files", () => {
+    it.each(["**/*.test.*", "./src/../**/*.test.*"])("drops files excluded by %s", (pattern) => {
         const config = loadConfig(
             project(
                 { "src/a.tsx": CLEAN, "src/a.test.tsx": OFFENDING, "src/styles/theme.css": THEME },
-                BASE,
+                { ...BASE, exclude: [pattern] },
             ),
         );
         expect(selectFiles(config)).toEqual(["src/a.tsx", "src/styles/theme.css"]);
@@ -234,18 +234,45 @@ describe("run", () => {
         expect(rules.has("L1")).toBe(true);
     });
 
-    it("accepts a glob in an allowlist path", () => {
-        const configPath = project(
-            { "src/legacy/a.tsx": OFFENDING, "src/styles/theme.css": THEME },
-            {
-                ...BASE,
-                allow: [{ rule: "L5", path: "src/legacy/**", reason: "migrated in S4" }],
-            },
-        );
-        expect(run(loadConfig(configPath)).findings.some((finding) => finding.rule === "L5")).toBe(
-            false,
-        );
-    });
+    it.each(["src/react/Button.tsx", "./src/react/Button.tsx", "src/./react/../react/Button.tsx"])(
+        "suppresses the L5 finding with allow path %s",
+        (path) => {
+            const file = "src/react/Button.tsx";
+            const configPath = project(
+                { [file]: "export const Button = () => <button />;\n" },
+                {
+                    ...BASE,
+                    include: [file],
+                    allow: [{ rule: "L5", path, reason: "shared Button primitive" }],
+                },
+            );
+            try {
+                expect(run(loadConfig(configPath))).toEqual({
+                    findings: [],
+                    exitCode: 0,
+                    filesChecked: 1,
+                });
+            } finally {
+                rmSync(dirname(configPath), { recursive: true, force: true });
+            }
+        },
+    );
+
+    it.each(["src/legacy/**", "./src/{unused/../archive,legacy}/**"])(
+        "accepts the allowlist glob %s",
+        (path) => {
+            const configPath = project(
+                { "src/legacy/a.tsx": OFFENDING, "src/styles/theme.css": THEME },
+                {
+                    ...BASE,
+                    allow: [{ rule: "L5", path, reason: "migrated in S4" }],
+                },
+            );
+            expect(
+                run(loadConfig(configPath)).findings.some((finding) => finding.rule === "L5"),
+            ).toBe(false);
+        },
+    );
 
     it("reports a warn rule without failing the run", () => {
         const configPath = project(

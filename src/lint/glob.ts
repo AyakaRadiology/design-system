@@ -1,3 +1,5 @@
+import { posix } from "node:path";
+
 /**
  * The small glob subset the config needs, compiled to a RegExp.
  *
@@ -81,7 +83,19 @@ export function globToRegExp(pattern: string): RegExp {
     return new RegExp(`^${compile(0, pattern.length, true)}$`, "su");
 }
 
+function normalizePattern(pattern: string): string {
+    const globStart = pattern.search(/[*?{]/);
+    if (globStart === -1) return posix.normalize(pattern);
+
+    // A glob can contain separators inside alternatives or wildcards that
+    // span directories. Normalize only its literal directory prefix.
+    const prefixEnd = pattern.lastIndexOf("/", globStart) + 1;
+    if (prefixEnd === 0) return pattern;
+    const prefix = posix.normalize(pattern.slice(0, prefixEnd));
+    return (prefix === "./" ? "" : prefix) + pattern.slice(prefixEnd);
+}
+
 /** Does `path` (relative, `/`-separated) match any of these globs? */
 export function matchesAny(path: string, patterns: readonly string[]): boolean {
-    return patterns.some((pattern) => globToRegExp(pattern).test(path));
+    return patterns.some((pattern) => globToRegExp(normalizePattern(pattern)).test(path));
 }
